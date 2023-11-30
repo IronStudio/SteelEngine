@@ -1,0 +1,121 @@
+workspace "SteelEngine"
+	configurations {"debug", "release", "dist"}
+	newoption {
+		trigger = "shared",
+		description = "Build SteelEngine as a shared library (.dll on Windows)"
+	}
+
+
+obj_dir = "obj/%{cfg.buildcfg}/%{prj.name}"
+output_dir_without_project = "bin/%{cfg.buildcfg}"
+output_dir = output_dir_without_project .. "/%{prj.name}"
+
+
+--		███████╗███╗   ██╗ ██████╗ ██╗███╗   ██╗███████╗
+--		██╔════╝████╗  ██║██╔════╝ ██║████╗  ██║██╔════╝
+--		█████╗  ██╔██╗ ██║██║  ███╗██║██╔██╗ ██║█████╗  
+--		██╔══╝  ██║╚██╗██║██║   ██║██║██║╚██╗██║██╔══╝  
+--		███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗
+--		╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝
+
+
+
+project "engine"
+	language "C++"
+	cppdialect "C++20"
+	location "engine"
+
+	files {
+		"%{prj.location}/include/**.hpp",
+		"%{prj.location}/include/**.inl",
+		"%{prj.location}/src/**.cpp",
+		"%{prj.location}/src/**.inl"
+	}
+
+	includedirs {
+		"%{prj.location}/include/se"
+	}
+
+	targetname "steelengine"
+	targetdir(output_dir)
+	objdir(obj_dir)
+
+
+	filter "options:shared"
+		kind "SharedLib"
+		postbuildcommands("python3 ../scripts/copy.py ../" .. output_dir .. "/%{cfg.buildtarget.name} ../" .. output_dir_without_project .. "/sandbox/")
+
+	filter "not options:shared"
+		kind "StaticLib"
+
+	filter "configurations:debug"
+		defines {"DEBUG", "SE_DEBUG_MODE"}
+		symbols "On"
+		optimize "Off"
+
+	filter "configurations:release"
+		defines {"DEBUG", "SE_RELEASE_MODE"}
+		symbols "On"
+		optimize "On"
+
+	filter "configurations:dist"
+		defines {"NDEBUG", "SE_DIST_MODE"}
+		symbols "Off"
+		optimize "On"
+
+
+
+--		███████╗ █████╗ ███╗   ██╗██████╗ ██████╗  ██████╗ ██╗  ██╗
+--		██╔════╝██╔══██╗████╗  ██║██╔══██╗██╔══██╗██╔═══██╗╚██╗██╔╝
+--		███████╗███████║██╔██╗ ██║██████╔╝██║  ██║██║   ██║ ╚███╔╝ 
+--		╚════██║██╔══██║██║╚██╗██║██╔══██╗██║  ██║██║   ██║ ██╔██╗ 
+--		███████║██║  ██║██║ ╚████║██████╔╝██████╔╝╚██████╔╝██╔╝ ██╗
+--		╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
+
+
+project "sandbox"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++20"
+	location "sandbox"
+
+	files {
+		"%{prj.location}/include/**.hpp",
+		"%{prj.location}/include/**.inl",
+		"%{prj.location}/src/**.cpp",
+		"%{prj.location}/src/**.inl"
+	}
+
+	includedirs {
+		"%{prj.location}/include/",
+		"engine/include/"
+	}
+
+	libdirs {
+		output_dir_without_project .. "/engine"
+	}
+
+	links {
+		"steelengine"
+	}
+
+	targetname "sandbox"
+	targetdir(output_dir)
+	objdir(obj_dir)
+
+
+	filter "configurations:debug"
+		defines {"DEBUG", "SE_DEBUG_MODE"}
+		symbols "On"
+		optimize "Off"
+
+	filter "configurations:release"
+		defines {"DEBUG", "SE_RELEASE_MODE"}
+		symbols "On"
+		optimize "On"
+
+	filter "configurations:dist"
+		defines {"NDEBUG", "SE_DIST_MODE"}
+		symbols "Off"
+		optimize "On"
+		kind "WindowedApp"
