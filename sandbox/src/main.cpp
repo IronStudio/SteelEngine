@@ -1,14 +1,20 @@
-#include <se/test.hpp>
+#include <iostream>
 
+#include <se/essentials/exception.hpp>
 
-#ifdef WIN32
-	#define main WinMain
-#endif
 
 
 int main(int, char **)
 {
-	se::test();
+	try
+	{
+		throw SE_UnknownInvalidArgumentError(blabla, "An error");
+	}
+
+	catch (const se::essentials::Exception &exception)
+	{
+		std::cout << exception.what() << std::endl;
+	}
 
 	return 0;
 }

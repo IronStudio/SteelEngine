@@ -24,6 +24,7 @@ project "engine"
 	language "C++"
 	cppdialect "C++20"
 	location "engine"
+	warnings "Extra"
 
 	files {
 		"%{prj.location}/include/**.hpp",
@@ -78,6 +79,7 @@ project "sandbox"
 	language "C++"
 	cppdialect "C++20"
 	location "sandbox"
+	warnings "Extra"
 
 	files {
 		"%{prj.location}/include/**.hpp",
