@@ -10,4 +10,4 @@ if len(sys.argv) == 2:
 
 subprocess.run(["premake5", "gmake2", shared])
 subprocess.run(["make", "engine"])
-subprocess.run(["make", "sandbox"])
+subprocess.run(["make", "test"])

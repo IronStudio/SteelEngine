@@ -1,12 +1,14 @@
 #include <iostream>
 
-#include <se/essentials/exception.hpp>
-
+//#include <se/essentials/exception.hpp>
+#include <se/essentials/string.hpp>
 
 
 int main(int, char **)
 {
-	try
+	
+
+	/*try
 	{
 		throw SE_UnknownInvalidArgumentError(blabla, "An error");
 	}
@@ -14,7 +16,7 @@ int main(int, char **)
 	catch (const se::essentials::Exception &exception)
 	{
 		std::cout << exception.what() << std::endl;
-	}
+	}*/
 
 	return 0;
 }

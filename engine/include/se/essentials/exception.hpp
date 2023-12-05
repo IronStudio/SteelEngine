@@ -1,88 +1,81 @@
 #pragma once
 
+#include "../origin.hpp"
 #include "string.hpp"
 
 
 
-namespace se::essentials
+namespace se
 {
-	enum class ExceptionOrigin
-	{
-		eEngine,
-		eApp,
-		eUnknown
-	};
-
-
-
 	class Exception
 	{
 		public:
 			Exception() = default;
 			virtual ~Exception() = default;
 
-			virtual const se::essentials::String &what() const noexcept = 0;
+			virtual const se::String &what() const noexcept = 0;
 	};
 
 
 
-	class RuntimeError final : public se::essentials::Exception
+	class RuntimeError final : public se::Exception
 	{
 		public:
 			RuntimeError(
-				const se::essentials::String &file,
+				const se::String &file,
 				int line,
-				const se::essentials::String &func,
-				const se::essentials::String &message,
-				se::essentials::ExceptionOrigin origin = se::essentials::ExceptionOrigin::eUnknown
+				const se::String &func,
+				const se::String &message,
+				se::Origin origin = se::Origin::eUnknown
 			);
 			RuntimeError() = default;
 
-			const se::essentials::String &what() const noexcept;
+			const se::String &what() const noexcept;
 
 		
 		private:
-			se::essentials::String m_string;
+			se::String m_string;
 	};
 
 
 
-	class InvalidArgumentError final : public se::essentials::Exception
+	class InvalidArgumentError final : public se::Exception
 	{
 		public:
 			InvalidArgumentError(
-				const se::essentials::String &file,
+				const se::String &file,
 				int line,
-				const se::essentials::String &func,
-				const se::essentials::String &argument,
-				const se::essentials::String &message,
-				se::essentials::ExceptionOrigin origin = se::essentials::ExceptionOrigin::eUnknown
+				const se::String &func,
+				const se::String &argument,
+				const se::String &message,
+				se::Origin origin = se::Origin::eUnknown
 			);
 			InvalidArgumentError() = default;
 
-			const se::essentials::String &what() const noexcept;
+			const se::String &what() const noexcept;
 
 		
 		private:
-			se::essentials::String m_string;
+			se::String m_string;
 	};
 
-} // namespace se::essentials
+} // namespace se
 
 
-#define SE_CoreRuntimeError(message) se::essentials::RuntimeError(\
-	__FILE__, __LINE__, __func__, message, se::essentials::ExceptionOrigin::eEngine)
-#define SE_CoreInvalidArgumentError(argument, message) se::essentials::InvalidArgumentError(\
-	__FILE__, __LINE__, __func__, #argument, message, se::essentials::ExceptionOrigin::eEngine)
+#define SE_CoreRuntimeError(message) se::RuntimeError(\
+	__FILE__, __LINE__, __func__, message, se::Origin::eEngine)
+#define SE_CoreInvalidArgumentError(argument, message) se::InvalidArgumentError(\
+	__FILE__, __LINE__, __func__, #argument, message, se::Origin::eEngine)
 
 
-#define SE_AppRuntimeError(message) se::essentials::RuntimeError(\
-	__FILE__, __LINE__, __func__, message, se::essentials::ExceptionOrigin::eApp)
-#define SE_AppInvalidArgumentError(argument, message) se::essentials::InvalidArgumentError(\
-	__FILE__, __LINE__, __func__, #argument, message, se::essentials::ExceptionOrigin::eApp)
+#define SE_AppRuntimeError(message) se::RuntimeError(\
+	__FILE__, __LINE__, __func__, message, se::Origin::eApp)
+#define SE_AppInvalidArgumentError(argument, message) se::InvalidArgumentError(\
+	__FILE__, __LINE__, __func__, #argument, message, se::Origin::eApp)
 
 
-#define SE_UnknownRuntimeError(message) se::essentials::RuntimeError(\
-	__FILE__, __LINE__, __func__, message, se::essentials::ExceptionOrigin::eUnknown)
-#define SE_UnknownInvalidArgumentError(argument, message) se::essentials::InvalidArgumentError(\
-	__FILE__, __LINE__, __func__, #argument, message, se::essentials::ExceptionOrigin::eUnknown)
+#define SE_UnknownRuntimeError(message) se::RuntimeError(\
+	__FILE__, __LINE__, __func__, message, se::Origin::eUnknown)
+#define SE_UnknownInvalidArgumentError(argument, message) se::InvalidArgumentError(\
+	__FILE__, __LINE__, __func__, #argument, message, se::Origin::eUnknown)
+
