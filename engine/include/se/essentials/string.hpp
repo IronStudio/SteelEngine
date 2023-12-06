@@ -40,11 +40,13 @@ namespace se
 	{
 		public:
 			String();
+			String(se::Char<charset>::Type character);
 			String(const se::Char<charset>::Type *str);
 			String(const se::String<charset> &str);
 			String(se::String<charset> &&str);
 			String(const std::string &str);
 
+			const se::String<charset> &operator=(se::Char<charset>::Type character);
 			const se::String<charset> &operator=(const se::Char<charset>::Type *str);
 			const se::String<charset> &operator=(const se::String<charset> &str);
 			const se::String<charset> &operator=(se::String<charset> &&str);
@@ -135,6 +137,11 @@ namespace se
 			size_t m_length;
 			size_t m_sizeInBytes;
 	};
+
+
+	template <se::Charset charset, int base>
+	se::String<charset> intToString(int number);
+
 
 
 	/**

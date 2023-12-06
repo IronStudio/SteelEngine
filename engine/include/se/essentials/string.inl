@@ -1,3 +1,4 @@
+#include "assertion.hpp"
 #include "string.hpp"
 
 
@@ -72,6 +73,31 @@ namespace se
 	size_t String<charset>::getSizeInBytes() const noexcept
 	{
 		return m_sizeInBytes;
+	}
+
+
+
+	template <se::Charset charset, int base>
+	se::String<charset> intToString(int number)
+	{
+		SE_UNKNOWN_ASSERT(base <= 16, "Can't convert given number to a base bigger than 16");
+
+		static const se::String<charset> baseNumbers {
+			"0123456789ABCDEF"
+		};
+
+		se::String<charset> result {};
+
+		if (number == 0)
+			return se::String<charset> ("0");
+
+		while (number != 0)
+		{
+			result = std::move(se::String<charset> (baseNumbers[number % base]) + result);
+			number = (int)(number / base);
+		}
+
+		return result;
 	}
 
 

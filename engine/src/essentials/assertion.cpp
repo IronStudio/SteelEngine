@@ -1,0 +1,22 @@
+#include "essentials/assertion.hpp"
+
+
+
+namespace se
+{
+	Assertion::Assertion(
+		const se::UTF8String &file,
+		int line,
+		const se::UTF8String &func,
+		const se::UTF8String &msg,
+		se::Origin origin
+	) :
+		m_msg {}
+	{
+		m_msg = se::convertOriginToString(origin) + " ASSERTION : in file '" + file + "', line "
+			+ se::intToString<se::Charset::UTF8, 10> (line) + ", function '" + func + "' > " + msg;
+	}
+
+
+
+} // namespace se

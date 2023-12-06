@@ -1,5 +1,7 @@
 #include <cstring>
+#include <iostream>
 
+#include "essentials/assertion.hpp"
 #include "essentials/string.hpp"
 
 
@@ -24,13 +26,30 @@ namespace se
 
 
 	template <se::Charset charset>
+	String<charset>::String(se::Char<charset>::Type character) :
+		m_data {nullptr},
+		m_length {0},
+		m_sizeInBytes {0}
+	{
+		SE_UNKNOWN_ASSERT(character != 0, "Can't create string from only '\0'");
+
+		m_sizeInBytes = 2;
+		m_length = 1;
+		m_data = static_cast<se::Char<charset>::Type*> (malloc(m_sizeInBytes));
+		SE_UNKNOWN_ASSERT(m_data != nullptr, "String data wasn't allocated");
+		m_data[0] = character;
+		m_data[1] = 0;
+	}
+
+
+
+	template <se::Charset charset>
 	String<charset>::String(const se::Char<charset>::Type *str) :
 		m_data {nullptr},
 		m_length {0},
 		m_sizeInBytes {0}
 	{
-		if (str == nullptr)
-			return;
+		SE_UNKNOWN_ASSERT(str != nullptr, "Can't create string from empty string");
 
 		this->p_allocateMemoryForArray(str);
 		this->p_copyRawArray(str);
@@ -44,8 +63,7 @@ namespace se
 		m_length {0},
 		m_sizeInBytes {0}
 	{
-		if (str.m_data == nullptr)
-			return;
+		SE_UNKNOWN_ASSERT(!str.isEmpty(), "Can't create string from empty string");
 
 		this->p_allocateMemoryForArray(str.m_data);
 		this->p_copyRawArray(str.m_data);
@@ -59,6 +77,8 @@ namespace se
 		m_length {str.m_length},
 		m_sizeInBytes {str.m_sizeInBytes}
 	{
+		SE_UNKNOWN_ASSERT(!str.isEmpty(), "Can't move empty string");
+
 		str.m_data = nullptr;
 		str.m_length = 0;
 		str.m_sizeInBytes = 0;
@@ -72,8 +92,7 @@ namespace se
 		m_length {0},
 		m_sizeInBytes {0}
 	{
-		if (str.empty())
-			return;
+		SE_UNKNOWN_ASSERT(!str.empty(), "Can't create string from empty string");
 
 		const char *data {str.c_str()};
 		this->p_allocateMemoryForArray(data);
@@ -83,11 +102,29 @@ namespace se
 
 
 	template <se::Charset charset>
-	const se::String<charset> &String<charset>::operator=(const se::Char<charset>::Type *str)
+	const se::String<charset> &String<charset>::operator=(se::Char<charset>::Type character)
 	{
 		this->clear();
-		if (str == nullptr)
-			return *this;
+		SE_UNKNOWN_ASSERT(character != 0, "Can't create string from only '\0'");
+
+		m_sizeInBytes = 2;
+		m_length = 1;
+		m_data = static_cast<se::Char<charset>::Type*> (malloc(m_sizeInBytes));
+		SE_UNKNOWN_ASSERT(m_data != nullptr, "String data wasn't allocated");
+		m_data[0] = character;
+		m_data[1] = 0;
+
+		return *this;
+	}
+
+
+
+	template <se::Charset charset>
+	const se::String<charset> &String<charset>::operator=(const se::Char<charset>::Type *str)
+	{
+		SE_UNKNOWN_ASSERT(str != nullptr, "Can't create string from empty string");
+
+		this->clear();
 		this->p_allocateMemoryForArray(str);
 		this->p_copyRawArray(str);
 		return *this;
@@ -98,9 +135,9 @@ namespace se
 	template <se::Charset charset>
 	const se::String<charset> &String<charset>::operator=(const se::String<charset> &str)
 	{
+		SE_UNKNOWN_ASSERT(!str.isEmpty(), "Can't create string from empty string");
+
 		this->clear();
-		if (str.m_data == nullptr)
-			return *this;
 		this->p_allocateMemoryForArray(str.m_data);
 		this->p_copyRawArray(str.m_data);
 		return *this;
@@ -111,6 +148,8 @@ namespace se
 	template <se::Charset charset>
 	const se::String<charset> &String<charset>::operator=(se::String<charset> &&str)
 	{
+		SE_UNKNOWN_ASSERT(!str.isEmpty(), "Can't move empty string");
+
 		this->clear();
 		m_data = str.m_data;
 		m_length = str.m_length;
@@ -126,9 +165,9 @@ namespace se
 	template <se::Charset charset>
 	const se::String<charset> &String<charset>::operator=(const std::string &str)
 	{
+		SE_UNKNOWN_ASSERT(!str.empty(), "Can't create string from empty string");
+
 		this->clear();
-		if (str.empty())
-			return *this;
 		const char *data {str.c_str()};
 		this->p_allocateMemoryForArray(data);
 		this->p_copyRawArray(data);
@@ -148,15 +187,14 @@ namespace se
 	template <se::Charset charset>
 	const se::String<charset> &String<charset>::operator+=(const se::String<charset> &str)
 	{
-		if (str.m_data == nullptr)
+		if (str.isEmpty())
 			return *this;
 
-		if (m_data == nullptr)
+		if (this->isEmpty())
 			return *this = str;
 
 		typename se::Char<charset>::Type *tmp {static_cast<se::Char<charset>::Type*> (malloc(m_sizeInBytes))};
-		if (tmp == nullptr)
-			return *this;
+		SE_UNKNOWN_ASSERT(tmp != nullptr, "Can't allocate memory to concatenate string");
 
 		memcpy(tmp, m_data, m_sizeInBytes);
 
@@ -167,6 +205,7 @@ namespace se
 		free(m_data);
 
 		m_data = static_cast<se::Char<charset>::Type*> (malloc(m_sizeInBytes));
+		SE_UNKNOWN_ASSERT(m_data != nullptr, "Can't allocate memory to concatenate string");
 		memcpy(m_data, tmp, oldSizeInBytes - 1);
 		memcpy(m_data + oldSizeInBytes - 1, str.m_data, str.m_sizeInBytes);
 
@@ -200,8 +239,8 @@ namespace se
 	template <se::Charset charset>
 	se::Char<charset>::Type &String<charset>::operator[](size_t index)
 	{
-		if (index >= m_sizeInBytes)
-			return m_data[m_sizeInBytes - 1];
+		SE_UNKNOWN_ASSERT(!this->isEmpty(), "Can't get character from empty string");
+		SE_UNKNOWN_ASSERT(index < m_sizeInBytes, "Can't get a character at a position outside the string");
 
 		return m_data[index];
 	}
@@ -211,9 +250,9 @@ namespace se
 	template <se::Charset charset>
 	se::Char<charset>::Type String<charset>::operator[](size_t index) const
 	{
-		if (index >= m_sizeInBytes)
-			return 0;
-			
+		SE_UNKNOWN_ASSERT(!this->isEmpty(), "Can't get character from empty string");
+		SE_UNKNOWN_ASSERT(index < m_sizeInBytes, "Can't get a character at a position outside the string");
+
 		return m_data[index];
 	}
 
@@ -237,13 +276,11 @@ namespace se
 		for (const typename se::Char<charset>::Type *currentChar {str}; *currentChar != 0; ++currentChar)
 			++m_length;
 
-		if (m_length == 0)
-			return;
+		SE_UNKNOWN_ASSERT(m_length != 0, "Can't allocate memory for empty string");
 
 		m_sizeInBytes = (m_length + 1) * se::Char<charset>::size;
 		m_data = static_cast<se::Char<charset>::Type*> (malloc(m_sizeInBytes));
-		if (m_data == nullptr)
-			return;
+		SE_UNKNOWN_ASSERT(m_data != nullptr, "String data wasn't allocated");
 
 		m_data[m_length] = 0;
 	}
