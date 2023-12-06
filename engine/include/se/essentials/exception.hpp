@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../core.hpp"
 #include "../origin.hpp"
 #include "string.hpp"
 
@@ -7,56 +8,56 @@
 
 namespace se
 {
-	class Exception
+	class SE_CORE Exception
 	{
 		public:
 			Exception() = default;
 			virtual ~Exception() = default;
 
-			virtual const se::String &what() const noexcept = 0;
+			virtual const se::UTF8String &what() const noexcept = 0;
 	};
 
 
 
-	class RuntimeError final : public se::Exception
+	class SE_CORE RuntimeError final : public se::Exception
 	{
 		public:
 			RuntimeError(
-				const se::String &file,
+				const se::UTF8String &file,
 				int line,
-				const se::String &func,
-				const se::String &message,
+				const se::UTF8String &func,
+				const se::UTF8String &message,
 				se::Origin origin = se::Origin::eUnknown
 			);
 			RuntimeError() = default;
 
-			const se::String &what() const noexcept;
+			const se::UTF8String &what() const noexcept;
 
 		
 		private:
-			se::String m_string;
+			se::UTF8String m_string;
 	};
 
 
 
-	class InvalidArgumentError final : public se::Exception
+	class SE_CORE InvalidArgumentError final : public se::Exception
 	{
 		public:
 			InvalidArgumentError(
-				const se::String &file,
+				const se::UTF8String &file,
 				int line,
-				const se::String &func,
-				const se::String &argument,
-				const se::String &message,
+				const se::UTF8String &func,
+				const se::UTF8String &argument,
+				const se::UTF8String &message,
 				se::Origin origin = se::Origin::eUnknown
 			);
 			InvalidArgumentError() = default;
 
-			const se::String &what() const noexcept;
+			const se::UTF8String &what() const noexcept;
 
 		
 		private:
-			se::String m_string;
+			se::UTF8String m_string;
 	};
 
 } // namespace se

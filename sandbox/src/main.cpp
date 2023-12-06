@@ -1,22 +1,19 @@
 #include <iostream>
 
-//#include <se/essentials/exception.hpp>
-#include <se/essentials/string.hpp>
+#include <se/essentials/exception.hpp>
 
 
 int main(int, char **)
 {
-	
-
-	/*try
+	try
 	{
 		throw SE_UnknownInvalidArgumentError(blabla, "An error");
 	}
 
-	catch (const se::essentials::Exception &exception)
+	catch (const se::Exception &exception)
 	{
 		std::cout << exception.what() << std::endl;
-	}*/
+	}
 
 	return 0;
 }

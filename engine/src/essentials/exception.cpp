@@ -1,5 +1,3 @@
-#ifdef AUHSJDHAHJDJASJKLSJKLDAJSA
-
 #include "essentials/exception.hpp"
 #include "essentials/map.hpp"
 
@@ -8,10 +6,10 @@
 namespace se
 {
 	RuntimeError::RuntimeError(
-		const se::String &file,
+		const se::UTF8String &file,
 		int line,
-		const se::String &func,
-		const se::String &message,
+		const se::UTF8String &func,
+		const se::UTF8String &message,
 		se::Origin origin
 	) : 
 		m_string {}
@@ -21,7 +19,7 @@ namespace se
 
 
 
-	const se::String &RuntimeError::what() const noexcept
+	const se::UTF8String &RuntimeError::what() const noexcept
 	{
 		return m_string;
 	}
@@ -29,11 +27,11 @@ namespace se
 
 
 	InvalidArgumentError::InvalidArgumentError(
-		const se::String &file,
+		const se::UTF8String &file,
 		int line,
-		const se::String &func,
-		const se::String &argument,
-		const se::String &message,
+		const se::UTF8String &func,
+		const se::UTF8String &argument,
+		const se::UTF8String &message,
 		se::Origin origin
 	) : 
 		m_string {}
@@ -44,7 +42,7 @@ namespace se
 
 
 
-	const se::String &InvalidArgumentError::what() const noexcept
+	const se::UTF8String &InvalidArgumentError::what() const noexcept
 	{
 		return m_string;
 	}
@@ -52,6 +50,3 @@ namespace se
 
 
 } // namespace se
-
-
-#endif

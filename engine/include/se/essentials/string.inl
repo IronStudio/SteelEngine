@@ -52,8 +52,8 @@ namespace se
 
 
 
-	template <>
-	std::string String<se::Charset::UTF8>::getCppString() const noexcept
+	template <se::Charset charset>
+	std::string String<charset>::getCppString() const noexcept
 	{
 		return std::string(m_data);
 	}
