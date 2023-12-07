@@ -82,7 +82,7 @@ namespace se
 	T *StackAllocator::Handle<T>::getRawPointer() const
 	{
 		SE_UNKNOWN_ASSERT(this->isValid(), "Can't get an invalid pointer to a stack allocated value");
-		return static_cast<T*> (*m_ptr);
+		return static_cast<T*> (m_ptr);
 	}
 
 
