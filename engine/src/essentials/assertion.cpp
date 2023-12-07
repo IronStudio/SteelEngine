@@ -1,4 +1,6 @@
 #include "essentials/assertion.hpp"
+#include "essentials/string.hpp"
+
 
 
 
@@ -14,7 +16,7 @@ namespace se
 		m_msg {}
 	{
 		m_msg = se::convertOriginToString(origin) + " ASSERTION : in file '" + file + "', line "
-			+ se::intToString<se::Charset::UTF8, 10> (line) + ", function '" + func + "' > " + msg;
+			+ se::intToString<se::Charset::UTF8> (line) + ", function '" + func + "' > " + msg;
 	}
 
 

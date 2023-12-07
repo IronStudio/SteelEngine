@@ -77,31 +77,6 @@ namespace se
 
 
 
-	template <se::Charset charset, int base>
-	se::String<charset> intToString(int number)
-	{
-		SE_UNKNOWN_ASSERT(base <= 16, "Can't convert given number to a base bigger than 16");
-
-		static const se::String<charset> baseNumbers {
-			"0123456789ABCDEF"
-		};
-
-		se::String<charset> result {};
-
-		if (number == 0)
-			return se::String<charset> ("0");
-
-		while (number != 0)
-		{
-			result = std::move(se::String<charset> (baseNumbers[number % base]) + result);
-			number = (int)(number / base);
-		}
-
-		return result;
-	}
-
-
-
 	template <se::Charset charset>
 	const se::String<charset> &operator+(se::String<charset> a, const typename se::Char<charset>::Type *b)
 	{

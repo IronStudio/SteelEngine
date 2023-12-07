@@ -32,7 +32,7 @@ namespace se
 
 
 #ifndef NDEBUG
-	#define SE_ASSERT(cond, msg, origin) if (!(cond)) throw se::Assertion(__FILE__, __LINE__, __func__, se::UTF8String(#cond) + " | " + msg, origin)
+	#define SE_ASSERT(cond, msg, origin) if (!(cond)) throw ::se::Assertion(__FILE__, __LINE__, __func__, se::UTF8String(#cond) + " | " + msg, origin)
 #else
 	#define SE_ASSERT(cond, msg, origin)
 #endif

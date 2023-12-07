@@ -2,6 +2,7 @@
 
 #include <se/essentials/assertion.hpp>
 #include <se/essentials/exception.hpp>
+#include <se/memory/stackAllocator.hpp>
 
 
 

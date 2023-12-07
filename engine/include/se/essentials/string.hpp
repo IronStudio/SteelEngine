@@ -43,13 +43,13 @@ namespace se
 			String(se::Char<charset>::Type character);
 			String(const se::Char<charset>::Type *str);
 			String(const se::String<charset> &str);
-			String(se::String<charset> &&str);
+			String(se::String<charset> &&str) noexcept;
 			String(const std::string &str);
 
 			const se::String<charset> &operator=(se::Char<charset>::Type character);
 			const se::String<charset> &operator=(const se::Char<charset>::Type *str);
 			const se::String<charset> &operator=(const se::String<charset> &str);
-			const se::String<charset> &operator=(se::String<charset> &&str);
+			const se::String<charset> &operator=(se::String<charset> &&str) noexcept;
 			const se::String<charset> &operator=(const std::string &str);
 
 			~String();
@@ -139,8 +139,8 @@ namespace se
 	};
 
 
-	template <se::Charset charset, int base>
-	se::String<charset> intToString(int number);
+	template <se::Charset charset>
+	SE_CORE se::String<charset> intToString(int number, int base = 10);
 
 
 

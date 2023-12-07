@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core.hpp"
-#include "essentials/string.hpp"
 
 
 
@@ -13,7 +12,14 @@ namespace se
 		eApp,
 		eUnknown
 	};
+} // namespace se
 
+
+#include "essentials/string.hpp"
+
+
+namespace se
+{
 	SE_CORE const se::UTF8String &convertOriginToString(se::Origin origin);
 
 } // namespace se

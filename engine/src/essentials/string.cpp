@@ -72,13 +72,11 @@ namespace se
 
 
 	template <se::Charset charset>
-	String<charset>::String(se::String<charset> &&str) :
+	String<charset>::String(se::String<charset> &&str) noexcept :
 		m_data {str.m_data},
 		m_length {str.m_length},
 		m_sizeInBytes {str.m_sizeInBytes}
 	{
-		SE_UNKNOWN_ASSERT(!str.isEmpty(), "Can't move empty string");
-
 		str.m_data = nullptr;
 		str.m_length = 0;
 		str.m_sizeInBytes = 0;
@@ -146,10 +144,8 @@ namespace se
 
 
 	template <se::Charset charset>
-	const se::String<charset> &String<charset>::operator=(se::String<charset> &&str)
+	const se::String<charset> &String<charset>::operator=(se::String<charset> &&str) noexcept
 	{
-		SE_UNKNOWN_ASSERT(!str.isEmpty(), "Can't move empty string");
-
 		this->clear();
 		m_data = str.m_data;
 		m_length = str.m_length;
@@ -313,9 +309,38 @@ namespace se
 
 
 
+	template <se::Charset charset>
+	se::String<charset> intToString(int number, int base)
+	{
+		SE_UNKNOWN_ASSERT(base <= 16, "Can't convert given number to a base bigger than 16");
+
+		static const se::String<charset> baseNumbers {
+			"0123456789ABCDEF"
+		};
+
+		se::String<charset> result {};
+
+		if (number == 0)
+			return se::String<charset> ("0");
+
+		while (number != 0)
+		{
+			result = std::move(se::String<charset> (baseNumbers[number % base]) + result);
+			number = (int)(number / base);
+		}
+
+		return result;
+	}
+
+
+
 } // namespace se
 
 
 template class se::String<se::Charset::UTF8>;
 //template class se::String<se::Charset::UTF16>;
 //template class se::String<se::Charset::UTF32>;
+
+template se::String<se::Charset::UTF8> se::intToString<se::Charset::UTF8> (int number, int base);
+//template se::String<se::Charset::UTF16> se::intToString<se::Charset::UTF16> (int number, int base);
+//template se::String<se::Charset::UTF32> se::intToString<se::Charset::UTF32> (int number, int base);
