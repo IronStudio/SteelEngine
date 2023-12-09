@@ -108,6 +108,11 @@ namespace se
 			 * @brief Return `true` if the string is empty (getLength() = 0 or getCString() = 0) and `false` otherwise
 			*/
 			inline bool isEmpty() const noexcept;
+			/**
+			 * @brief Resize the memory buffer of the string to `size` to accomodate more characters
+			 * @warning `size` **must** be greater or equal to `this->getSizeInBytes()`
+			*/
+			void reserve(size_t size);
 
 			/**
 			 * @brief Return a C-style raw array reprensenting the null-terminated string
@@ -136,11 +141,14 @@ namespace se
 			se::Char<charset>::Type *m_data;
 			size_t m_length;
 			size_t m_sizeInBytes;
+			size_t m_capacity;
 	};
 
 
 	template <se::Charset charset>
-	SE_CORE se::String<charset> intToString(int number, int base = 10);
+	SE_CORE se::String<charset> intToString(int64_t number, int base = 10);
+	template <se::Charset charset>
+	SE_CORE se::String<charset> uintToString(uint64_t number, int base = 10);
 
 
 

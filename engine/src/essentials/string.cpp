@@ -18,7 +18,8 @@ namespace se
 	String<charset>::String() :
 		m_data {nullptr},
 		m_length {0},
-		m_sizeInBytes {0}
+		m_sizeInBytes {0},
+		m_capacity {0}
 	{
 
 	}
@@ -29,11 +30,13 @@ namespace se
 	String<charset>::String(se::Char<charset>::Type character) :
 		m_data {nullptr},
 		m_length {0},
-		m_sizeInBytes {0}
+		m_sizeInBytes {0},
+		m_capacity {0}
 	{
 		SE_UNKNOWN_ASSERT(character != 0, "Can't create string from only '\0'");
 
 		m_sizeInBytes = 2;
+		m_capacity = 2;
 		m_length = 1;
 		m_data = static_cast<se::Char<charset>::Type*> (malloc(m_sizeInBytes));
 		SE_UNKNOWN_ASSERT(m_data != nullptr, "String data wasn't allocated");
@@ -47,7 +50,8 @@ namespace se
 	String<charset>::String(const se::Char<charset>::Type *str) :
 		m_data {nullptr},
 		m_length {0},
-		m_sizeInBytes {0}
+		m_sizeInBytes {0},
+		m_capacity {0}
 	{
 		SE_UNKNOWN_ASSERT(str != nullptr, "Can't create string from empty string");
 
@@ -61,7 +65,8 @@ namespace se
 	String<charset>::String(const se::String<charset> &str) :
 		m_data {nullptr},
 		m_length {0},
-		m_sizeInBytes {0}
+		m_sizeInBytes {0},
+		m_capacity {0}
 	{
 		SE_UNKNOWN_ASSERT(!str.isEmpty(), "Can't create string from empty string");
 
@@ -75,11 +80,13 @@ namespace se
 	String<charset>::String(se::String<charset> &&str) noexcept :
 		m_data {str.m_data},
 		m_length {str.m_length},
-		m_sizeInBytes {str.m_sizeInBytes}
+		m_sizeInBytes {str.m_sizeInBytes},
+		m_capacity {str.m_capacity}
 	{
 		str.m_data = nullptr;
 		str.m_length = 0;
 		str.m_sizeInBytes = 0;
+		str.m_capacity = 0;
 	}
 
 
@@ -88,7 +95,8 @@ namespace se
 	String<charset>::String(const std::string &str) :
 		m_data {nullptr},
 		m_length {0},
-		m_sizeInBytes {0}
+		m_sizeInBytes {0},
+		m_capacity {0}
 	{
 		SE_UNKNOWN_ASSERT(!str.empty(), "Can't create string from empty string");
 
@@ -106,6 +114,7 @@ namespace se
 		SE_UNKNOWN_ASSERT(character != 0, "Can't create string from only '\0'");
 
 		m_sizeInBytes = 2;
+		m_capacity = 2;
 		m_length = 1;
 		m_data = static_cast<se::Char<charset>::Type*> (malloc(m_sizeInBytes));
 		SE_UNKNOWN_ASSERT(m_data != nullptr, "String data wasn't allocated");
@@ -150,9 +159,11 @@ namespace se
 		m_data = str.m_data;
 		m_length = str.m_length;
 		m_sizeInBytes = str.m_sizeInBytes;
+		m_capacity = str.m_capacity;
 		str.m_data = nullptr;
 		str.m_length = 0;
 		str.m_sizeInBytes = 0;
+		str.m_capacity = 0;
 		return *this;
 	}
 
@@ -189,6 +200,12 @@ namespace se
 		if (this->isEmpty())
 			return *this = str;
 
+		if (m_capacity >= m_sizeInBytes + str.m_sizeInBytes)
+		{
+			memcpy(m_data + m_sizeInBytes, str.m_data, str.m_sizeInBytes);
+			return *this;
+		}
+
 		typename se::Char<charset>::Type *tmp {static_cast<se::Char<charset>::Type*> (malloc(m_sizeInBytes))};
 		SE_UNKNOWN_ASSERT(tmp != nullptr, "Can't allocate memory to concatenate string");
 
@@ -196,6 +213,7 @@ namespace se
 
 		size_t oldSizeInBytes = m_sizeInBytes;
 		m_sizeInBytes += str.m_sizeInBytes - 1;
+		m_capacity = m_sizeInBytes;
 		m_length += str.m_length;
 
 		free(m_data);
@@ -267,6 +285,23 @@ namespace se
 
 
 	template <se::Charset charset>
+	void String<charset>::reserve(size_t size)
+	{
+		SE_UNKNOWN_ASSERT(size >= m_sizeInBytes, "Can't reserve a space smaller than the current string memory footprint");
+
+		auto tmp {static_cast<se::Char<charset>::Type*> (malloc(size * se::Char<charset>::size))};
+		SE_UNKNOWN_ASSERT(tmp != nullptr, "String data wasn't allocated");
+
+		for (size_t i {0}; i < m_sizeInBytes; ++i)
+			tmp[i] = m_data[i];
+
+		free(m_data);
+		m_data = tmp;
+	}
+
+
+
+	template <se::Charset charset>
 	void String<charset>::p_allocateMemoryForArray(const se::Char<charset>::Type *str)
 	{
 		for (const typename se::Char<charset>::Type *currentChar {str}; *currentChar != 0; ++currentChar)
@@ -310,9 +345,27 @@ namespace se
 
 
 	template <se::Charset charset>
-	se::String<charset> intToString(int number, int base)
+	se::String<charset> intToString(int64_t number, int base)
+	{
+		bool isNegative {number < 0};
+		if (isNegative)
+			number *= -1;
+			
+		auto result {uintToString<charset> (static_cast<uint64_t> (number), base)};
+
+		if (isNegative)
+			result = std::move(se::String<charset> ('-') + result);
+
+		return result;
+	}
+
+
+
+	template <se::Charset charset>
+	se::String<charset> uintToString(uint64_t number, int base)
 	{
 		SE_UNKNOWN_ASSERT(base <= 16, "Can't convert given number to a base bigger than 16");
+		SE_UNKNOWN_ASSERT(base > 1, "Can't convert given number to a base lower or equal to 1");
 
 		static const se::String<charset> baseNumbers {
 			"0123456789ABCDEF"
@@ -322,6 +375,7 @@ namespace se
 
 		if (number == 0)
 			return se::String<charset> ("0");
+
 
 		while (number != 0)
 		{
@@ -341,6 +395,9 @@ template class se::String<se::Charset::UTF8>;
 //template class se::String<se::Charset::UTF16>;
 //template class se::String<se::Charset::UTF32>;
 
-template se::String<se::Charset::UTF8> se::intToString<se::Charset::UTF8> (int number, int base);
-//template se::String<se::Charset::UTF16> se::intToString<se::Charset::UTF16> (int number, int base);
-//template se::String<se::Charset::UTF32> se::intToString<se::Charset::UTF32> (int number, int base);
+template se::String<se::Charset::UTF8> se::intToString<se::Charset::UTF8> (int64_t number, int base);
+//template se::String<se::Charset::UTF16> se::intToString<se::Charset::UTF16> (int64_t number, int base);
+//template se::String<se::Charset::UTF32> se::intToString<se::Charset::UTF32> (int64_t number, int base);
+template se::String<se::Charset::UTF8> se::uintToString<se::Charset::UTF8> (uint64_t number, int base);
+//template se::String<se::Charset::UTF16> se::uintToString<se::Charset::UTF16> (uint64_t number, int base);
+//template se::String<se::Charset::UTF32> se::uintToString<se::Charset::UTF32> (uint64_t number, int base);
