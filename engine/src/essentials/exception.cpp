@@ -7,7 +7,7 @@ namespace se
 {
 	RuntimeError::RuntimeError(
 		const se::UTF8String &file,
-		int line,
+		se::Uint line,
 		const se::UTF8String &func,
 		const se::UTF8String &message,
 		se::Origin origin
@@ -28,7 +28,7 @@ namespace se
 
 	InvalidArgumentError::InvalidArgumentError(
 		const se::UTF8String &file,
-		int line,
+		se::Uint line,
 		const se::UTF8String &func,
 		const se::UTF8String &argument,
 		const se::UTF8String &message,

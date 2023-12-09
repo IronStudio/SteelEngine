@@ -109,7 +109,7 @@ namespace se
 		if (handle.m_ptr >= m_stackTop)
 			return false;
 
-		if (reinterpret_cast<size_t> (handle.m_ptr) + sizeof(T) - 1 >= reinterpret_cast<size_t> (m_stackTop))
+		if (reinterpret_cast<se::Size> (handle.m_ptr) + sizeof(T) - 1 >= reinterpret_cast<se::Size> (m_stackTop))
 			return false;
 
 		return true;
@@ -125,11 +125,11 @@ namespace se
 
 
 	template <typename T>
-	se::StackAllocator::Handle<T> StackAllocator::allocate(size_t amount)
+	se::StackAllocator::Handle<T> StackAllocator::allocate(se::Size amount)
 	{
 		se::StackAllocator::Handle<T> handle {this, m_stackTop};
-		m_stackTop = reinterpret_cast<void*> (reinterpret_cast<size_t> (m_stackTop) + sizeof(T) * amount);
-		if (reinterpret_cast<size_t> (m_stackTop) > reinterpret_cast<size_t> (m_stackBottom) + m_stackSize)
+		m_stackTop = reinterpret_cast<void*> (reinterpret_cast<se::Size> (m_stackTop) + sizeof(T) * amount);
+		if (reinterpret_cast<se::Size> (m_stackTop) > reinterpret_cast<se::Size> (m_stackBottom) + m_stackSize)
 			throw SE_UnknownRuntimeError("No more memory available on stack allocator");
 		return handle;
 	}
@@ -150,18 +150,18 @@ namespace se
 
 
 
-	size_t StackAllocator::getSize() const noexcept
+	se::Size StackAllocator::getSize() const noexcept
 	{
 		return m_stackSize;
 	}
 
 
 
-	size_t StackAllocator::getUsage() const noexcept
+	se::Size StackAllocator::getUsage() const noexcept
 	{
 		if (!this->isValid())
 			return 0;
-		return reinterpret_cast<size_t> (m_stackTop) - reinterpret_cast<size_t> (m_stackBottom);
+		return reinterpret_cast<se::Size> (m_stackTop) - reinterpret_cast<se::Size> (m_stackBottom);
 	}
 
 

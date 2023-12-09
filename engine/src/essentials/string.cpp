@@ -8,9 +8,9 @@
 
 namespace se
 {
-	size_t Char<se::Charset::UTF8>::size {sizeof(char)};
-	size_t Char<se::Charset::UTF16>::size {sizeof(char)};
-	size_t Char<se::Charset::UTF32>::size {sizeof(char)};
+	se::Size Char<se::Charset::UTF8>::size {sizeof(char)};
+	se::Size Char<se::Charset::UTF16>::size {sizeof(char16_t)};
+	se::Size Char<se::Charset::UTF32>::size {sizeof(char32_t)};
 
 
 
@@ -211,7 +211,7 @@ namespace se
 
 		memcpy(tmp, m_data, m_sizeInBytes);
 
-		size_t oldSizeInBytes = m_sizeInBytes;
+		se::Size oldSizeInBytes = m_sizeInBytes;
 		m_sizeInBytes += str.m_sizeInBytes - 1;
 		m_capacity = m_sizeInBytes;
 		m_length += str.m_length;
@@ -239,7 +239,7 @@ namespace se
 		if (m_sizeInBytes != str.m_sizeInBytes)
 			return false;
 
-		for (size_t i {0}; i < m_sizeInBytes; ++i)
+		for (se::Size i {0}; i < m_sizeInBytes; ++i)
 		{
 			if (m_data[i] != str.m_data[i])
 				return false;
@@ -251,7 +251,7 @@ namespace se
 
 
 	template <se::Charset charset>
-	se::Char<charset>::Type &String<charset>::operator[](size_t index)
+	se::Char<charset>::Type &String<charset>::operator[](se::Size index)
 	{
 		SE_UNKNOWN_ASSERT(!this->isEmpty(), "Can't get character from empty string");
 		SE_UNKNOWN_ASSERT(index < m_sizeInBytes, "Can't get a character at a position outside the string");
@@ -262,7 +262,7 @@ namespace se
 
 
 	template <se::Charset charset>
-	se::Char<charset>::Type String<charset>::operator[](size_t index) const
+	se::Char<charset>::Type String<charset>::operator[](se::Size index) const
 	{
 		SE_UNKNOWN_ASSERT(!this->isEmpty(), "Can't get character from empty string");
 		SE_UNKNOWN_ASSERT(index < m_sizeInBytes, "Can't get a character at a position outside the string");
@@ -285,14 +285,14 @@ namespace se
 
 
 	template <se::Charset charset>
-	void String<charset>::reserve(size_t size)
+	void String<charset>::reserve(se::Size size)
 	{
 		SE_UNKNOWN_ASSERT(size >= m_sizeInBytes, "Can't reserve a space smaller than the current string memory footprint");
 
 		auto tmp {static_cast<se::Char<charset>::Type*> (malloc(size * se::Char<charset>::size))};
 		SE_UNKNOWN_ASSERT(tmp != nullptr, "String data wasn't allocated");
 
-		for (size_t i {0}; i < m_sizeInBytes; ++i)
+		for (se::Size i {0}; i < m_sizeInBytes; ++i)
 			tmp[i] = m_data[i];
 
 		free(m_data);
@@ -321,8 +321,8 @@ namespace se
 	template <>
 	void String<se::Charset::UTF8>::p_copyRawArray(const se::Char<se::Charset::UTF8>::Type *str)
 	{
-		size_t loopIterationCount {m_length};
-		for (size_t i {0}; i < loopIterationCount; ++i)
+		se::Size loopIterationCount {m_length};
+		for (se::Size i {0}; i < loopIterationCount; ++i)
 		{
 			m_data[i] = str[i];
 			if (!(m_data[i] & 0b10000000))
@@ -345,13 +345,13 @@ namespace se
 
 
 	template <se::Charset charset>
-	se::String<charset> intToString(int64_t number, int base)
+	se::String<charset> intToString(se::Int64 number, se::Uint base)
 	{
 		bool isNegative {number < 0};
 		if (isNegative)
 			number *= -1;
 			
-		auto result {uintToString<charset> (static_cast<uint64_t> (number), base)};
+		auto result {uintToString<charset> (static_cast<se::Uint64> (number), base)};
 
 		if (isNegative)
 			result = std::move(se::String<charset> ('-') + result);
@@ -362,7 +362,7 @@ namespace se
 
 
 	template <se::Charset charset>
-	se::String<charset> uintToString(uint64_t number, int base)
+	se::String<charset> uintToString(se::Uint64 number, se::Uint base)
 	{
 		SE_UNKNOWN_ASSERT(base <= 16, "Can't convert given number to a base bigger than 16");
 		SE_UNKNOWN_ASSERT(base > 1, "Can't convert given number to a base lower or equal to 1");
@@ -380,7 +380,7 @@ namespace se
 		while (number != 0)
 		{
 			result = std::move(se::String<charset> (baseNumbers[number % base]) + result);
-			number = (int)(number / base);
+			number = (se::Uint64)(number / base);
 		}
 
 		return result;
@@ -395,9 +395,9 @@ template class se::String<se::Charset::UTF8>;
 //template class se::String<se::Charset::UTF16>;
 //template class se::String<se::Charset::UTF32>;
 
-template se::String<se::Charset::UTF8> se::intToString<se::Charset::UTF8> (int64_t number, int base);
-//template se::String<se::Charset::UTF16> se::intToString<se::Charset::UTF16> (int64_t number, int base);
-//template se::String<se::Charset::UTF32> se::intToString<se::Charset::UTF32> (int64_t number, int base);
-template se::String<se::Charset::UTF8> se::uintToString<se::Charset::UTF8> (uint64_t number, int base);
-//template se::String<se::Charset::UTF16> se::uintToString<se::Charset::UTF16> (uint64_t number, int base);
-//template se::String<se::Charset::UTF32> se::uintToString<se::Charset::UTF32> (uint64_t number, int base);
+template se::String<se::Charset::UTF8> se::intToString<se::Charset::UTF8> (se::Int64 number, se::Uint base);
+//template se::String<se::Charset::UTF16> se::intToString<se::Charset::UTF16> (se::Int64 number, se::Uint base);
+//template se::String<se::Charset::UTF32> se::intToString<se::Charset::UTF32> (se::Int64 number, se::Uint base);
+template se::String<se::Charset::UTF8> se::uintToString<se::Charset::UTF8> (se::Uint64 number, se::Uint base);
+//template se::String<se::Charset::UTF16> se::uintToString<se::Charset::UTF16> (se::Uint64 number, se::Uint base);
+//template se::String<se::Charset::UTF32> se::uintToString<se::Charset::UTF32> (se::Uint64 number, se::Uint base);

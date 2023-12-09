@@ -2,6 +2,7 @@
 
 #include "../core.hpp"
 #include "../origin.hpp"
+#include "intTypes.hpp"
 #include "string.hpp"
 
 
@@ -13,7 +14,7 @@ namespace se
 		public:
 			Assertion(
 				const se::UTF8String &file,
-				int line,
+				se::Uint line,
 				const se::UTF8String &func,
 				const se::UTF8String &msg,
 				se::Origin origin = se::Origin::eUnknown

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <cinttypes>
 #include <ostream>
 #include <string>
 
 #include "../core.hpp"
+#include "intTypes.hpp"
 
 
 
@@ -25,7 +25,7 @@ namespace se
 	struct Char
 	{
 		struct Type;
-		static size_t size;
+		static se::Size size;
 	};
 
 
@@ -93,12 +93,12 @@ namespace se
 			 * @brief Access a character of the string
 			 * @warning In UTF8 and UTF16 charset, the returned character can be only one part of a multi-bytes character, like é
 			*/
-			se::Char<charset>::Type &operator[](size_t index);
+			se::Char<charset>::Type &operator[](se::Size index);
 			/**
 			 * @brief Access a character of the string
 			 * @warning In UTF8 and UTF16 charset, the returned character can be only one part of a multi-bytes character, like é
 			*/
-			se::Char<charset>::Type operator[](size_t index) const;
+			se::Char<charset>::Type operator[](se::Size index) const;
 
 			/**
 			 * @brief Free the memory of the string and send the string in the state `se::String<charset> ()`
@@ -112,7 +112,7 @@ namespace se
 			 * @brief Resize the memory buffer of the string to `size` to accomodate more characters
 			 * @warning `size` **must** be greater or equal to `this->getSizeInBytes()`
 			*/
-			void reserve(size_t size);
+			void reserve(se::Size size);
 
 			/**
 			 * @brief Return a C-style raw array reprensenting the null-terminated string
@@ -126,12 +126,12 @@ namespace se
 			 * @brief Return the length of the string, not including '\0'
 			 * @warning The length is in **visible** character, not in bytes (eg 'é' count as 1, not 2 in UTF8)
 			*/
-			inline size_t getLength() const noexcept;
+			inline se::Size getLength() const noexcept;
 			/**
 			 * @brief Return the size in bytes of the string, including '\0'
 			 * @warning Multi-bytes character count as the number of bytes they occupe in memory, not as 1 (eg 'é' count as 2 in UTF8) 
 			*/
-			inline size_t getSizeInBytes() const noexcept;
+			inline se::Size getSizeInBytes() const noexcept;
 
 
 		private:
@@ -139,16 +139,16 @@ namespace se
 			void p_copyRawArray(const se::Char<charset>::Type *str);
 
 			se::Char<charset>::Type *m_data;
-			size_t m_length;
-			size_t m_sizeInBytes;
-			size_t m_capacity;
+			se::Size m_length;
+			se::Size m_sizeInBytes;
+			se::Size m_capacity;
 	};
 
 
 	template <se::Charset charset>
-	SE_CORE se::String<charset> intToString(int64_t number, int base = 10);
+	SE_CORE se::String<charset> intToString(se::Int64 number, se::Uint base = 10);
 	template <se::Charset charset>
-	SE_CORE se::String<charset> uintToString(uint64_t number, int base = 10);
+	SE_CORE se::String<charset> uintToString(se::Uint64 number, se::Uint base = 10);
 
 
 
@@ -183,21 +183,21 @@ namespace se
 	struct Char<se::Charset::UTF8>
 	{
 		using Type = char;
-		static size_t size;
+		static se::Size size;
 	};
 
 	template <>
 	struct Char<se::Charset::UTF16>
 	{
 		using Type = char16_t;
-		static size_t size;
+		static se::Size size;
 	};
 
 	template <>
 	struct Char<se::Charset::UTF32>
 	{
 		using Type = char32_t;
-		static size_t size;
+		static se::Size size;
 	};
 
 } // namespace se

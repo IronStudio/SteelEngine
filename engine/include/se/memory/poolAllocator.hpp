@@ -1,8 +1,7 @@
 #pragma once
 
-#include <cinttypes>
-
 #include "../core.hpp"
+#include "../essentials/intTypes.hpp"
 
 
 
@@ -41,7 +40,7 @@ namespace se
 
 
 
-			PoolAllocator(size_t size);
+			PoolAllocator(se::Size size);
 			~PoolAllocator();
 
 			bool isHandleValid(const se::PoolAllocator<T>::Handle &handle) const;
@@ -51,8 +50,8 @@ namespace se
 			inline void free(const se::PoolAllocator<T>::Handle &handle);
 
 			inline bool isValid() const noexcept;
-			inline size_t getSize() const noexcept;
-			inline size_t getUsage() const noexcept;
+			inline se::Size getSize() const noexcept;
+			inline se::Size getUsage() const noexcept;
 
 
 		private:
@@ -63,8 +62,8 @@ namespace se
 			};
 
 			se::PoolAllocator<T>::Data *m_data;
-			size_t m_size;
-			size_t m_usage;
+			se::Size m_size;
+			se::Size m_usage;
 	};
 
 } // namespace se

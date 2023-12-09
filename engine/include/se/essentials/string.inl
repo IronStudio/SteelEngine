@@ -62,7 +62,7 @@ namespace se
 
 
 	template <se::Charset charset>
-	size_t String<charset>::getLength() const noexcept
+	se::Size String<charset>::getLength() const noexcept
 	{
 		return m_length;
 	}
@@ -70,7 +70,7 @@ namespace se
 
 
 	template <se::Charset charset>
-	size_t String<charset>::getSizeInBytes() const noexcept
+	se::Size String<charset>::getSizeInBytes() const noexcept
 	{
 		return m_sizeInBytes;
 	}

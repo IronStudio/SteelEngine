@@ -6,7 +6,7 @@
 
 namespace se
 {
-	StackAllocator::StackAllocator(size_t size) :
+	StackAllocator::StackAllocator(se::Size size) :
 		m_stackBottom {nullptr},
 		m_stackTop {nullptr},
 		m_stackSize {0}

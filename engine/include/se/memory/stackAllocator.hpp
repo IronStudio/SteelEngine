@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cinttypes>
-
+#include "../essentials/intTypes.hpp"
 #include "../origin.hpp"
 
 
@@ -39,10 +38,10 @@ namespace se
 			};
 
 
-			using Point = Handle<uint8_t>;
+			using Point = Handle<se::Uint8>;
 
 
-			StackAllocator(size_t size);
+			StackAllocator(se::Size size);
 			~StackAllocator();
 
 			[[deprecated("Please avoid using raw pointer in general, because it can cause problem when defragmenting RAM and it isn't as safe as using handles")]]
@@ -53,20 +52,20 @@ namespace se
 			inline se::StackAllocator::Point getStackTop() const noexcept;
 
 			template <typename T>
-			se::StackAllocator::Handle<T> allocate(size_t amount = 1);
+			se::StackAllocator::Handle<T> allocate(se::Size amount = 1);
 
 			inline void free(const se::StackAllocator::Point &point);
 
 			inline bool isValid() const noexcept;
-			inline size_t getSize() const noexcept;
-			inline size_t getUsage() const noexcept;
+			inline se::Size getSize() const noexcept;
+			inline se::Size getUsage() const noexcept;
 
 
 
 		private:
 			void *m_stackBottom;
 			void *m_stackTop;
-			size_t m_stackSize;
+			se::Size m_stackSize;
 	};
 
 } // namespace se

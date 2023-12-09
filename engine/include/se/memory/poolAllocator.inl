@@ -101,7 +101,7 @@ namespace se
 
 
 	template <typename T>
-	PoolAllocator<T>::PoolAllocator(size_t size) :
+	PoolAllocator<T>::PoolAllocator(se::Size size) :
 		m_data {nullptr},
 		m_size {0},
 		m_usage {0}
@@ -130,13 +130,13 @@ namespace se
 		SE_UNKNOWN_ASSERT(this->isValid(), "Can't check validity of a handle on an invalid stack allocator");
 		SE_UNKNOWN_ASSERT(handle.m_poolAllocator == this, "Can't check validity of a handle of an other stack allocator");
 
-		if (reinterpret_cast<size_t> (handle.m_ptr) < reinterpret_cast<size_t>(m_data))
+		if (reinterpret_cast<se::Size> (handle.m_ptr) < reinterpret_cast<se::Size>(m_data))
 			return false;
 
-		if (reinterpret_cast<size_t> (handle.m_ptr) >= reinterpret_cast<size_t> (m_data) + m_size * sizeof(se::PoolAllocator<T>::Data))
+		if (reinterpret_cast<se::Size> (handle.m_ptr) >= reinterpret_cast<se::Size> (m_data) + m_size * sizeof(se::PoolAllocator<T>::Data))
 			return false;
 
-		if (reinterpret_cast<size_t> (handle.m_ptr) - 1 >= reinterpret_cast<size_t> (m_data) + (m_size - 1) * sizeof(se::PoolAllocator<T>::Data))
+		if (reinterpret_cast<se::Size> (handle.m_ptr) - 1 >= reinterpret_cast<se::Size> (m_data) + (m_size - 1) * sizeof(se::PoolAllocator<T>::Data))
 			return false;
 
 		if (!reinterpret_cast<se::PoolAllocator<T>::Data*> (handle.m_ptr)->isInUse)
@@ -150,7 +150,7 @@ namespace se
 	template <typename T>
 	se::PoolAllocator<T>::Handle PoolAllocator<T>::allocate()
 	{
-		for (size_t i {0}; i < m_size; ++i)
+		for (se::Size i {0}; i < m_size; ++i)
 		{
 			if (!m_data[i].isInUse)
 			{
@@ -185,7 +185,7 @@ namespace se
 
 
 	template <typename T>
-	size_t PoolAllocator<T>::getSize() const noexcept
+	se::Size PoolAllocator<T>::getSize() const noexcept
 	{
 		return m_size;
 	}
@@ -193,7 +193,7 @@ namespace se
 
 
 	template <typename T>
-	size_t PoolAllocator<T>::getUsage() const noexcept
+	se::Size PoolAllocator<T>::getUsage() const noexcept
 	{
 		return m_usage;
 	}
