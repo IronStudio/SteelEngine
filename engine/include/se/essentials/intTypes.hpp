@@ -16,6 +16,7 @@ namespace se
 	using Uint64 = uint64_t;
 
 	using Size = size_t;
+	using Length = size_t;
 	using Byte = se::Uint8;
 
 	using Int = se::Int32;

@@ -62,7 +62,7 @@ namespace se
 
 
 	template <se::Charset charset>
-	se::Size String<charset>::getLength() const noexcept
+	se::Length String<charset>::getLength() const noexcept
 	{
 		return m_length;
 	}

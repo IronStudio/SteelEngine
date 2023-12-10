@@ -93,12 +93,12 @@ namespace se
 			 * @brief Access a character of the string
 			 * @warning In UTF8 and UTF16 charset, the returned character can be only one part of a multi-bytes character, like é
 			*/
-			se::Char<charset>::Type &operator[](se::Size index);
+			se::Char<charset>::Type &operator[](se::Length index);
 			/**
 			 * @brief Access a character of the string
 			 * @warning In UTF8 and UTF16 charset, the returned character can be only one part of a multi-bytes character, like é
 			*/
-			se::Char<charset>::Type operator[](se::Size index) const;
+			se::Char<charset>::Type operator[](se::Length index) const;
 
 			/**
 			 * @brief Free the memory of the string and send the string in the state `se::String<charset> ()`
@@ -126,7 +126,7 @@ namespace se
 			 * @brief Return the length of the string, not including '\0'
 			 * @warning The length is in **visible** character, not in bytes (eg 'é' count as 1, not 2 in UTF8)
 			*/
-			inline se::Size getLength() const noexcept;
+			inline se::Length getLength() const noexcept;
 			/**
 			 * @brief Return the size in bytes of the string, including '\0'
 			 * @warning Multi-bytes character count as the number of bytes they occupe in memory, not as 1 (eg 'é' count as 2 in UTF8) 
@@ -139,7 +139,7 @@ namespace se
 			void p_copyRawArray(const se::Char<charset>::Type *str);
 
 			se::Char<charset>::Type *m_data;
-			se::Size m_length;
+			se::Length m_length;
 			se::Size m_sizeInBytes;
 			se::Size m_capacity;
 	};

@@ -251,7 +251,7 @@ namespace se
 
 
 	template <se::Charset charset>
-	se::Char<charset>::Type &String<charset>::operator[](se::Size index)
+	se::Char<charset>::Type &String<charset>::operator[](se::Length index)
 	{
 		SE_UNKNOWN_ASSERT(!this->isEmpty(), "Can't get character from empty string");
 		SE_UNKNOWN_ASSERT(index < m_sizeInBytes, "Can't get a character at a position outside the string");
@@ -262,7 +262,7 @@ namespace se
 
 
 	template <se::Charset charset>
-	se::Char<charset>::Type String<charset>::operator[](se::Size index) const
+	se::Char<charset>::Type String<charset>::operator[](se::Length index) const
 	{
 		SE_UNKNOWN_ASSERT(!this->isEmpty(), "Can't get character from empty string");
 		SE_UNKNOWN_ASSERT(index < m_sizeInBytes, "Can't get a character at a position outside the string");
@@ -276,7 +276,10 @@ namespace se
 	void String<charset>::clear()
 	{
 		if (m_data != nullptr)
+		{
 			free(m_data);
+			m_data = nullptr;
+		}
 
 		m_length = 0;
 		m_sizeInBytes = 0;
