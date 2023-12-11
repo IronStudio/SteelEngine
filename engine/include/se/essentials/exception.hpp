@@ -64,20 +64,18 @@ namespace se
 } // namespace se
 
 
-#define SE_CoreRuntimeError(message) se::RuntimeError(\
-	__FILE__, __LINE__, __func__, message, se::Origin::eEngine)
-#define SE_CoreInvalidArgumentError(argument, message) se::InvalidArgumentError(\
-	__FILE__, __LINE__, __func__, #argument, message, se::Origin::eEngine)
+#define SE_RuntimeError(message, origin) se::RuntimeError(\
+	__FILE__, __LINE__, __func__, message, origin)
+#define SE_InvalidArgumentError(argument, message, origin) se::InvalidArgumentError(\
+	__FILE__, __LINE__, __func__, #argument, message, origin)
 
 
-#define SE_AppRuntimeError(message) se::RuntimeError(\
-	__FILE__, __LINE__, __func__, message, se::Origin::eApp)
-#define SE_AppInvalidArgumentError(argument, message) se::InvalidArgumentError(\
-	__FILE__, __LINE__, __func__, #argument, message, se::Origin::eApp)
+#define SE_CoreRuntimeError(message) SE_RuntimeError(message, se::Origin::eEngine)
+#define SE_CoreInvalidArgumentError(argument, message) SE_InvalidArgumentError(argument, message, origin)
 
+#define SE_AppRuntimeError(message) SE_RuntimeError(message, se::Origin::eApp)
+#define SE_AppInvalidArgumentError(argument, message) SE_InvalidArgumentError(argument, message, origin)
 
-#define SE_UnknownRuntimeError(message) se::RuntimeError(\
-	__FILE__, __LINE__, __func__, message, se::Origin::eUnknown)
-#define SE_UnknownInvalidArgumentError(argument, message) se::InvalidArgumentError(\
-	__FILE__, __LINE__, __func__, #argument, message, se::Origin::eUnknown)
+#define SE_UnknownRuntimeError(message) SE_RuntimeError(message, se::Origin::eUnknown)
+#define SE_UnknownInvalidArgumentError(argument, message) SE_InvalidArgumentError(argument, message, origin)
 
