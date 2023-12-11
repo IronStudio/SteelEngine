@@ -101,7 +101,7 @@ namespace se
 
 
 	template <typename T>
-	PoolAllocator<T>::PoolAllocator(se::Size size) :
+	PoolAllocator<T>::PoolAllocator(se::Length size) :
 		m_data {nullptr},
 		m_size {0},
 		m_usage {0}
@@ -150,7 +150,7 @@ namespace se
 	template <typename T>
 	se::PoolAllocator<T>::Handle PoolAllocator<T>::allocate()
 	{
-		for (se::Size i {0}; i < m_size; ++i)
+		for (se::Length i {0}; i < m_size; ++i)
 		{
 			if (!m_data[i].isInUse)
 			{
@@ -185,7 +185,7 @@ namespace se
 
 
 	template <typename T>
-	se::Size PoolAllocator<T>::getSize() const noexcept
+	se::Length PoolAllocator<T>::getSize() const noexcept
 	{
 		return m_size;
 	}
@@ -193,7 +193,7 @@ namespace se
 
 
 	template <typename T>
-	se::Size PoolAllocator<T>::getUsage() const noexcept
+	se::Length PoolAllocator<T>::getUsage() const noexcept
 	{
 		return m_usage;
 	}

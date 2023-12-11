@@ -145,8 +145,19 @@ namespace se
 	};
 
 
+	/**
+	 * @brief Convert an integer to a string
+	 * @param number The integer to convert
+	 * @param base The base of the number, [2, 16]
+	 * @warning Prefer using `se::uintToString()` if you convert positive-only number
+	*/
 	template <se::Charset charset>
 	SE_CORE se::String<charset> intToString(se::Int64 number, se::Uint base = 10);
+	/**
+	 * @brief Convert an unsigned integer to a string
+	 * @param number The unsigned integer to convert
+	 * @param base The base of the number, [2, 16]
+	*/
 	template <se::Charset charset>
 	SE_CORE se::String<charset> uintToString(se::Uint64 number, se::Uint base = 10);
 

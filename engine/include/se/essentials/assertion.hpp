@@ -9,9 +9,21 @@
 
 namespace se
 {
+	/**
+	 * @brief A class to throw and handle assertation in a memory-safe way
+	*/
 	class SE_CORE Assertion final
 	{
 		public:
+			/**
+			 * @brief Use with throw to stop the program
+			 * @param file The file in which the assert happened, usually `__FILE__`
+			 * @param line The line at which the assert happened, usually `__LINE__`
+			 * @param func The function in which the assert happened, usually `__func__`
+			 * @param msg The message to to describe the assert
+			 * @param origin The origin of the assert
+			 * @warning Please consider using macros like `SE_APP_ASSERT()` instead using directly this constructor
+			*/
 			Assertion(
 				const se::UTF8String &file,
 				se::Uint line,
@@ -21,6 +33,9 @@ namespace se
 			);
 			~Assertion() = default;
 
+			/**
+			 * @brief Return the formatted content of the assert
+			*/
 			inline const char *what() const noexcept;
 
 

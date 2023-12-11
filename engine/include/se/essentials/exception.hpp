@@ -9,20 +9,39 @@
 
 namespace se
 {
+	/**
+	 * @brief Base class of all exceptions of SteelEngine
+	*/
 	class SE_CORE Exception
 	{
 		public:
 			Exception() = default;
 			virtual ~Exception() = default;
 
+			/**
+			 * @brief Return the formatted content of the exception
+			*/
 			virtual const se::UTF8String &what() const noexcept = 0;
 	};
 
 
 
+	/**
+	 * @brief A class that represents a runtime-only error, like an allocation failure
+	 * @warning Don't use it to handle invalid argument, instead please use `se::InvalidArgumentError` or `se::Assertion`
+	*/
 	class SE_CORE RuntimeError final : public se::Exception
 	{
 		public:
+			/**
+			 * @brief Constructor of a `se::RuntimeRrror`
+			 * @param file The file in which the exception happened, usually `__FILE__`
+			 * @param line The line at which the exception happened, usually `__LINE__`
+			 * @param func The function in which the exception happened, usually `__func__`
+			 * @param message The message to to describe the exception
+			 * @param origin The origin of the exception
+			 * @warning Please consider using macros like `SE_AppRuntimeError()` instead using directly this constructor
+			*/
 			RuntimeError(
 				const se::UTF8String &file,
 				se::Uint line,
@@ -32,6 +51,9 @@ namespace se
 			);
 			RuntimeError() = default;
 
+			/**
+			 * @brief Return the formatted content of the exception
+			*/
 			const se::UTF8String &what() const noexcept;
 
 		
@@ -41,9 +63,22 @@ namespace se
 
 
 
+	/**
+	 * @brief A class that represents invalid argument error, like a negative value given to `sqrt()`
+	*/
 	class SE_CORE InvalidArgumentError final : public se::Exception
 	{
 		public:
+			/**
+			 * @brief Constructor of a `se::RuntimeRrror`
+			 * @param file The file in which the exception happened, usually `__FILE__`
+			 * @param line The line at which the exception happened, usually `__LINE__`
+			 * @param func The function in which the exception happened, usually `__func__`
+			 * @param argument The name of the argument that is invalid
+			 * @param message The message to to describe the exception
+			 * @param origin The origin of the exception
+			 * @warning Please consider using macros like `SE_AppInvalidArgumentError()` instead using directly this constructor
+			*/
 			InvalidArgumentError(
 				const se::UTF8String &file,
 				se::Uint line,
@@ -54,6 +89,9 @@ namespace se
 			);
 			InvalidArgumentError() = default;
 
+			/**
+			 * @brief Return the formatted content of the exception
+			*/
 			const se::UTF8String &what() const noexcept;
 
 		

@@ -7,16 +7,27 @@
 
 namespace se
 {
+	/**
+	 * @brief A pool allocator, use to allocate efficiently memory for a one-typed usage
+	 * @tparam T The type of the pool
+	*/
 	template <typename T>
 	class SE_CORE PoolAllocator
 	{
 		public:
+			/**
+			 * @brief A memory-safe handle to a `se::PoolAllocator<T>`
+			*/
 			class Handle final
 			{
 				friend class se::PoolAllocator<T>;
 
 				public:
 					Handle();
+					/**
+					 * @deprecated Please consider using the handle given by `se::PoolAllocator<T>.allocate()` or copying handle instead
+					 *             of using raw pointer
+					*/
 					Handle(const se::PoolAllocator<T> *poolAllocator, T *ptr);
 					Handle(const se::PoolAllocator<T>::Handle &handle);
 					Handle(se::PoolAllocator<T>::Handle &&handle) noexcept;
@@ -39,19 +50,38 @@ namespace se
 
 
 
-
-			PoolAllocator(se::Size size);
+			/**
+			 * @param size The number of element of type `T` in the pool allocator
+			*/
+			PoolAllocator(se::Length size);
 			~PoolAllocator();
 
+			/**
+			 * @brief Check if a handle is valid, that is his memory is still allocated and is owned by the allocator
+			*/
 			bool isHandleValid(const se::PoolAllocator<T>::Handle &handle) const;
 
+			/**
+			 * @brief Allocate one element of a pool allocator
+			 * @warning Don't forget to free the given element
+			*/
 			se::PoolAllocator<T>::Handle allocate();
 
+			/**
+			 * @brief Free one element of a pool allocator
+			 * @warning `handle` must be a valid element of the pool allocator
+			*/
 			inline void free(const se::PoolAllocator<T>::Handle &handle);
 
 			inline bool isValid() const noexcept;
-			inline se::Size getSize() const noexcept;
-			inline se::Size getUsage() const noexcept;
+			/**
+			 * @brief Get the maxium number of element in the pool allocator
+			*/
+			inline se::Length getSize() const noexcept;
+			/**
+			 * @brief Get the number of element currently allocated in the pool allocator
+			*/
+			inline se::Length getUsage() const noexcept;
 
 
 		private:
@@ -62,8 +92,8 @@ namespace se
 			};
 
 			se::PoolAllocator<T>::Data *m_data;
-			se::Size m_size;
-			se::Size m_usage;
+			se::Length m_size;
+			se::Length m_usage;
 	};
 
 } // namespace se
