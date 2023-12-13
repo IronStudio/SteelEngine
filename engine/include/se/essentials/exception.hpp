@@ -15,13 +15,18 @@ namespace se
 	class SE_CORE Exception
 	{
 		public:
-			Exception() = default;
+			Exception(se::Origin origin);
 			virtual ~Exception() = default;
 
 			/**
 			 * @brief Return the formatted content of the exception
 			*/
 			virtual const se::UTF8String &what() const noexcept = 0;
+			se::Origin getOrigin() const noexcept;
+
+
+		private:
+			se::Origin m_origin;
 	};
 
 

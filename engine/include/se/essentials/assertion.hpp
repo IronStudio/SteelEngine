@@ -37,10 +37,12 @@ namespace se
 			 * @brief Return the formatted content of the assert
 			*/
 			inline const char *what() const noexcept;
+			inline se::Origin getOrigin() const noexcept;
 
 
 		private:
 			se::UTF8String m_msg;
+			se::Origin m_origin;
 	};
 
 } // namespace se

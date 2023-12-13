@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <se/application.hpp>
 #include <se/essentials/assertion.hpp>
 #include <se/essentials/exception.hpp>
 #include <se/memory/poolAllocator.hpp>
@@ -9,56 +10,53 @@
 
 
 
-int main(int, char **)
+class SandboxApp final : public se::Application
 {
-	try
-	{
-		se::Logger<se::Origin::eApp>::load();
-		se::Logger<se::Origin::eEngine>::load();
-		se::Logger<se::Origin::eUnknown>::load();
-		SE_AppLogger.setStream(&std::cout);
-		SE_CoreLogger.setStream(&std::cout);
-		SE_UnknownLogger.setStream(&std::cout);
+	public:
+		SandboxApp() = default;
+		~SandboxApp() = default;
+
+		void onLoad() override
+		{
+			se::Application::onLoad();
+
+			se::HeapAllocator allocator {1024};
+			auto handle = allocator.allocate<int> ();
+			auto handle2 = allocator.allocate<int> (3);
+			auto handle3 = allocator.allocate<int> (1);
+			auto handle4 = allocator.allocate<int> ();
+
+			SE_AppLogger << se::LogStart() << "Usage : " << allocator.getUsage() << se::endLog;
+			SE_AppLogger << se::LogStart() << "Fragmentation : " << allocator.getFragmentationSpaceSize() << se::endLog;
+
+			*handle3 = 42;
+
+			allocator.free(handle2);
+
+			SE_AppLogger << se::LogStart() << "Usage : " << allocator.getUsage() << se::endLog;
+			SE_AppLogger << se::LogStart() << "Fragmentation : " << allocator.getFragmentationSpaceSize() << se::endLog;
+
+			allocator.defragment();
+
+			SE_AppLogger << se::LogStart() << "Usage : " << allocator.getUsage() << se::endLog;
+			SE_AppLogger << se::LogStart() << "Fragmentation : " << allocator.getFragmentationSpaceSize() << se::endLog;
+
+			SE_AppLogger << se::LogStart() << "Test : " << *handle3 << se::endLog;
+		}
 
 
-		se::HeapAllocator allocator {1024};
-		auto handle = allocator.allocate<int> ();
-		auto handle2 = allocator.allocate<int> (3);
-		auto handle3 = allocator.allocate<int> (1);
-		auto handle4 = allocator.allocate<int> ();
-
-		SE_AppLogger << se::LogStart() << "Usage : " << allocator.getUsage() << se::endLog;
-		SE_AppLogger << se::LogStart() << "Fragmentation : " << allocator.getFragmentationSpaceSize() << se::endLog;
-
-		*handle3 = 42;
-
-		allocator.free(handle2);
-
-		SE_AppLogger << se::LogStart() << "Usage : " << allocator.getUsage() << se::endLog;
-		SE_AppLogger << se::LogStart() << "Fragmentation : " << allocator.getFragmentationSpaceSize() << se::endLog;
-
-		allocator.defragment();
-
-		SE_AppLogger << se::LogStart() << "Usage : " << allocator.getUsage() << se::endLog;
-		SE_AppLogger << se::LogStart() << "Fragmentation : " << allocator.getFragmentationSpaceSize() << se::endLog;
-
-		SE_AppLogger << se::LogStart() << "Test : " << *handle3 << se::endLog;
+		void onUpdate() override {}
+		void onError() noexcept override {}
+		void onUnload() noexcept override {se::Application::onUnload();}
+};
 
 
-		se::Logger<se::Origin::eEngine>::unload();
-		se::Logger<se::Origin::eUnknown>::unload();
-		se::Logger<se::Origin::eApp>::unload();
-	}
 
-	catch (const se::Exception &exception)
-	{
-		std::cout << exception.what() << std::endl;
-	}
-
-	catch (const se::Assertion &assertion)
-	{
-		std::cout << assertion.what() << std::endl;
-	}
-
-	return 0;
+se::Application *se::createApplication()
+{
+	return new SandboxApp();
 }
+
+
+
+#include <se/entryPoint.inl>

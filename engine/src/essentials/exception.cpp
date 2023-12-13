@@ -4,6 +4,21 @@
 
 namespace se
 {
+	Exception::Exception(se::Origin origin) :
+		m_origin {origin}
+	{
+
+	}
+
+
+
+	se::Origin Exception::getOrigin() const noexcept
+	{
+		return m_origin;
+	}
+
+
+
 	RuntimeError::RuntimeError(
 		const se::UTF8String &file,
 		se::Uint line,
@@ -11,6 +26,7 @@ namespace se
 		const se::UTF8String &message,
 		se::Origin origin
 	) : 
+		se::Exception(origin),
 		m_string {}
 	{
 		m_string = se::convertOriginToString(origin) + " : in function '" + func + "', file '" + file + "', line " + std::to_string(line) + " > " + message;
@@ -33,6 +49,7 @@ namespace se
 		const se::UTF8String &message,
 		se::Origin origin
 	) : 
+		se::Exception(origin),
 		m_string {}
 	{
 		m_string = se::convertOriginToString(origin) + " : in function '" + func + "', file '" + file + "', line " + std::to_string(line)

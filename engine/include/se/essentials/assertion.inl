@@ -11,4 +11,11 @@ namespace se
 
 
 
+	se::Origin Assertion::getOrigin() const noexcept
+	{
+		return m_origin;
+	}
+
+
+
 } // namespace se

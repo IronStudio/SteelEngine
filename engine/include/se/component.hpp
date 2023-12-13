@@ -12,7 +12,8 @@ namespace se
 	enum class ComponentTypeFlags
 	{
 		unknown = -1,
-		root = 0
+		root = 0,
+		script = 1,
 	};
 
 
