@@ -29,7 +29,7 @@ namespace se
 					 * @deprecated Please consider using the handle given by `se::StackAllocator.allocate<T> ()`
 					 *             or copying handle instead of using raw pointer
 					*/
-					Handle(const se::StackAllocator *stackAllocator, void *ptr);
+					Handle(const se::StackAllocator *stackAllocator, void *ptr, se::Length count = 1);
 					Handle(const se::StackAllocator::Handle<T> &handle);
 					Handle(se::StackAllocator::Handle<T> &&handle) noexcept;
 
@@ -47,6 +47,7 @@ namespace se
 				private:
 					void *m_ptr;
 					const se::StackAllocator *m_stackAllocator;
+					se::Length m_count;
 			};
 
 
@@ -82,7 +83,7 @@ namespace se
 			 * @warning Please don't forget to save stack top with `se::StackAllocator.getStackTop()` to later free the stack
 			*/
 			template <typename T>
-			se::StackAllocator::Handle<T> allocate(se::Size amount = 1);
+			se::StackAllocator::Handle<T> allocate(se::Length amount = 1);
 
 			/**
 			 * @brief Reverse the stack to `point`, that is deallocate memory from the current stack top to `point`

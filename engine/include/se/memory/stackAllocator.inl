@@ -16,9 +16,10 @@ namespace se
 
 
 	template <typename T>
-	StackAllocator::Handle<T>::Handle(const se::StackAllocator *stackAllocator, void *ptr) :
+	StackAllocator::Handle<T>::Handle(const se::StackAllocator *stackAllocator, void *ptr, se::Length count) :
 		m_ptr {ptr},
-		m_stackAllocator {stackAllocator}
+		m_stackAllocator {stackAllocator},
+		m_count {count}
 	{
 
 	}
@@ -28,7 +29,8 @@ namespace se
 	template <typename T>
 	StackAllocator::Handle<T>::Handle(const se::StackAllocator::Handle<T> &handle) :
 		m_ptr {handle.m_ptr},
-		m_stackAllocator {handle.m_stackAllocator}
+		m_stackAllocator {handle.m_stackAllocator},
+		m_count {handle.m_count}
 	{
 
 	}
@@ -38,10 +40,12 @@ namespace se
 	template <typename T>
 	StackAllocator::Handle<T>::Handle(se::StackAllocator::Handle<T> &&handle) noexcept :
 		m_ptr {handle.m_ptr},
-		m_stackAllocator {handle.m_stackAllocator}
+		m_stackAllocator {handle.m_stackAllocator},
+		m_count {handle.m_count}
 	{
 		handle.m_ptr = nullptr;
 		handle.m_stackAllocator = nullptr;
+		handle.m_count = 0;
 	}
 
 
@@ -51,6 +55,7 @@ namespace se
 	{
 		m_ptr = handle.m_ptr;
 		m_stackAllocator = handle.m_stackAllocator;
+		m_count = handle.m_count;
 		return *this;
 	}
 
@@ -61,8 +66,10 @@ namespace se
 	{
 		m_ptr = handle.m_ptr;
 		m_stackAllocator = handle.m_stackAllocator;
+		m_count = handle.m_count;
 		handle.m_ptr = nullptr;
 		handle.m_stackAllocator = nullptr;
+		handle.m_count = 0;
 		return *this;
 	}
 
@@ -109,7 +116,7 @@ namespace se
 		if (handle.m_ptr >= m_stackTop)
 			return false;
 
-		if (reinterpret_cast<se::Size> (handle.m_ptr) + sizeof(T) - 1 >= reinterpret_cast<se::Size> (m_stackTop))
+		if (reinterpret_cast<se::Size> (handle.m_ptr) + sizeof(T) * handle.m_count - 1 >= reinterpret_cast<se::Size> (m_stackTop))
 			return false;
 
 		return true;
@@ -125,9 +132,9 @@ namespace se
 
 
 	template <typename T>
-	se::StackAllocator::Handle<T> StackAllocator::allocate(se::Size amount)
+	se::StackAllocator::Handle<T> StackAllocator::allocate(se::Length amount)
 	{
-		se::StackAllocator::Handle<T> handle {this, m_stackTop};
+		se::StackAllocator::Handle<T> handle {this, m_stackTop, amount};
 		m_stackTop = reinterpret_cast<void*> (reinterpret_cast<se::Size> (m_stackTop) + sizeof(T) * amount);
 		if (reinterpret_cast<se::Size> (m_stackTop) > reinterpret_cast<se::Size> (m_stackBottom) + m_stackSize)
 			throw SE_UnknownRuntimeError("No more memory available on stack allocator");

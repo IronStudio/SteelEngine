@@ -22,4 +22,9 @@ namespace se
 	using Int = se::Int32;
 	using Uint = se::Uint32;
 
+	using Float32 = float;
+	using Float64 = double;
+
+	using Float = se::Float32;
+
 } // namespace se
