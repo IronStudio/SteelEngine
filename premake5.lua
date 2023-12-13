@@ -10,6 +10,14 @@ obj_dir = "obj/%{cfg.buildcfg}/%{prj.name}"
 output_dir_without_project = "bin/%{cfg.buildcfg}"
 output_dir = output_dir_without_project .. "/%{prj.name}"
 
+local handle = io.popen("python3 -c \"from sysconfig import get_paths as gp; print(gp()['data'])\"")
+local python_path = handle:read("*a"):gsub('[\n\r]', '')
+handle:close()
+python_include_path = python_path .. "/include"
+python_libs_path = python_path .. "/libs"
+print(python_include_path)
+print(python_libs_path)
+
 
 --		███████╗███╗   ██╗ ██████╗ ██╗███╗   ██╗███████╗
 --		██╔════╝████╗  ██║██╔════╝ ██║████╗  ██║██╔════╝
@@ -33,8 +41,10 @@ project "engine"
 		"%{prj.location}/src/**.inl"
 	}
 
+
 	includedirs {
-		"%{prj.location}/include/se"
+		"%{prj.location}/include/se",
+		python_include_path
 	}
 
 	targetname "steelengine"
@@ -102,15 +112,18 @@ project "sandbox"
 
 	includedirs {
 		"%{prj.location}/include/",
-		"engine/include/"
+		"engine/include/",
+		python_include_path
 	}
 
 	libdirs {
-		output_dir_without_project .. "/engine"
+		output_dir_without_project .. "/engine",
+		python_libs_path
 	}
 
 	links {
-		"steelengine"
+		"steelengine",
+		"python3"
 	}
 
 	targetname "sandbox"

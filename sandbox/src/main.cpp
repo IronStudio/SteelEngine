@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <Python.h>
+
 #include <se/application.hpp>
 #include <se/essentials/assertion.hpp>
 #include <se/essentials/exception.hpp>
@@ -42,6 +44,26 @@ class SandboxApp final : public se::Application
 			SE_AppLogger << se::LogStart() << "Fragmentation : " << allocator.getFragmentationSpaceSize() << se::endLog;
 
 			SE_AppLogger << se::LogStart() << "Test : " << *handle3 << se::endLog;
+
+
+			Py_Initialize();
+
+			PyObject *platformModule {PyImport_ImportModule("platform")};
+			if (platformModule == nullptr)
+				throw SE_AppRuntimeError("Can't load python module 'platform'");
+
+			PyObject *systemFunction {PyObject_GetAttrString(platformModule, "system")};
+			if (!systemFunction || !PyCallable_Check(systemFunction))
+				throw SE_AppRuntimeError("Can't load or call 'platform.system' function");
+
+			PyObject *systemObj {PyObject_CallObject(systemFunction, nullptr)};
+			PyObject *str {PyUnicode_AsEncodedString(systemObj, "utf-8", "~E~")};
+			const char *systemStr {PyBytes_AS_STRING(str)};
+			SE_AppLogger << se::LogStart() << "System : " << systemStr << se::endLog;
+
+			Py_XDECREF(systemFunction);
+			Py_XDECREF(systemObj);
+			Py_XDECREF(str);
 		}
 
 
