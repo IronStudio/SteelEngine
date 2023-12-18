@@ -258,4 +258,16 @@ namespace se
 
 
 
+	template <typename T, se::Length D>
+	requires std::is_arithmetic_v<T>
+	std::ostream &operator<<(std::ostream &stream, const se::Vector<T, D> &vector)
+	{
+		for (se::Length i {0}; i < D - 1; ++i)
+			stream << vector[i] << ", ";
+		stream << vector[D - 1];
+		return stream;
+	}
+
+
+
 } // namespace se

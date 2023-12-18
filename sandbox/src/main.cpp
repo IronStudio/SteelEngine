@@ -72,7 +72,7 @@ int main(int, char **)
 		vec4.y = -3.f;
 		vec4.z = -19.42f;
 		vec4.w = 24.29f;
-		std::cout << vec4.r << ", " << vec4.g << ", " << vec4.b << ", " << vec4.a << std::endl;
+		std::cout << vec4 << std::endl;
 
 
 

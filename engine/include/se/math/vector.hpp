@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <ostream>
 #include <type_traits>
 
 #include "../types.hpp"
@@ -79,6 +80,11 @@ namespace se
 	template <typename T, typename T2, se::Length D>
 	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
 	T dot(const se::Vector<T, D> &a, const se::Vector<T2, D> &b);
+
+
+	template <typename T, se::Length D>
+	requires std::is_arithmetic_v<T>
+	std::ostream &operator<<(std::ostream &stream, const se::Vector<T, D> &vector);
 
 	
 } // namespace se
