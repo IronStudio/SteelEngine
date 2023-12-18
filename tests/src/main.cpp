@@ -1,24 +1,23 @@
+#include <iostream>
+
+#include <se/utils/assert.hpp>
+#include <se/math/vec4.hpp>
+
 #include "test.hpp"
 
-#include "string.inl"
 
 
-int main()
+int main(int, char **)
 {
-	int failedTest {0};
-	int testCount {0};
-
-	for (const auto &test : functions)
+	try
 	{
-		++testCount;
-
-		if (!test.second())
-		{
-			++failedTest;
-			std::cout << "Failed test '" << test.first << "'" << std::endl;
-		}
+		#include "vector.inl"
 	}
 
-	std::cout << "Passed " << testCount - failedTest << " tests of " << testCount << std::endl;
-	return failedTest;
+	catch (const se::Assert &assert)
+	{
+		std::cout << assert.getMessage() << std::endl;
+	}
+
+	return 0;
 }

@@ -216,13 +216,13 @@ namespace se
 	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
 	bool operator==(const se::Vector<T, D> &a, const se::Vector<T2, D> &b)
 	{
-		if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
+		/*if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
 		{
 			__m128 dst {_mm_load_ps(a.getInternalArray().data())};
 			__m128 src {_mm_load_ps(b.getInternalArray().data())};
-			dst = _mm_cmpeq_ps(dst, src);
+			dst = _mm_cmpneq_ps(dst, src);
 			return _mm_movemask_ps(dst) == 0xffff;
-		}
+		}*/
 
 		for (se::Length i {0}; i < D; ++i)
 		{
