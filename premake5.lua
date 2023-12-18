@@ -10,6 +10,8 @@ obj_dir = "obj/%{cfg.buildcfg}/%{prj.name}"
 output_dir_without_project = "bin/%{cfg.buildcfg}"
 output_dir = output_dir_without_project .. "/%{prj.name}"
 
+vector_extension_version = "SSE4.1"
+
 
 --		███████╗███╗   ██╗ ██████╗ ██╗███╗   ██╗███████╗
 --		██╔════╝████╗  ██║██╔════╝ ██║████╗  ██║██╔════╝
@@ -25,6 +27,7 @@ project "engine"
 	cppdialect "C++20"
 	location "engine"
 	warnings "Extra"
+	vectorextensions(vector_extension_version)
 
 	files {
 		"%{prj.location}/include/**.hpp",
@@ -92,6 +95,7 @@ project "sandbox"
 	cppdialect "C++20"
 	location "sandbox"
 	warnings "Extra"
+	vectorextensions(vector_extension_version)
 
 	files {
 		"%{prj.location}/include/**.hpp",
@@ -160,6 +164,7 @@ project "test"
 	cppdialect "C++20"
 	location "tests"
 	warnings "Extra"
+	vectorextensions(vector_extension_version)
 
 	files {
 		"%{prj.location}/include/**.hpp",
@@ -184,7 +189,6 @@ project "test"
 	targetname "tests"
 	targetdir(output_dir)
 	objdir(obj_dir)
-
 
 	filter "configurations:debug"
 		defines {"DEBUG", "SE_DEBUG_MODE"}

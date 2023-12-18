@@ -1,5 +1,8 @@
 #pragma once
 
+#include <xmmintrin.h>
+
+#include <array>
 #include <cinttypes>
 
 
@@ -30,6 +33,12 @@ namespace se
 	using Char8 = char;
 	using Char16 = char16_t;
 	using Char32 = char32_t;
+
+	using Float32 = float;
+	using Float64 = double;
+
+
+	using VFloat32 = __m128;
 
 	
 } // namespace se
