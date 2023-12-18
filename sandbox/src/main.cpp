@@ -4,6 +4,7 @@
 
 #include <se/utils/assert.hpp>
 #include <se/math/vector.hpp>
+#include <se/math/vec4.hpp>
 
 
 #define PRINT_VECTOR(vector, D) for (size_t i {0}; i < D; ++i) std::cout << vector[i] << ", "; std::cout << std::endl;
@@ -64,6 +65,15 @@ int main(int, char **)
 
 		se::Vector<float, 2> polar {cosf(2.3f), sinf(2.3f)};
 		std::cout << polar.length2() << ", " << polar.length() << std::endl;
+
+		
+		se::Vec4<float> vec4 {1.f};
+		vec4.x = 10.f;
+		vec4.y = -3.f;
+		vec4.z = -19.42f;
+		vec4.w = 24.29f;
+		std::cout << vec4.r << ", " << vec4.g << ", " << vec4.b << ", " << vec4.a << std::endl;
+
 
 
 		std::vector<float> vectors1 {};
