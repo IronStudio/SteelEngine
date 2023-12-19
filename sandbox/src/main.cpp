@@ -5,7 +5,7 @@
 #include <se/utils/assert.hpp>
 #include <se/math/vector.hpp>
 #include <se/math/vec4.hpp>
-#include <se/math/matrix.hpp>
+#include <se/math/matn.hpp>
 
 
 
@@ -47,6 +47,8 @@ int main(int, char **)
 		std::cout << "----------\n";
 		std::cout << (se::Matrix<float, 4, 4> (1.f) * se::Matrix<float, 4, 4> (1.f) == se::Matrix<float, 4, 4> (4.f)) << std::endl;
 		std::cout << "----------\n";
+
+		std::cout << se::det(se::Matn<float, 2> (1.f, 1.f, 1.f, 1.f)) << std::endl;
 
 		mat *= -1.f;
 		std::cout << mat << std::endl;
