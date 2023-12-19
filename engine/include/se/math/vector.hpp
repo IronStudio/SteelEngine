@@ -23,7 +23,7 @@ namespace se
 
 			template <typename T2, se::Length D2>
 			requires std::is_arithmetic_v<T2> && (D2 <= D)
-			Vector(const std::array<T, D> &datas);
+			Vector(const std::array<T2, D2> &datas);
 
 			template <typename T2, se::Length D2>
 			requires std::is_arithmetic_v<T2> && (D2 <= D)
@@ -75,6 +75,22 @@ namespace se
 	template <typename T, typename T2, se::Length D>
 	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
 	bool operator==(const se::Vector<T, D> &a, const se::Vector<T2, D> &b);
+
+	template <typename T, typename T2, se::Length D>
+	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
+	inline se::Vector<T, D> operator+(se::Vector<T, D> a, const se::Vector<T2, D> b);
+
+	template <typename T, typename T2, se::Length D>
+	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
+	inline se::Vector<T, D> operator-(se::Vector<T, D> a, const se::Vector<T2, D> b);
+
+	template <typename T, typename T2, se::Length D>
+	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
+	inline se::Vector<T, D> operator*(se::Vector<T, D> a, const se::Vector<T2, D> b);
+
+	template <typename T, typename T2, se::Length D>
+	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
+	inline se::Vector<T, D> operator*(se::Vector<T, D> vector, T2 scalar);
 
 
 	template <typename T, typename T2, se::Length D>

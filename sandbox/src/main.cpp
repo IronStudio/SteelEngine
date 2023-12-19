@@ -5,9 +5,9 @@
 #include <se/utils/assert.hpp>
 #include <se/math/vector.hpp>
 #include <se/math/vec4.hpp>
+#include <se/math/matrix.hpp>
 
 
-#define PRINT_VECTOR(vector, D) for (size_t i {0}; i < D; ++i) std::cout << vector[i] << ", "; std::cout << std::endl;
 
 struct Clock
 {
@@ -31,7 +31,32 @@ int main(int, char **)
 {
 	try
 	{
-		
+		se::Matrix<float, 4, 4> mat {
+			1.f, 2.f, 3.f, 0.f,
+			4.f, 5.f, 6.f, 0.f,
+			7.f, 8.f, 9.f, 0.f,
+			10.f, 11.f, 12.f, 1.f
+		};
+
+		std::cout << mat << std::endl;
+		std::cout << mat[1][2] << std::endl;
+		mat[1][2] = -0.9f;
+		std::cout << mat << std::endl;
+		std::cout << se::transpose(mat) << std::endl;
+
+		std::cout << "----------\n";
+		std::cout << (se::Matrix<float, 4, 4> (1.f) * se::Matrix<float, 4, 4> (1.f) == se::Matrix<float, 4, 4> (4.f)) << std::endl;
+		std::cout << "----------\n";
+
+		mat *= -1.f;
+		std::cout << mat << std::endl;
+
+		se::Vector<float, 16> vec {mat.getInternalArray()};
+		std::cout << vec << std::endl;
+
+		se::Vector<float, 4> vec4 {1.f, 2.f, 3.f, 4.f};
+		vec4 *= 2.f;
+		std::cout << vec4 << std::endl;
 	}
 
 	catch (const se::Assert &assert)

@@ -25,7 +25,7 @@ namespace se
 	requires std::is_arithmetic_v<T>
 	template <typename T2, se::Length D2>
 	requires std::is_arithmetic_v<T2> && (D2 <= D)
-	Vector<T, D>::Vector(const std::array<T, D> &datas) :
+	Vector<T, D>::Vector(const std::array<T2, D2> &datas) :
 		m_datas {}
 	{
 		std::copy(datas.begin(), datas.end(), m_datas.begin());
@@ -163,7 +163,7 @@ namespace se
 		{
 			__m128 dst {_mm_load_ps(m_datas.data())};
 			__m128 src {_mm_set1_ps(scalar)};
-			dst = _mm_sub_ps(dst, src);
+			dst = _mm_mul_ps(dst, src);
 			_mm_store_ps(m_datas.data(), dst);
 			return *this;
 		}
@@ -231,6 +231,46 @@ namespace se
 		}
 
 		return true;
+	}
+
+
+
+	template <typename T, typename T2, se::Length D>
+	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
+	inline se::Vector<T, D> operator+(se::Vector<T, D> a, const se::Vector<T2, D> b)
+	{
+		a += b;
+		return a;
+	}
+
+
+
+	template <typename T, typename T2, se::Length D>
+	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
+	inline se::Vector<T, D> operator-(se::Vector<T, D> a, const se::Vector<T2, D> b)
+	{
+		a -= b;
+		return a;
+	}
+
+
+
+	template <typename T, typename T2, se::Length D>
+	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
+	inline se::Vector<T, D> operator*(se::Vector<T, D> a, const se::Vector<T2, D> b)
+	{
+		a *= b;
+		return a;
+	}
+
+
+
+	template <typename T, typename T2, se::Length D>
+	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
+	inline se::Vector<T, D> operator*(se::Vector<T, D> vector, T2 scalar)
+	{
+		vector *= scalar;
+		return vector;
 	}
 
 
