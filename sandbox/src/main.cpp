@@ -4,8 +4,10 @@
 
 #include <se/utils/assert.hpp>
 #include <se/math/vector.hpp>
+#include <se/math/vec3.hpp>
 #include <se/math/vec4.hpp>
 #include <se/math/matn.hpp>
+#include <se/math/quaternion.hpp>
 
 
 
@@ -31,34 +33,17 @@ int main(int, char **)
 {
 	try
 	{
-		se::Matrix<float, 4, 4> mat {
-			1.f, 2.f, 3.f, 0.f,
-			4.f, 5.f, 6.f, 0.f,
-			7.f, 8.f, 9.f, 0.f,
-			10.f, 11.f, 12.f, 1.f
-		};
-
-		std::cout << mat << std::endl;
-		std::cout << mat[1][2] << std::endl;
-		mat[1][2] = -0.9f;
-		std::cout << mat << std::endl;
-		std::cout << se::transpose(mat) << std::endl;
-
-		std::cout << "----------\n";
-		std::cout << (se::Matrix<float, 4, 4> (1.f) * se::Matrix<float, 4, 4> (1.f) == se::Matrix<float, 4, 4> (4.f)) << std::endl;
-		std::cout << "----------\n";
-
-		std::cout << se::det(se::Matn<float, 2> (1.f, 1.f, 1.f, 1.f)) << std::endl;
-
-		mat *= -1.f;
-		std::cout << mat << std::endl;
-
-		se::Vector<float, 16> vec {mat.getInternalArray()};
-		std::cout << vec << std::endl;
-
-		se::Vector<float, 4> vec4 {1.f, 2.f, 3.f, 4.f};
-		vec4 *= 2.f;
-		std::cout << vec4 << std::endl;
+		std::cout << se::cross(se::Vec3f(1.f, 0.f, 0.f), se::Vec3f(0.f, 1.f, 0.f)) << std::endl;;
+		se::Quaternion<float> quat {sinf(2.f) * se::Vec3f(1.f, 0.f, 0.f), cosf(2.f)};
+		se::Quaternion<float> quat2 {sinf(1.f) * se::Vec3f(0.f, 1.f, 0.f), cosf(1.f)};
+		std::cout << quat << " : " << quat.length() << std::endl;
+		std::cout << quat2 << " : " << quat2.length() << std::endl;
+		auto quat3 {quat};
+		quat3 *= quat2;
+		std::cout << quat3 << " : " << quat3.length() << std::endl;
+		quat3.normalize();
+		std::cout << quat3 << " : " << quat3.length() << std::endl;
+		std::cout << (quat * quat) << " : " << (quat * quat).length() << std::endl;
 	}
 
 	catch (const se::Assert &assert)

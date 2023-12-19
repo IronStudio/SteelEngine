@@ -92,6 +92,10 @@ namespace se
 	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
 	inline se::Vector<T, D> operator*(se::Vector<T, D> vector, T2 scalar);
 
+	template <typename T, typename T2, se::Length D>
+	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
+	inline se::Vector<T, D> operator*(T2 scalar, se::Vector<T, D> vector);
+
 
 	template <typename T, typename T2, se::Length D>
 	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>

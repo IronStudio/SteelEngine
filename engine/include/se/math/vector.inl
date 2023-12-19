@@ -277,6 +277,16 @@ namespace se
 
 	template <typename T, typename T2, se::Length D>
 	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
+	inline se::Vector<T, D> operator*(T2 scalar, se::Vector<T, D> vector)
+	{
+		vector *= scalar;
+		return vector;
+	}
+
+
+
+	template <typename T, typename T2, se::Length D>
+	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
 	T dot(const se::Vector<T, D> &a, const se::Vector<T2, D> &b)
 	{
 		if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
@@ -302,9 +312,10 @@ namespace se
 	requires std::is_arithmetic_v<T>
 	std::ostream &operator<<(std::ostream &stream, const se::Vector<T, D> &vector)
 	{
+		stream << "[";
 		for (se::Length i {0}; i < D - 1; ++i)
 			stream << vector[i] << ", ";
-		stream << vector[D - 1];
+		stream << vector[D - 1] << "]";
 		return stream;
 	}
 
