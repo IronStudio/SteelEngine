@@ -108,6 +108,11 @@ namespace se
 	inline se::Quaternion<T> operator-(se::Quaternion<T> a, const se::Quaternion<T2> &b);
 
 
+	using Quati = se::Quaternion<se::Int32>;
+	using Quatf = se::Quaternion<se::Float32>;
+	using Quatf64 = se::Quaternion<se::Float64>;
+
+
 
 } // namespace se
 
