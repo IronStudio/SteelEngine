@@ -1,6 +1,8 @@
 #include "vector.hpp"
 
-#include <smmintrin.h>
+#ifndef SE_NO_VECTORIZATION
+	#include <smmintrin.h>
+#endif
 
 #include <algorithm>
 #include <cmath>
@@ -93,18 +95,27 @@ namespace se
 	requires std::is_arithmetic_v<T2>
 	const se::Vector<T, D> &Vector<T, D>::operator+=(const se::Vector<T2, D> &vector)
 	{
-		if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
-		{
-			__m128 dst {_mm_load_ps(m_datas.data())};
-			__m128 src {_mm_load_ps(vector.getInternalArray().data())};
-			dst = _mm_add_ps(dst, src);
-			_mm_store_ps(m_datas.data(), dst);
-			return *this;
-		}
+		#ifndef SE_NO_VECTORIZATION
+			if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
+			{
+				__m128 dst {_mm_load_ps(m_datas.data())};
+				__m128 src {_mm_load_ps(vector.getInternalArray().data())};
+				dst = _mm_add_ps(dst, src);
+				_mm_store_ps(m_datas.data(), dst);
+				return *this;
+			}
+
+			else
+			{
+		#endif
 
 		for (se::Length i {0}; i < D; ++i)
 			m_datas[i] += vector[i];
 		return *this;
+
+		#ifndef SE_NO_VECTORIZATION
+			}
+		#endif
 	}
 
 
@@ -115,18 +126,27 @@ namespace se
 	requires std::is_arithmetic_v<T2>
 	const se::Vector<T, D> &Vector<T, D>::operator-=(const se::Vector<T2, D> &vector)
 	{
-		if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
-		{
-			__m128 dst {_mm_load_ps(m_datas.data())};
-			__m128 src {_mm_load_ps(vector.getInternalArray().data())};
-			dst = _mm_sub_ps(dst, src);
-			_mm_store_ps(m_datas.data(), dst);
-			return *this;
-		}
+		#ifndef SE_NO_VECTORIZATION
+			if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
+			{
+				__m128 dst {_mm_load_ps(m_datas.data())};
+				__m128 src {_mm_load_ps(vector.getInternalArray().data())};
+				dst = _mm_sub_ps(dst, src);
+				_mm_store_ps(m_datas.data(), dst);
+				return *this;
+			}
+
+			else
+			{
+		#endif
 
 		for (se::Length i {0}; i < D; ++i)
 			m_datas[i] -= vector[i];
 		return *this;
+
+		#ifndef SE_NO_VECTORIZATION
+			}
+		#endif
 	}
 
 
@@ -137,18 +157,27 @@ namespace se
 	requires std::is_arithmetic_v<T2>
 	const se::Vector<T, D> &Vector<T, D>::operator*=(const se::Vector<T2, D> &vector)
 	{
-		if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
-		{
-			__m128 dst {_mm_load_ps(m_datas.data())};
-			__m128 src {_mm_load_ps(vector.getInternalArray().data())};
-			dst = _mm_mul_ps(dst, src);
-			_mm_store_ps(m_datas.data(), dst);
-			return *this;
-		}
+		#ifndef SE_NO_VECTORIZATION
+			if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
+			{
+				__m128 dst {_mm_load_ps(m_datas.data())};
+				__m128 src {_mm_load_ps(vector.getInternalArray().data())};
+				dst = _mm_mul_ps(dst, src);
+				_mm_store_ps(m_datas.data(), dst);
+				return *this;
+			}
+
+			else
+			{
+		#endif
 
 		for (se::Length i {0}; i < D; ++i)
 			m_datas[i] *= vector[i];
 		return *this;
+
+		#ifndef SE_NO_VECTORIZATION
+			}
+		#endif
 	}
 
 
@@ -159,18 +188,27 @@ namespace se
 	requires std::is_arithmetic_v<T2>
 	const se::Vector<T, D> &Vector<T, D>::operator*=(T2 scalar)
 	{
-		if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
-		{
-			__m128 dst {_mm_load_ps(m_datas.data())};
-			__m128 src {_mm_set1_ps(scalar)};
-			dst = _mm_mul_ps(dst, src);
-			_mm_store_ps(m_datas.data(), dst);
-			return *this;
-		}
+		#ifndef SE_NO_VECTORIZATION
+			if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
+			{
+				__m128 dst {_mm_load_ps(m_datas.data())};
+				__m128 src {_mm_set1_ps(scalar)};
+				dst = _mm_mul_ps(dst, src);
+				_mm_store_ps(m_datas.data(), dst);
+				return *this;
+			}
+
+			else
+			{
+		#endif
 
 		for (se::Length i {0}; i < D; ++i)
 			m_datas[i] *= scalar;
 		return *this;
+
+		#ifndef SE_NO_VECTORIZATION
+			}
+		#endif
 	}
 
 
@@ -179,17 +217,26 @@ namespace se
 	requires std::is_arithmetic_v<T>
 	T Vector<T, D>::length() const noexcept
 	{
-		if constexpr (std::is_same_v<T, se::Float32> && D <= 4)
-		{
-			__m128 dst {_mm_load_ps(m_datas.data())};
-			dst = _mm_dp_ps(dst, dst, 0b11111111);
-			dst = _mm_sqrt_ps(dst);
-			float output[4];
-			_mm_store_ps(output, dst);
-			return output[0];
-		}
+		#ifndef SE_NO_VECTORIZATION
+			if constexpr (std::is_same_v<T, se::Float32> && D <= 4)
+			{
+				__m128 dst {_mm_load_ps(m_datas.data())};
+				dst = _mm_dp_ps(dst, dst, 0b11111111);
+				dst = _mm_sqrt_ps(dst);
+				float output[4];
+				_mm_store_ps(output, dst);
+				return output[0];
+			}
+
+			else
+			{
+		#endif
 
 		return sqrtf(se::dot(*this, *this));
+
+		#ifndef SE_NO_VECTORIZATION
+			}
+		#endif
 	}
 
 
@@ -216,14 +263,6 @@ namespace se
 	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
 	bool operator==(const se::Vector<T, D> &a, const se::Vector<T2, D> &b)
 	{
-		/*if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
-		{
-			__m128 dst {_mm_load_ps(a.getInternalArray().data())};
-			__m128 src {_mm_load_ps(b.getInternalArray().data())};
-			dst = _mm_cmpneq_ps(dst, src);
-			return _mm_movemask_ps(dst) == 0xffff;
-		}*/
-
 		for (se::Length i {0}; i < D; ++i)
 		{
 			if (a.getInternalArray()[i] != b.getInternalArray()[i])
@@ -289,21 +328,30 @@ namespace se
 	requires std::is_arithmetic_v<T> && std::is_arithmetic_v<T2>
 	T dot(const se::Vector<T, D> &a, const se::Vector<T2, D> &b)
 	{
-		if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
-		{
-			__m128 dst {_mm_load_ps(a.getInternalArray().data())};
-			__m128 src {_mm_load_ps(b.getInternalArray().data())};
-			dst = _mm_dp_ps(dst, src, 0b11111111);
-			float output[4];
-			_mm_store_ps(output, dst);
-			return output[0];
-		}
+		#ifndef SE_NO_VECTORIZATION
+			if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && D <= 4)
+			{
+				__m128 dst {_mm_load_ps(a.getInternalArray().data())};
+				__m128 src {_mm_load_ps(b.getInternalArray().data())};
+				dst = _mm_dp_ps(dst, src, 0b11111111);
+				float output[4];
+				_mm_store_ps(output, dst);
+				return output[0];
+			}
+
+			else
+			{
+		#endif
 
 		T result {};
 		for (se::Length i {0}; i < D; ++i)
 			result += a.getInternalArray()[i] * b.getInternalArray()[i];
 
 		return result;
+
+		#ifndef SE_NO_VECTORIZATION
+			}
+		#endif
 	}
 
 

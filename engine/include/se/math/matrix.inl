@@ -1,6 +1,8 @@
 #include "matrix.hpp"
 
-#include <smmintrin.h>
+#ifndef SE_NO_VECTORIZATION
+	#include <smmintrin.h>
+#endif
 
 #include <cstring>
 
@@ -109,23 +111,32 @@ namespace se
 	requires std::is_arithmetic_v<T2>
 	const se::Matrix<T, R, C> &Matrix<T, R, C>::operator+=(const se::Matrix<T2, R, C> &matrix)
 	{
-		if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && R == 4 && R == C)
-		{
-			for (se::Length i {0}; i < R; ++i)
+		#ifndef SE_NO_VECTORIZATION
+			if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && R == 4 && R == C)
 			{
-				__m128 dst {_mm_load_ps(m_datas.data() + i * R)};
-				__m128 src {_mm_load_ps(matrix.getInternalArray().data() + i * R)};
-				dst = _mm_add_ps(dst, src);
-				_mm_store_ps(m_datas.data() + i * R, dst);
+				for (se::Length i {0}; i < R; ++i)
+				{
+					__m128 dst {_mm_load_ps(m_datas.data() + i * R)};
+					__m128 src {_mm_load_ps(matrix.getInternalArray().data() + i * R)};
+					dst = _mm_add_ps(dst, src);
+					_mm_store_ps(m_datas.data() + i * R, dst);
+				}
+
+				return *this;
 			}
 
-			return *this;
-		}
+			else
+			{
+		#endif
 
 		for (se::Length i {0}; i < R * C; ++i)
 			m_datas[i] += matrix.getInternalArray()[i];
 
 		return *this;
+
+		#ifndef SE_NO_VECTORIZATION
+			}
+		#endif
 	}
 
 
@@ -136,23 +147,33 @@ namespace se
 	requires std::is_arithmetic_v<T2>
 	const se::Matrix<T, R, C> &Matrix<T, R, C>::operator-=(const se::Matrix<T2, R, C> &matrix)
 	{
-		if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && R == 4 && R == C)
-		{
-			for (se::Length i {0}; i < R; ++i)
+		#ifndef SE_NO_VECTORIZATION
+			if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && R == 4 && R == C)
 			{
-				__m128 dst {_mm_load_ps(m_datas.data() + i * R)};
-				__m128 src {_mm_load_ps(matrix.getInternalArray().data() + i * R)};
-				dst = _mm_sub_ps(dst, src);
-				_mm_store_ps(m_datas.data() + i * R, dst);
+				for (se::Length i {0}; i < R; ++i)
+				{
+					__m128 dst {_mm_load_ps(m_datas.data() + i * R)};
+					__m128 src {_mm_load_ps(matrix.getInternalArray().data() + i * R)};
+					dst = _mm_sub_ps(dst, src);
+					_mm_store_ps(m_datas.data() + i * R, dst);
+				}
+
+				return *this;
 			}
 
-			return *this;
-		}
+			else
+			{
+
+		#endif
 
 		for (se::Length i {0}; i < R * C; ++i)
 			m_datas[i] -= matrix.getInternalArray()[i];
 
 		return *this;
+
+		#ifndef SE_NO_VECTORIZATION
+			}
+		#endif
 	}
 
 
@@ -163,23 +184,32 @@ namespace se
 	requires std::is_arithmetic_v<T2>
 	const se::Matrix<T, R, C> &Matrix<T, R, C>::operator*=(T2 scalar)
 	{
-		if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && R == 4 && R == C)
-		{
-			for (se::Length i {0}; i < R; ++i)
+		#ifndef SE_NO_VECTORIZATION
+			if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && R == 4 && R == C)
 			{
-				__m128 dst {_mm_load_ps(m_datas.data() + i * R)};
-				__m128 src {_mm_set_ps1(scalar)};
-				dst = _mm_mul_ps(dst, src);
-				_mm_store_ps(m_datas.data() + i * R, dst);
+				for (se::Length i {0}; i < R; ++i)
+				{
+					__m128 dst {_mm_load_ps(m_datas.data() + i * R)};
+					__m128 src {_mm_set_ps1(scalar)};
+					dst = _mm_mul_ps(dst, src);
+					_mm_store_ps(m_datas.data() + i * R, dst);
+				}
+
+				return *this;
 			}
 
-			return *this;
-		}
+			else
+			{
+		#endif
 
 		for (se::Length i {0}; i < R * C; ++i)
 			m_datas[i] *= scalar;
 
 		return *this;
+
+		#ifndef SE_NO_VECTORIZATION
+			}
+		#endif
 	}
 
 
@@ -250,27 +280,31 @@ namespace se
 	{
 		se::Matrix<T, R, C> result {};
 
-		if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && R == 4 && R == C && R == S)
-		{
-			auto bColumnMajor {se::transpose(b)};
-
-			for (se::Length i {0}; i < R; ++i)
+		#ifndef SE_NO_VECTORIZATION
+			if constexpr (std::is_same_v<T, se::Float32> && std::is_same_v<T, T2> && R == 4 && R == C && R == S)
 			{
-				__m128 aRow {_mm_load_ps(a.getInternalArray().data() + i * R)};
+				auto bColumnMajor {se::transpose(b)};
 
-				for (se::Length j {0}; j < R; ++j)
+				for (se::Length i {0}; i < R; ++i)
 				{
-					__m128 bRow {_mm_load_ps(bColumnMajor.getInternalArray().data() + j * R)};
-					__m128 res {_mm_dp_ps(aRow, bRow, 0b11111111)};
-					float output[4] {};
-					_mm_store_ps(output, res);
-					result[i][j] = output[0];
+					__m128 aRow {_mm_load_ps(a.getInternalArray().data() + i * R)};
+
+					for (se::Length j {0}; j < R; ++j)
+					{
+						__m128 bRow {_mm_load_ps(bColumnMajor.getInternalArray().data() + j * R)};
+						__m128 res {_mm_dp_ps(aRow, bRow, 0b11111111)};
+						float output[4] {};
+						_mm_store_ps(output, res);
+						result[i][j] = output[0];
+					}
 				}
+
+				return result;
 			}
 
-			return result;
-		}
-
+			else
+			{
+		#endif
 		
 		for (se::Length i {0}; i < R; ++i)
 		{
@@ -286,6 +320,10 @@ namespace se
 		}
 
 		return result;
+
+		#ifndef SE_NO_VECTORIZATION
+			}
+		#endif
 	}
 
 
