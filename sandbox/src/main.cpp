@@ -9,6 +9,10 @@
 #include <se/math/matn.hpp>
 #include <se/math/quaternion.hpp>
 
+#include <se/utils/hash.hpp>
+#include <se/utils/convert.hpp>
+#include <se/uuid.hpp>
+
 
 
 struct Clock
@@ -33,7 +37,10 @@ int main(int, char **)
 {
 	try
 	{
-		
+		auto a = se::UUIDManager::generate<float> ();
+		auto b = se::UUIDManager::generate<int> ("this-one-is-named");
+		std::cout << se::int64ToString(a, SE_UUID_BASE) << ", " << se::UUIDManager::getType(a) << std::endl;
+		std::cout << se::int64ToString(b, SE_UUID_BASE) << ", " << se::UUIDManager::getName(b) << std::endl;
 	}
 
 	catch (const se::Assert &assert)
