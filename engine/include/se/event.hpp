@@ -9,6 +9,15 @@
 
 namespace se
 {
+	enum class EventPriority
+	{
+		eBlocking,
+		eNow,
+		eCanWait
+	};
+
+
+
 	struct EventType
 	{
 		se::UUID uuid;
@@ -23,6 +32,7 @@ namespace se
 		se::UUID type;
 		std::any data;
 		se::Frame lifeExpectancy;
+		se::EventPriority priority {se::EventPriority::eCanWait};
 	};
 
 

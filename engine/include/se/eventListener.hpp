@@ -22,7 +22,9 @@ namespace se
 			EventListener(se::UUID eventType, se::UUID linkedObject);
 			virtual ~EventListener() = default;
 
-			virtual void process(const se::Event &event) SE_THREAD_SAFE = 0;
+			virtual void process(se::EventType type, se::Event event) SE_THREAD_SAFE = 0;
+
+			inline const se::EventListenerInfos &getInfos() const noexcept;
 
 
 		protected:
@@ -32,3 +34,7 @@ namespace se
 
 
 } // namespace se
+
+
+
+#include "eventListener.inl"
