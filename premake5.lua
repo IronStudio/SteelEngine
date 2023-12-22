@@ -1,8 +1,12 @@
 workspace "SteelEngine"
 	configurations {"debug", "release", "dist"}
 	newoption {
-		trigger = "shared",
+		trigger     = "shared",
 		description = "Build SteelEngine as a shared library (.dll on Windows)"
+	}
+	newoption {
+		trigger     = "disable-vectorization",
+		description = "Disable usage of vectorization when generating SteelEngine (use for very old cpu or Apple M1)"
 	}
 
 
@@ -10,7 +14,7 @@ obj_dir = "obj/%{cfg.buildcfg}/%{prj.name}"
 output_dir_without_project = "bin/%{cfg.buildcfg}"
 output_dir = output_dir_without_project .. "/%{prj.name}"
 
-vector_extension_version = "SSE4.1"
+vector_extension_version = "SSE4.2"
 
 
 --		███████╗███╗   ██╗ ██████╗ ██╗███╗   ██╗███████╗
@@ -27,7 +31,6 @@ project "engine"
 	cppdialect "C++20"
 	location "engine"
 	warnings "Extra"
-	vectorextensions(vector_extension_version)
 
 	files {
 		"%{prj.location}/include/**.hpp",
@@ -46,6 +49,12 @@ project "engine"
 
 	defines {"SE_BUILD_ENGINE"}
 
+	filter "not options:disable-vectorization"
+		vectorextensions(vector_extension_version)
+		defines "SE_VECTORIZE"
+
+	filter "options:disable-vectorization"
+		defines "SE_NO_VECTORIZATION"
 
 	filter "options:shared"
 		kind "SharedLib"
@@ -95,7 +104,6 @@ project "sandbox"
 	cppdialect "C++20"
 	location "sandbox"
 	warnings "Extra"
-	vectorextensions(vector_extension_version)
 
 	files {
 		"%{prj.location}/include/**.hpp",
@@ -121,6 +129,13 @@ project "sandbox"
 	targetdir(output_dir)
 	objdir(obj_dir)
 
+
+	filter "not options:disable-vectorization"
+		vectorextensions(vector_extension_version)
+		defines "SE_VECTORIZE"
+
+	filter "options:disable-vectorization"
+		defines "SE_NO_VECTORIZATION"
 
 	filter "configurations:debug"
 		defines {"DEBUG", "SE_DEBUG_MODE"}
@@ -164,7 +179,6 @@ project "test"
 	cppdialect "C++20"
 	location "tests"
 	warnings "Extra"
-	vectorextensions(vector_extension_version)
 
 	files {
 		"%{prj.location}/include/**.hpp",
@@ -189,6 +203,14 @@ project "test"
 	targetname "tests"
 	targetdir(output_dir)
 	objdir(obj_dir)
+
+	
+	filter "not options:disable-vectorization"
+		vectorextensions(vector_extension_version)
+		defines "SE_VECTORIZE"
+
+	filter "options:disable-vectorization"
+		defines "SE_NO_VECTORIZATION"
 
 	filter "configurations:debug"
 		defines {"DEBUG", "SE_DEBUG_MODE"}
