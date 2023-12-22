@@ -16,6 +16,7 @@
 #include <se/utils/convert.hpp>
 #include <se/uuid.hpp>
 #include <se/eventManager.hpp>
+#include <se/logging.hpp>
 
 
 
@@ -29,7 +30,7 @@ struct Clock
 
 	~Clock()
 	{
-		std::cout << "CLOCK : " << std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (std::chrono::high_resolution_clock::now() - start).count() << " ms" << std::endl;
+		SE_DEBUG("CLOCK : %.5f ms", std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (std::chrono::high_resolution_clock::now() - start).count());
 	}
 
 
@@ -64,6 +65,8 @@ int main(int, char **)
 {
 	try
 	{
+		se::Logging::load();
+
 		se::EventType type1 {};
 		type1.linkedObject = 0;
 		auto type1uuid = se::EventManager::addType(type1);
@@ -72,7 +75,7 @@ int main(int, char **)
 		auto type2uuid = se::EventManager::addType(type2);
 
 		auto listener1 = se::EventManager::addListener<LambdaListener> (type1uuid, 0, [&](se::EventType type, se::Event event) {
-			std::cout << "Called listener 1 : " << std::any_cast<std::string> (event.data) << std::endl;
+			SE_INFO("Called listener 1 : %s", std::any_cast<std::string> (event.data).c_str());
 		});
 		
 		se::Event event1 {};
@@ -91,12 +94,12 @@ int main(int, char **)
 		se::EventManager::notify(event1);
 
 		auto listener2 = se::EventManager::addListener<LambdaListener> (type1uuid, 0, [&](se::EventType type, se::Event event) {
-			std::cout << "Called listener 2 : "  << std::any_cast<std::string> (event.data) << std::endl;
+			SE_CORE_ERROR("Called listener 2 : %s", std::any_cast<std::string> (event.data).c_str());
 		});
 
-		std::cout << "I'm waiting" << std::endl;
+		SE_TRACE("I'm waiting");
 			std::this_thread::sleep_for(std::chrono::seconds(1));
-		std::cout << "Waiting over" << std::endl;
+		SE_TRACE("Waiting over");
 
 		se::EventManager::updateEvents();
 	}
@@ -107,6 +110,7 @@ int main(int, char **)
 	}
 
 	se::EventManager::unload();
+	se::Logging::unload();
 
 	return 0;
 }
