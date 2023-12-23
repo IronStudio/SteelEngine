@@ -16,6 +16,8 @@ namespace se
 			inline static se::Logger &getAppLogger();
 			inline static se::Logger &getCoreLogger();
 
+			inline static void flush();
+
 
 		private:
 			static se::Logger *s_appLogger;

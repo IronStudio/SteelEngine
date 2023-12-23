@@ -17,5 +17,13 @@ namespace se
 	}
 
 
+
+	void Logging::flush()
+	{
+		s_appLogger->flush();
+		s_coreLogger->flush();
+	}
+
+
 	
 } // namespace se

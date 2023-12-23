@@ -23,8 +23,16 @@ namespace se
 
 
 
+	void Logger::setMinimalLevel(se::LogLevel level)
+	{
+		m_minimalLevel = level;
+	}
+
+
+
 	void Logger::flush()
 	{
+		std::lock_guard<std::mutex> _ {s_mutex};
 		m_stream->flush();
 	}
 

@@ -11,6 +11,8 @@ namespace se
 
 	void Logging::load()
 	{
+		std::ios::sync_with_stdio(false);
+		
 		s_appLogger = new se::Logger();
 		s_coreLogger = new se::Logger();
 
