@@ -18,6 +18,8 @@
 #include <se/eventManager.hpp>
 #include <se/logging.hpp>
 
+#include <se/workManager.hpp>
+
 
 
 struct Clock
@@ -66,6 +68,7 @@ int main(int, char **)
 	try
 	{
 		se::Logging::load();
+		se::WorkManager::load();
 
 		se::EventType type1 {};
 		type1.linkedObject = 0;
@@ -74,14 +77,34 @@ int main(int, char **)
 		type2.linkedObject = 0;
 		auto type2uuid = se::EventManager::addType(type2);
 
-		auto listener1 = se::EventManager::addListener<LambdaListener> (type1uuid, 0, [&](se::EventType type, se::Event event) {
+		auto listener1 = se::EventManager::addListener<LambdaListener> (type1uuid, 0, [](se::EventType type, se::Event event) {
 			SE_INFO("Called listener 1 : %s", std::any_cast<std::string> (event.data).c_str());
 		});
-		
+
+		se::WorkInfos workInfos1 {};
+		workInfos1.data = std::string("Hi");
+		workInfos1.priority = se::WorkPriority::eHigh;
+		workInfos1.work = [&](const se::WorkInfos &infos) {
+			SE_INFO("Work : %s", std::any_cast<std::string> (infos.data).c_str());
+			se::Logging::flush();
+			return se::Status::eSuccess;
+		};
+		se::WorkManager::addWork(workInfos1);
+
+		se::WorkInfos workInfos2 {};
+		workInfos2.data = std::string("Hello");
+		workInfos2.priority = se::WorkPriority::eHigh;
+		workInfos2.work = [&](const se::WorkInfos &infos) {
+			SE_INFO("What about that ? : %s", std::any_cast<std::string> (infos.data).c_str());
+			se::Logging::flush();
+			return se::Status::eSuccess;
+		};
+		se::WorkManager::addWork(workInfos2);
+
 		se::Event event1 {};
 		event1.lifeExpectancy = -1;
 		event1.data = std::string("This is event 1");
-		event1.priority = se::EventPriority::eBlocking;
+		event1.priority = se::EventPriority::eNow;
 		event1.type = type1uuid;
 
 		se::Event event2 {};
@@ -93,12 +116,13 @@ int main(int, char **)
 		se::EventManager::notify(event2);
 		se::EventManager::notify(event1);
 
-		auto listener2 = se::EventManager::addListener<LambdaListener> (type1uuid, 0, [&](se::EventType type, se::Event event) {
+		auto listener2 = se::EventManager::addListener<LambdaListener> (type1uuid, 0, [](se::EventType type, se::Event event) {
 			SE_CORE_ERROR("Called listener 2 : %s", std::any_cast<std::string> (event.data).c_str());
 		});
 
 		SE_TRACE("I'm waiting");
-			std::this_thread::sleep_for(std::chrono::seconds(1));
+		se::Logging::flush();
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 		SE_TRACE("Waiting over");
 
 		se::EventManager::updateEvents();
@@ -110,6 +134,7 @@ int main(int, char **)
 	}
 
 	se::EventManager::unload();
+	se::WorkManager::unload();
 	se::Logging::unload();
 
 	return 0;

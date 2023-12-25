@@ -29,6 +29,7 @@ namespace se
 
 			inline void setName(const std::string &name);
 			inline void setStream(std::ostream *stream);
+			inline void setMinimalLevel(se::LogLevel level);
 			inline void flush();
 
 			inline void trace(const std::string &format, ...);
@@ -43,10 +44,11 @@ namespace se
 
 		private:
 			static std::chrono::steady_clock::time_point s_start;
+			static std::mutex s_mutex;
 			
-			std::mutex m_mutex;
 			std::string m_name;
 			std::ostream *m_stream;
+			se::LogLevel m_minimalLevel;
 			
 	};
 
