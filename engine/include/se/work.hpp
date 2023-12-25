@@ -23,7 +23,6 @@ namespace se
 
 	struct WorkInfos
 	{
-		se::UUID uuid;
 		std::function<se::Status(se::WorkInfos infos) SE_THREAD_SAFE> work;
 		std::any data;
 		se::WorkPriority priority;
@@ -41,13 +40,10 @@ namespace se
 			inline const se::WorkInfos &getInfos() const noexcept;
 			inline void raisePriority() noexcept;
 			inline se::Status work() SE_THREAD_SAFE;
-			inline se::WorkCount getRegistrationTime() const noexcept;
-			inline void increaseRegistrationTime() noexcept;
 
 
 		private:
 			se::WorkInfos m_infos;
-			se::WorkCount m_registrationTime;
 	};
 
 

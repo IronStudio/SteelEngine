@@ -28,11 +28,10 @@ namespace se
 
 	struct Event
 	{
-		se::UUID uuid;
 		se::UUID type;
 		std::any data;
-		se::Frame lifeExpectancy;
 		se::EventPriority priority {se::EventPriority::eCanWait};
+		se::Frame lifeExpectancy {-1};
 	};
 
 
