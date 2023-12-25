@@ -77,7 +77,7 @@ int main(int, char **)
 		type2.linkedObject = 0;
 		auto type2uuid = se::EventManager::addType(type2);
 
-		auto listener1 = se::EventManager::addListener<LambdaListener> (type1uuid, 0, [&](se::EventType type, se::Event event) {
+		auto listener1 = se::EventManager::addListener<LambdaListener> (type1uuid, 0, [](se::EventType type, se::Event event) {
 			SE_INFO("Called listener 1 : %s", std::any_cast<std::string> (event.data).c_str());
 		});
 
@@ -104,7 +104,7 @@ int main(int, char **)
 		se::Event event1 {};
 		event1.lifeExpectancy = -1;
 		event1.data = std::string("This is event 1");
-		event1.priority = se::EventPriority::eBlocking;
+		event1.priority = se::EventPriority::eNow;
 		event1.type = type1uuid;
 
 		se::Event event2 {};
@@ -116,7 +116,7 @@ int main(int, char **)
 		se::EventManager::notify(event2);
 		se::EventManager::notify(event1);
 
-		auto listener2 = se::EventManager::addListener<LambdaListener> (type1uuid, 0, [&](se::EventType type, se::Event event) {
+		auto listener2 = se::EventManager::addListener<LambdaListener> (type1uuid, 0, [](se::EventType type, se::Event event) {
 			SE_CORE_ERROR("Called listener 2 : %s", std::any_cast<std::string> (event.data).c_str());
 		});
 

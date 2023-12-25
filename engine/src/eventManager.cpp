@@ -1,5 +1,15 @@
 #include "eventManager.hpp"
 
+#include "workManager.hpp"
+
+
+
+struct EventWorkData
+{
+	se::EventType type;
+	se::Event event;
+	se::EventListener *listener;
+};
 
 
 namespace se
@@ -59,13 +69,38 @@ namespace se
 		switch (event.priority)
 		{
 			case se::EventPriority::eBlocking:
-			case se::EventPriority::eNow:
 			{
 				std::lock_guard<std::mutex> _ {m_listenerMutex};
 				for (const auto &listener : m_listeners)
 				{
 					if (listener.second->getInfos().eventType == type.uuid)
 						listener.second->process(type, event);
+				}
+				break;
+			}
+
+
+			case se::EventPriority::eNow:
+			{
+				std::lock_guard<std::mutex> _ {m_listenerMutex};
+				for (const auto &listener : m_listeners)
+				{
+					if (listener.second->getInfos().eventType == type.uuid)
+					{
+						se::WorkInfos workInfos {};
+						workInfos.priority = se::WorkPriority::eHigh;
+						workInfos.data = EventWorkData(
+							type,
+							event,
+							listener.second
+						);
+						workInfos.work = [] (se::WorkInfos workInfos) -> se::Status {
+							auto data {std::any_cast<EventWorkData> (workInfos.data)};
+							data.listener->process(data.type, data.event);
+							return se::Status::eSuccess;
+						};
+						se::WorkManager::addWork(workInfos);
+					}
 				}
 				break;
 			}
@@ -87,6 +122,7 @@ namespace se
 	void EventManager::updateEvents() SE_THREAD_SAFE
 	{
 		std::lock_guard<std::mutex> _ {m_eventMutex};
+		std::atomic<se::Int32> eventCount {0};
 		while (!m_events.empty())
 		{
 			se::EventType type {};
@@ -104,12 +140,30 @@ namespace se
 				for (const auto &listener : m_listeners)
 				{
 					if (listener.second->getInfos().eventType == type.uuid)
-						listener.second->process(type, m_events.front());
+					{
+						++eventCount;
+						se::WorkInfos workInfos {};
+						workInfos.priority = se::WorkPriority::eHigh;
+						workInfos.data = EventWorkData(
+							type,
+							m_events.front(),
+							listener.second
+						);
+						workInfos.work = [&eventCount] (se::WorkInfos workInfos) -> se::Status {
+							auto data {std::any_cast<EventWorkData> (workInfos.data)};
+							data.listener->process(data.type, data.event);
+							--eventCount;
+							return se::Status::eSuccess;
+						};
+						se::WorkManager::addWork(workInfos);
+					}
 				}
 			}
 
 			m_events.pop();
 		}
+
+		while (eventCount != 0);
 	}
 
 
