@@ -5,8 +5,7 @@
 namespace se
 {
 	Work::Work() :
-		m_infos {},
-		m_registrationTime {0}
+		m_infos {}
 	{
 
 	}
@@ -14,8 +13,7 @@ namespace se
 
 
 	Work::Work(const se::WorkInfos &infos) :
-		m_infos {infos},
-		m_registrationTime {0}
+		m_infos {infos}
 	{
 
 	}
@@ -25,7 +23,6 @@ namespace se
 	const se::Work &Work::operator=(const se::Work &work)
 	{
 		m_infos = work.m_infos;
-		m_registrationTime = work.m_registrationTime;
 		return *this;
 	}
 
@@ -60,20 +57,6 @@ namespace se
 	se::Status Work::work() SE_THREAD_SAFE
 	{
 		return m_infos.work(m_infos);
-	}
-
-
-
-	se::WorkCount Work::getRegistrationTime() const noexcept
-	{
-		return m_registrationTime;
-	}
-
-
-
-	void Work::increaseRegistrationTime() noexcept
-	{
-		++m_registrationTime;
 	}
 
 

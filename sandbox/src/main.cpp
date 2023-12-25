@@ -125,7 +125,7 @@ int main(int, char **)
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		SE_TRACE("Waiting over");
 
-		se::EventManager::updateEvents();
+		se::EventManager::flush();
 	}
 
 	catch (const se::Assert &assert)

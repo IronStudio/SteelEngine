@@ -22,7 +22,7 @@ namespace se
 			static se::UUID addListener(se::UUID eventType, se::UUID linkedObject, Args ...args) SE_THREAD_SAFE;
 			static void removeListener(se::UUID listener) SE_THREAD_SAFE;
 			static void notify(const se::Event &event) SE_THREAD_SAFE;
-			static void updateEvents() SE_THREAD_SAFE;
+			static void flush() SE_THREAD_SAFE;
 			static void unload();
 
 

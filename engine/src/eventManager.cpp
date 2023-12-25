@@ -119,7 +119,7 @@ namespace se
 
 
 
-	void EventManager::updateEvents() SE_THREAD_SAFE
+	void EventManager::flush() SE_THREAD_SAFE
 	{
 		std::lock_guard<std::mutex> _ {m_eventMutex};
 		std::atomic<se::Int32> eventCount {0};

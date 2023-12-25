@@ -94,7 +94,6 @@ namespace se
 				{
 					for (auto &work : s_works[(se::WorkPriority)priority])
 					{
-						work->increaseRegistrationTime();
 						work->raisePriority();
 						s_works[(se::WorkPriority)(priority + 1)].push_back(work);
 						s_works[(se::WorkPriority)priority].remove(work);
