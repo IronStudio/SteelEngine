@@ -21,6 +21,8 @@
 #include <se/layer.hpp>
 #include <se/workManager.hpp>
 
+#include <se/application.hpp>
+
 
 
 struct Clock
@@ -64,13 +66,15 @@ class LambdaListener : public se::EventListener
 };
 
 
-int main(int, char **)
-{
-	try
-	{
-		se::Logging::load();
-		se::WorkManager::load();
 
+class SandboxApp : public se::Application
+{
+public:
+	SandboxApp() = default;
+	~SandboxApp() override = default;
+
+	void run() override
+	{
 		se::Logging::setLogLevel(se::LogLevel::debug);
 
 		se::LayerInfos layer1Infos {};
@@ -156,15 +160,11 @@ int main(int, char **)
 
 		se::EventManager::flush();
 	}
+};
 
-	catch (const se::Assert &assert)
-	{
-		std::cout << assert.getMessage() << std::endl;
-	}
 
-	se::EventManager::unload();
-	se::WorkManager::unload();
-	se::Logging::unload();
 
-	return 0;
+se::Application *createApplication()
+{
+	return new SandboxApp();
 }
