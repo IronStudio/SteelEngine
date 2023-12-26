@@ -12,6 +12,10 @@
 
 namespace se
 {
+	/**
+	 * @brief A class that represents a RxC matrix (R row and C column)
+	 * @warning Matrix are stored in a row-major way
+	*/
 	template <typename T, se::Length R, se::Length C>
 	requires std::is_arithmetic_v<T>
 	class Matrix
@@ -23,6 +27,10 @@ namespace se
 			requires std::is_arithmetic_v<T2>
 			Matrix(T2 fill);
 
+			/**
+			 * @brief Copy `S` element of the given array into the beginning of the matrix, and fill the rest with 0
+			 * @warning `datas` must be row-major
+			*/
 			template <typename T2, se::Length S>
 			requires std::is_arithmetic_v<T2> && (S <= R * C)
 			Matrix(const std::array<T2, S> &datas);
@@ -41,7 +49,13 @@ namespace se
 			const se::Matrix<T, R, C> &operator=(const se::Matrix<T2, R, C> &matrix);
 
 
+			/**
+			 * @brief Access the `index`th row
+			*/
 			std::span<T, C> operator[] (se::Length index);
+			/**
+			 * @brief Access the `index`th row
+			*/
 			const se::Vector<T, C> operator[] (se::Length index) const;
 
 			template <typename T2>

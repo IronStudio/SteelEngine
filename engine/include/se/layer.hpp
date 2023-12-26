@@ -21,6 +21,9 @@ namespace se
 
 
 	
+	/**
+	 * @brief A global static class that handles layers
+	*/
 	class SE_CORE LayerManager
 	{
 		public:

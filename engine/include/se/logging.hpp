@@ -7,6 +7,9 @@
 
 namespace se
 {
+	/**
+	 * @brief A global static class that manages loggers life-time and usability
+	*/
 	class SE_CORE Logging
 	{
 		public:

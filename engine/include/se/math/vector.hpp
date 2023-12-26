@@ -10,6 +10,9 @@
 
 namespace se
 {
+	/**
+	 * @brief A class that represent a vector, in a mathematical sense (that is an arrow)
+	*/
 	template <typename T, se::Length D>
 	requires std::is_arithmetic_v<T>
 	class Vector

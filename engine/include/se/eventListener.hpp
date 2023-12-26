@@ -16,6 +16,9 @@ namespace se
 
 
 
+	/**
+	 * @brief Base class of all events listeners 
+	*/
 	class SE_CORE EventListener
 	{
 		public:

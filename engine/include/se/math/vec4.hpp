@@ -6,6 +6,9 @@
 
 namespace se
 {
+	/**
+	 * @brief A class that provide access to `Vector<T, 4>` components with references
+	*/
 	template <typename T>
 	requires std::is_arithmetic_v<T>
 	class Vec4 : public Vector<T, 4>

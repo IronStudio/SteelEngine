@@ -29,6 +29,9 @@ namespace se
 	};
 
 
+	/**
+	 * @brief A class that handles a work (ie something to execute on another thread)
+	*/
 	class Work
 	{
 		public:

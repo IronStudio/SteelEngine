@@ -6,6 +6,9 @@
 
 namespace se
 {
+	/**
+	 * @brief A class that respresent a square NxN matrix
+	*/
 	template <typename T, se::Length N>
 	requires std::is_arithmetic_v<T>
 	class Matn : public se::Matrix<T, N, N>
@@ -13,6 +16,10 @@ namespace se
 		public:
 			Matn();
 
+			/**
+			 * @brief A constructor for a diagonal matrix (for examples the identity)
+			 * @param diagonal The value to fill the diagonal with (1 for the identity matrix)
+			*/
 			template <typename T2>
 			requires std::is_arithmetic_v<T2>
 			Matn(T2 diagonal);
@@ -31,6 +38,10 @@ namespace se
 	};
 
 
+	/**
+	 * @brief Calculate the determinant of `matrx`
+	 * @warning Avoid using this **as much as possible** since it is a really slow operation
+	*/
 	template <typename T, se::Length N>
 	requires std::is_arithmetic_v<T> && (N <= 4)
 	T det(const se::Matn<T, N> &matrix);

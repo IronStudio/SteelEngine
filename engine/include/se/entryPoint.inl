@@ -6,7 +6,11 @@
 #include "logging.hpp"
 
 
-
+/**
+ * @brief When implementing it, please just return a newly allocated instance to your application class,
+ *        like this `return new SandboxApp();`
+ * @warning **Don't** allocate memory with `malloc`, because memory is freed with `delete`
+*/
 se::Application *createApplication();
 
 int main(int, char **)

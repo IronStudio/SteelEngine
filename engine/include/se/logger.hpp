@@ -21,6 +21,9 @@ namespace se
 		fatal
 	};
 
+	/**
+	 * @brief A class that handle logging through an instanced object
+	*/
 	class SE_CORE Logger final
 	{
 		public:

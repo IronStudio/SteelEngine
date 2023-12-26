@@ -8,6 +8,9 @@
 
 namespace se
 {
+	/**
+	 * @brief A class that represent a quaternion, usefull for rotation
+	*/
 	template <typename T>
 	requires std::is_arithmetic_v<T>
 	class Quaternion
@@ -82,6 +85,10 @@ namespace se
 	requires std::is_arithmetic_v<T>
 	se::Quaternion<T> conjugate(const se::Quaternion<T> &quaternion);
 
+	/**
+	 * @brief Inverse the given quaternion
+	 * @warning Please use `conjugate` if you know that your quaternion is normliazed (that is, `length(quat) == 1`)
+	*/
 	template <typename T>
 	requires std::is_arithmetic_v<T>
 	se::Quaternion<T> inverse(const se::Quaternion<T> &quaternion);

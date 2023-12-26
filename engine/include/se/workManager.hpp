@@ -12,6 +12,10 @@
 
 namespace se
 {
+	/**
+	 * @brief A global static class that handle all multithreading aspects of the engine, by providing a kind
+	 *        of thread pool where you can submit work with different priorities
+	*/
 	class SE_CORE WorkManager
 	{
 		public:
