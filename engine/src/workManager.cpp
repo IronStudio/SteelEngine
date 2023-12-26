@@ -133,11 +133,8 @@ namespace se
 		++s_worksLaunchedCount;
 		for (se::Uint8 i {0}; i < s_threads.size(); ++i)
 		{
-			SE_CORE_DEBUG("thread %d %d", i, s_waitingThreads[i]);
-			
 			if (s_waitingThreads[i])
 			{
-				SE_CORE_DEBUG("thread %d selected", i);
 				s_threadWork[i] = work;
 				s_waitingThreads[i] = false;
 				return;

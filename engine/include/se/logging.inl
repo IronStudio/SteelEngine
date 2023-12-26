@@ -26,4 +26,12 @@ namespace se
 
 
 	
+	void Logging::setLogLevel(se::LogLevel level)
+	{
+		s_appLogger->setMinimalLevel(level);
+		s_coreLogger->setMinimalLevel(level);
+	}
+
+
+
 } // namespace se

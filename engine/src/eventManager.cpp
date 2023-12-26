@@ -1,5 +1,6 @@
 #include "eventManager.hpp"
 
+#include "layer.hpp"
 #include "workManager.hpp"
 
 
@@ -18,7 +19,7 @@ namespace se
 	std::mutex EventManager::m_listenerMutex {};
 	std::mutex EventManager::m_eventMutex {};
 	std::map<se::UUID, se::EventType> EventManager::m_types {};
-	std::map<se::UUID, se::EventListener*> EventManager::m_listeners {};
+	std::map<se::UUID, std::map<se::UUID, se::EventListener*>> EventManager::m_listeners {};
 	std::queue<se::Event> EventManager::m_events {};
 
 
@@ -44,11 +45,15 @@ namespace se
 	void EventManager::removeListener(se::UUID listener) SE_THREAD_SAFE
 	{
 		std::lock_guard<std::mutex> _ {m_listenerMutex};
-		auto it {m_listeners.find(listener)};
-		if (it == m_listeners.end())
+		for (auto &listeners : m_listeners)
+		{
+			auto it {listeners.second.find(listener)};
+			if (it == listeners.second.end())
+				continue;
+			delete it->second;
+			listeners.second.erase(it);
 			return;
-		delete it->second;
-		m_listeners.erase(it);
+		}
 	}
 
 
@@ -71,11 +76,18 @@ namespace se
 			case se::EventPriority::eBlocking:
 			{
 				std::lock_guard<std::mutex> _ {m_listenerMutex};
-				for (const auto &listener : m_listeners)
-				{
-					if (listener.second->getInfos().eventType == type.uuid)
-						listener.second->process(type, event);
-				}
+				se::LayerManager::forEachEnabledLayer([&] (const se::LayerInfos &layerInfos) -> bool {
+					if (m_listeners[layerInfos.uuid].size() == 0)
+						return false;
+						
+					for (const auto &listener : m_listeners[layerInfos.uuid])
+					{
+						if (listener.second->getInfos().eventType == type.uuid)
+							listener.second->process(type, event);
+					}
+					return true;
+				});
+				
 				break;
 			}
 
@@ -83,25 +95,31 @@ namespace se
 			case se::EventPriority::eNow:
 			{
 				std::lock_guard<std::mutex> _ {m_listenerMutex};
-				for (const auto &listener : m_listeners)
-				{
-					if (listener.second->getInfos().eventType == type.uuid)
+				se::LayerManager::forEachEnabledLayer([&] (const se::LayerInfos &layerInfos) -> bool {
+					if (m_listeners[layerInfos.uuid].size() == 0)
+						return false;
+						
+					for (const auto &listener : m_listeners[layerInfos.uuid])
 					{
-						se::WorkInfos workInfos {};
-						workInfos.priority = se::WorkPriority::eHigh;
-						workInfos.data = EventWorkData(
-							type,
-							event,
-							listener.second
-						);
-						workInfos.work = [] (se::WorkInfos workInfos) -> se::Status {
-							auto data {std::any_cast<EventWorkData> (workInfos.data)};
-							data.listener->process(data.type, data.event);
-							return se::Status::eSuccess;
-						};
-						se::WorkManager::addWork(workInfos);
+						if (listener.second->getInfos().eventType == type.uuid)
+						{
+							se::WorkInfos workInfos {};
+							workInfos.priority = se::WorkPriority::eHigh;
+							workInfos.data = EventWorkData(
+								type,
+								event,
+								listener.second
+							);
+							workInfos.work = [] (se::WorkInfos workInfos) -> se::Status {
+								auto data {std::any_cast<EventWorkData> (workInfos.data)};
+								data.listener->process(data.type, data.event);
+								return se::Status::eSuccess;
+							};
+							se::WorkManager::addWork(workInfos);
+						}
 					}
-				}
+					return true;
+				});
 				break;
 			}
 
@@ -137,27 +155,34 @@ namespace se
 
 			{
 				std::lock_guard<std::mutex> _ {m_listenerMutex};
-				for (const auto &listener : m_listeners)
-				{
-					if (listener.second->getInfos().eventType == type.uuid)
+				se::LayerManager::forEachEnabledLayer([&] (const se::LayerInfos &layerInfos) -> bool {
+					if (m_listeners[layerInfos.uuid].size() == 0)
+						return false;
+						
+					for (const auto &listener : m_listeners[layerInfos.uuid])
 					{
-						++eventCount;
-						se::WorkInfos workInfos {};
-						workInfos.priority = se::WorkPriority::eHigh;
-						workInfos.data = EventWorkData(
-							type,
-							m_events.front(),
-							listener.second
-						);
-						workInfos.work = [&eventCount] (se::WorkInfos workInfos) -> se::Status {
-							auto data {std::any_cast<EventWorkData> (workInfos.data)};
-							data.listener->process(data.type, data.event);
-							--eventCount;
-							return se::Status::eSuccess;
-						};
-						se::WorkManager::addWork(workInfos);
+						if (listener.second->getInfos().eventType == type.uuid)
+						{
+							++eventCount;
+							se::WorkInfos workInfos {};
+							workInfos.priority = se::WorkPriority::eHigh;
+							workInfos.data = EventWorkData(
+								type,
+								m_events.front(),
+								listener.second
+							);
+							workInfos.work = [&eventCount] (se::WorkInfos workInfos) -> se::Status {
+								auto data {std::any_cast<EventWorkData> (workInfos.data)};
+								data.listener->process(data.type, data.event);
+								--eventCount;
+								return se::Status::eSuccess;
+							};
+							se::WorkManager::addWork(workInfos);
+						}
 					}
-				}
+
+					return true;
+				});
 			}
 
 			m_events.pop();
@@ -170,8 +195,11 @@ namespace se
 
 	void EventManager::unload()
 	{
-		for (const auto &listener : m_listeners)
-			delete listener.second;
+		for (const auto &listeners : m_listeners)
+		{
+			for (const auto &listener : listeners.second)
+				delete listener.second;
+		}
 	}
 
 

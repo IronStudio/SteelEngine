@@ -17,6 +17,7 @@ namespace se
 			inline static se::Logger &getCoreLogger();
 
 			inline static void flush();
+			inline static void setLogLevel(se::LogLevel level);
 
 
 		private:
