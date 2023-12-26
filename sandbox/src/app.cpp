@@ -23,6 +23,8 @@
 
 #include <se/application.hpp>
 
+#include <se/registry.hpp>
+
 
 
 struct Clock
@@ -77,86 +79,20 @@ public:
 	{
 		se::Logging::setLogLevel(se::LogLevel::debug);
 
-		se::LayerInfos layer1Infos {};
-		layer1Infos.enabled = true;
-		layer1Infos.level = 0;
-		layer1Infos.name = "layer1";
-		auto layer1uuid = se::LayerManager::addLayer(layer1Infos);
+		se::Registry registry {};
+		auto entities {registry.createEntities(100)};
+		auto entity24 {registry.getEntityFromUUID(entities[24]->getUUID())};
+		entity24->addComponent<int> (42);
+		entity24->addComponent<float> (3.14159f);
+		entities[1]->addComponent<int> (12);
+		entities[58]->addComponent<float> (1.6f);
+		registry.sortEntities();
+		SE_DEBUG("int : %u, float : %u", typeid(int).hash_code(), typeid(float).hash_code());
+		SE_DEBUG("<int> : There is %d match(s)", registry.query<int> ().size());
+		SE_DEBUG("<float> : There is %d match(s)", registry.query<float> ().size());
+		SE_DEBUG("<int, float> : There is %d match(s)", registry.query<int, float> ().size());
+		SE_DEBUG("<float, int> : There is %d match(s)", registry.query<float, int> ().size());
 
-		se::LayerInfos layer2Infos {};
-		layer2Infos.enabled = true;
-		layer2Infos.level = 1;
-		layer2Infos.name = "layer2";
-		auto layer2uuid = se::LayerManager::addLayer(layer2Infos);
-
-		se::LayerManager::forEachEnabledLayer([](const se::LayerInfos &info) -> bool {
-			static int count {0};
-			SE_DEBUG("Layer %s : level %d, count : %d", info.name.c_str(), info.level, count++);
-			return false;
-		});
-
-		se::EventType type1 {};
-		type1.linkedObject = 0;
-		auto type1uuid = se::EventManager::addType(type1);
-		se::EventType type2 {};
-		type2.linkedObject = 0;
-		auto type2uuid = se::EventManager::addType(type2);
-
-		auto listener1 = se::EventManager::addListener<LambdaListener> (layer1uuid, type1uuid, 0, [](se::EventType type, se::Event event) {
-			SE_INFO("Called listener 1 : %s", std::any_cast<std::string> (event.data).c_str());
-		});
-
-		se::WorkInfos workInfos1 {};
-		workInfos1.data = std::string("Hi");
-		workInfos1.priority = se::WorkPriority::eHigh;
-		workInfos1.work = [&](const se::WorkInfos &infos) {
-			SE_INFO("Work : %s", std::any_cast<std::string> (infos.data).c_str());
-			se::Logging::flush();
-			return se::Status::eSuccess;
-		};
-		se::WorkManager::addWork(workInfos1);
-
-		se::WorkInfos workInfos2 {};
-		workInfos2.data = std::string("Hello");
-		workInfos2.priority = se::WorkPriority::eHigh;
-		workInfos2.work = [&](const se::WorkInfos &infos) {
-			SE_INFO("What about that ? : %s", std::any_cast<std::string> (infos.data).c_str());
-			se::Logging::flush();
-			return se::Status::eSuccess;
-		};
-		se::WorkManager::addWork(workInfos2);
-
-		se::Event event1 {};
-		event1.lifeExpectancy = -1;
-		event1.data = std::string("This is event 1");
-		event1.priority = se::EventPriority::eNow;
-		event1.type = type1uuid;
-
-		se::Event event2 {};
-		event2.lifeExpectancy = -1;
-		event2.data = std::string("This is event 2");
-		event2.priority = se::EventPriority::eCanWait;
-		event2.type = type1uuid;
-
-		se::EventManager::notify(event2);
-		se::EventManager::notify(event1);
-
-		auto listener2 = se::EventManager::addListener<LambdaListener> (layer2uuid, type1uuid, 0, [](se::EventType type, se::Event event) {
-			SE_CORE_ERROR("Called listener 2 : %s", std::any_cast<std::string> (event.data).c_str());
-		});
-
-		se::LayerManager::moveLayerUp(layer2uuid);
-
-		se::LayerManager::forEachEnabledLayer([](const se::LayerInfos &info) -> bool {
-			static int count {0};
-			SE_DEBUG("Layer2 %s : level %d, count : %d", info.name.c_str(), info.level, count++);
-			return false;
-		});
-
-		SE_TRACE("I'm waiting");
-		se::Logging::flush();
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-		SE_TRACE("Waiting over");
 
 		se::EventManager::flush();
 	}
