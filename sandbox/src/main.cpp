@@ -18,6 +18,7 @@
 #include <se/eventManager.hpp>
 #include <se/logging.hpp>
 
+#include <se/layer.hpp>
 #include <se/workManager.hpp>
 
 
@@ -70,6 +71,26 @@ int main(int, char **)
 		se::Logging::load();
 		se::WorkManager::load();
 
+		se::Logging::setLogLevel(se::LogLevel::debug);
+
+		se::LayerInfos layer1Infos {};
+		layer1Infos.enabled = true;
+		layer1Infos.level = 0;
+		layer1Infos.name = "layer1";
+		auto layer1uuid = se::LayerManager::addLayer(layer1Infos);
+
+		se::LayerInfos layer2Infos {};
+		layer2Infos.enabled = true;
+		layer2Infos.level = 1;
+		layer2Infos.name = "layer2";
+		auto layer2uuid = se::LayerManager::addLayer(layer2Infos);
+
+		se::LayerManager::forEachEnabledLayer([](const se::LayerInfos &info) -> bool {
+			static int count {0};
+			SE_DEBUG("Layer %s : level %d, count : %d", info.name.c_str(), info.level, count++);
+			return false;
+		});
+
 		se::EventType type1 {};
 		type1.linkedObject = 0;
 		auto type1uuid = se::EventManager::addType(type1);
@@ -77,7 +98,7 @@ int main(int, char **)
 		type2.linkedObject = 0;
 		auto type2uuid = se::EventManager::addType(type2);
 
-		auto listener1 = se::EventManager::addListener<LambdaListener> (type1uuid, 0, [](se::EventType type, se::Event event) {
+		auto listener1 = se::EventManager::addListener<LambdaListener> (layer1uuid, type1uuid, 0, [](se::EventType type, se::Event event) {
 			SE_INFO("Called listener 1 : %s", std::any_cast<std::string> (event.data).c_str());
 		});
 
@@ -116,8 +137,16 @@ int main(int, char **)
 		se::EventManager::notify(event2);
 		se::EventManager::notify(event1);
 
-		auto listener2 = se::EventManager::addListener<LambdaListener> (type1uuid, 0, [](se::EventType type, se::Event event) {
+		auto listener2 = se::EventManager::addListener<LambdaListener> (layer2uuid, type1uuid, 0, [](se::EventType type, se::Event event) {
 			SE_CORE_ERROR("Called listener 2 : %s", std::any_cast<std::string> (event.data).c_str());
+		});
+
+		se::LayerManager::moveLayerUp(layer2uuid);
+
+		se::LayerManager::forEachEnabledLayer([](const se::LayerInfos &info) -> bool {
+			static int count {0};
+			SE_DEBUG("Layer2 %s : level %d, count : %d", info.name.c_str(), info.level, count++);
+			return false;
 		});
 
 		SE_TRACE("I'm waiting");
