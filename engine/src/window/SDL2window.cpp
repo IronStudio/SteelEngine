@@ -3,6 +3,7 @@
 #include <map>
 #include <stdexcept>
 
+#include "utils/assert.hpp"
 #include "config/config.hpp"
 #include "logging.hpp"
 
@@ -17,6 +18,8 @@ namespace se
 		se::Window(infos),
 		m_window {nullptr}
 	{
+		SE_ASSERT(!(m_infos.maximized == true && m_infos.minimized == true), "Can't maximize and minimize window at the same time");
+
 		static const std::map<se::GraphicsApi, se::Uint32> apiToFlagMap {
 			{se::GraphicsApi::eOpenGL, SDL_WINDOW_OPENGL},
 			{se::GraphicsApi::eVulkan, SDL_WINDOW_VULKAN}
@@ -43,9 +46,21 @@ namespace se
 		if (m_infos.alwaysOnTop)
 			windowFlags |= SDL_WINDOW_ALWAYS_ON_TOP;
 
+		if (m_infos.minimized)
+			windowFlags |= SDL_WINDOW_MINIMIZED;
+
+		if (m_infos.maximized)
+			windowFlags |= SDL_WINDOW_MAXIMIZED;
+
+		if (m_infos.position.x == SE_CENTERED_POSITION)
+			m_infos.position.x = SDL_WINDOWPOS_CENTERED;
+
+		if (m_infos.position.y == SE_CENTERED_POSITION)
+			m_infos.position.y = SDL_WINDOWPOS_CENTERED;
+
 		m_window = SDL_CreateWindow(
 			m_infos.title.c_str(),
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+			m_infos.position.y, m_infos.position.y,
 			m_infos.size.x, m_infos.size.y,
 			windowFlags
 		);
@@ -54,6 +69,7 @@ namespace se
 
 
 		SDL_GetWindowSize(m_window, &m_infos.size.x, &m_infos.size.y);
+		SDL_GetWindowPosition(m_window, &m_infos.position.x, &m_infos.position.y);
 
 		if (m_infos.minSize != SE_UNDEFINED_SIZE)
 			SDL_SetWindowMinimumSize(m_window, m_infos.minSize.x, m_infos.minSize.y);
@@ -96,7 +112,7 @@ namespace se
 
 
 
-	void SDL2Window::setSize(const glm::ivec2 size)
+	void SDL2Window::setSize(const glm::ivec2 &size)
 	{
 		m_infos.windowedSize = size;
 		if (m_infos.fullscreen)
@@ -108,7 +124,7 @@ namespace se
 
 
 
-	void SDL2Window::setMinSize(const glm::ivec2 size)
+	void SDL2Window::setMinSize(const glm::ivec2 &size)
 	{
 		m_infos.minSize = size;
 		SDL_SetWindowMinimumSize(m_window, m_infos.minSize.x, m_infos.minSize.y);
@@ -116,7 +132,7 @@ namespace se
 
 
 
-	void SDL2Window::setMaxSize(const glm::ivec2 size)
+	void SDL2Window::setMaxSize(const glm::ivec2 &size)
 	{
 		m_infos.maxSize = size;
 		SDL_SetWindowMaximumSize(m_window, m_infos.maxSize.x, m_infos.maxSize.y);
@@ -168,11 +184,73 @@ namespace se
 
 
 
+	void SDL2Window::setPosition(const glm::ivec2 &position)
+	{
+		m_infos.position = position;
+
+		if (m_infos.position.x == SE_CENTERED_POSITION)
+			m_infos.position.x = SDL_WINDOWPOS_CENTERED;
+
+		if (m_infos.position.y == SE_CENTERED_POSITION)
+			m_infos.position.y = SDL_WINDOWPOS_CENTERED;
+
+		SDL_SetWindowPosition(m_window, m_infos.position.x, m_infos.position.y);
+	}
+
+
+
+	void SDL2Window::toggleMinimization()
+	{
+		m_infos.maximized = false;
+		m_infos.minimized = !m_infos.minimized;
+		if (m_infos.minimized)
+		{
+			SDL_MinimizeWindow(m_window);
+			return;
+		}
+
+		SDL_RestoreWindow(m_window);
+	}
+
+
+
+	void SDL2Window::toggleMaximization()
+	{
+		m_infos.minimized = false;
+		m_infos.maximized = !m_infos.maximized;
+		if (m_infos.maximized)
+		{
+			SDL_MaximizeWindow(m_window);
+			return;
+		}
+		
+		SDL_RestoreWindow(m_window);
+	}
+
+
+
 	void SDL2Window::updateInfos()
 	{
 		SDL_GetWindowSize(m_window, &m_infos.size.x, &m_infos.size.y);
 		SDL_GetWindowMinimumSize(m_window, &m_infos.minSize.x, &m_infos.minSize.y);
 		SDL_GetWindowMaximumSize(m_window, &m_infos.maxSize.x, &m_infos.maxSize.y);
+		SDL_GetWindowPosition(m_window, &m_infos.position.x, &m_infos.position.y);
+		se::Uint32 flags {SDL_GetWindowFlags(m_window)};
+
+		if (flags & SDL_WINDOW_MAXIMIZED)
+			m_infos.maximized = true;
+
+		if (flags & SDL_WINDOW_MINIMIZED)
+			m_infos.minimized = true;
+
+		if (flags & fullscreenMode)
+			m_infos.fullscreen = true;
+
+		if (flags & SDL_WINDOW_RESIZABLE)
+			m_infos.resizable = true;
+
+		if (flags & SDL_WINDOW_ALWAYS_ON_TOP)
+			m_infos.alwaysOnTop = true;
 
 		if (m_infos.fullscreen)
 			return;

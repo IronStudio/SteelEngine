@@ -27,6 +27,7 @@
 #include <se/registry.hpp>
 
 #include <se/window/SDL2window.hpp>
+#include <se/window/windowManager.hpp>
 
 #include <se/application.hpp>
 
@@ -117,11 +118,17 @@ public:
 		windowInfos.resizable = true;
 		windowInfos.fullscreen = false;
 		windowInfos.graphicsApi = se::GraphicsApi::eOpenGL;
-		se::SDL2Window window {windowInfos};
+
+		auto window {se::WindowManager::create<se::SDL2Window> (windowInfos)};
+
+		windowInfos.position = glm::ivec2(100, 200);
+		windowInfos.opacity = 0.7f;
+		auto window2 {se::WindowManager::create<se::SDL2Window> (windowInfos)};
+
 
 		while (true)
 		{
-			window.updateInfos();
+			se::WindowManager::update();
 			se::Logging::flush();
 
 			SDL_Event event {};
@@ -130,17 +137,45 @@ public:
 				if (event.type == SDL_QUIT)
 					return;
 
+				if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE)
+				{
+					for (auto &window : se::WindowManager::getWindows())
+					{
+						auto id {SDL_GetWindowID((SDL_Window*)window->getWindow())};
+						if (event.key.windowID == id)
+						{
+							se::WindowManager::remove(window);
+							break;
+						}
+					}
+				}
+
 				if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_F)
-					window.toggleFullscreen();
+				{
+					for (auto &window : se::WindowManager::getWindows())
+					{
+						auto id {SDL_GetWindowID((SDL_Window*)window->getWindow())};
+						if (event.key.windowID == id)
+							window->toggleFullscreen();
+					}
+				}
 
 				if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_B)
-					window.toggleBorder();
+				{
+					for (auto &window : se::WindowManager::getWindows())
+					{
+						auto id {SDL_GetWindowID((SDL_Window*)window->getWindow())};
+						if (event.key.windowID == id)
+							window->toggleBorder();
+					}
+				}
 			}
 		}
 	}
 
 	void unload() override
 	{
+		se::WindowManager::unload();
 		SDL_Quit();
 		
 		se::Application::unload();

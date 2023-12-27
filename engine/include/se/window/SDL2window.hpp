@@ -16,14 +16,17 @@ namespace se
 
 			void *getWindow() const noexcept override;
 			void toggleFullscreen() override;
-			void setSize(const glm::ivec2 size) override;
-			void setMinSize(const glm::ivec2 size) override;
-			void setMaxSize(const glm::ivec2 size) override;
+			void setSize(const glm::ivec2 &size) override;
+			void setMinSize(const glm::ivec2 &size) override;
+			void setMaxSize(const glm::ivec2 &size) override;
 			void toggleResizablity() override;
 			void toggleBorder() override;
 			void toggleAlwaysOnTop() override;
 			void setTitle(const std::string &title) override;
 			void setOpacity(float opacity) override;
+			void setPosition(const glm::ivec2 &position) override;
+			void toggleMinimization() override;
+			void toggleMaximization() override;
 
 			void updateInfos() override;
 
