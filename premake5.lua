@@ -40,7 +40,18 @@ project "engine"
 	}
 
 	includedirs {
-		"%{prj.location}/include/se"
+		"%{prj.location}/include/se",
+		"vendors/SDL2/build/include"
+	}
+
+	libdirs {
+		output_dir_without_project .. "/engine",
+		"vendors/SDL2/build/lib"
+	}
+
+	links {
+		"SDL2",
+		"SDL2main"
 	}
 
 	targetname "steelengine"
@@ -114,15 +125,19 @@ project "sandbox"
 
 	includedirs {
 		"%{prj.location}/include/",
-		"engine/include/"
+		"engine/include/",
+		"vendors/SDL2/build/include"
 	}
 
 	libdirs {
-		output_dir_without_project .. "/engine"
+		output_dir_without_project .. "/engine",
+		"vendors/SDL2/build/lib"
 	}
 
 	links {
-		"steelengine"
+		"steelengine",
+		"SDL2",
+		"SDL2main"
 	}
 
 	targetname "sandbox"
@@ -189,15 +204,19 @@ project "test"
 
 	includedirs {
 		"%{prj.location}/include/",
-		"engine/include/"
+		"engine/include/",
+		"vendors/SDL2/build/include"
 	}
 
 	libdirs {
-		output_dir_without_project .. "/engine"
+		output_dir_without_project .. "/engine",
+		"vendors/SDL2/build/lib"
 	}
 
 	links {
-		"steelengine"
+		"steelengine",
+		"SDL2",
+		"SDL2main"
 	}
 
 	targetname "tests"

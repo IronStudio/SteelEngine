@@ -5,6 +5,8 @@
 #include <iostream>
 #include <thread>
 
+#include <SDL2/SDL.h>
+
 #include <se/utils/assert.hpp>
 #include <se/math/vector.hpp>
 #include <se/math/vec3.hpp>
@@ -20,10 +22,11 @@
 
 #include <se/layer.hpp>
 #include <se/workManager.hpp>
+#include <se/registry.hpp>
+
+#include <se/window/SDL2window.hpp>
 
 #include <se/application.hpp>
-
-#include <se/registry.hpp>
 
 
 
@@ -75,6 +78,12 @@ public:
 	SandboxApp() = default;
 	~SandboxApp() override = default;
 
+	void load() override
+	{
+		if (SDL_Init(SDL_INIT_VIDEO) != 0)
+			throw std::runtime_error("Can't init SDL2");
+	}
+
 	void run() override
 	{
 		se::Logging::setLogLevel(se::LogLevel::debug);
@@ -95,6 +104,33 @@ public:
 
 
 		se::EventManager::flush();
+
+
+		se::WindowInfos windowInfos {};
+		windowInfos.title = "SteelEngine";
+		windowInfos.size = se::Vec2i(16 * 140, 9 * 140);
+		windowInfos.resizable = false;
+		windowInfos.fullscreen = false;
+		windowInfos.graphicsApi = se::GraphicsApi::eOpenGL;
+		se::SDL2Window window {windowInfos};
+
+		while (true)
+		{
+			SDL_Event event {};
+			while (SDL_PollEvent(&event))
+			{
+				if (event.type == SDL_QUIT)
+					return;
+
+				if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_F)
+					window.toggleFullscreen();
+			}
+		}
+	}
+
+	void unload() override
+	{
+		SDL_Quit();
 	}
 };
 
