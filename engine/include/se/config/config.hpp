@@ -6,5 +6,8 @@
 
 namespace se::config
 {
-	inline constexpr bool useRealFullscreen {true};
+	inline constexpr bool useRealFullscreen {false};
+
+
+	
 } // namespace se::config

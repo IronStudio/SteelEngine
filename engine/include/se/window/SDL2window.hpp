@@ -8,7 +8,7 @@
 
 namespace se
 {
-	class SDL2Window : public se::Window
+	class SE_CORE SDL2Window : public se::Window
 	{
 		public:
 			SDL2Window(const se::WindowInfos &infos);
@@ -16,6 +16,16 @@ namespace se
 
 			void *getWindow() const noexcept override;
 			void toggleFullscreen() override;
+			void setSize(const glm::ivec2 size) override;
+			void setMinSize(const glm::ivec2 size) override;
+			void setMaxSize(const glm::ivec2 size) override;
+			void toggleResizablity() override;
+			void toggleBorder() override;
+			void toggleAlwaysOnTop() override;
+			void setTitle(const std::string &title) override;
+			void setOpacity(float opacity) override;
+
+			void updateInfos() override;
 
 
 		private:

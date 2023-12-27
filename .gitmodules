@@ -2,3 +2,6 @@
 	path = vendors/SDL2
 	url = git@github.com:libsdl-org/SDL.git
 	branch = SDL2
+[submodule "vendors/glm"]
+	path = vendors/glm
+	url = git@github.com:g-truc/glm.git

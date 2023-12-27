@@ -41,7 +41,8 @@ project "engine"
 
 	includedirs {
 		"%{prj.location}/include/se",
-		"vendors/SDL2/build/include"
+		"vendors/SDL2/build/include",
+		"vendors/glm/include"
 	}
 
 	libdirs {
@@ -126,7 +127,8 @@ project "sandbox"
 	includedirs {
 		"%{prj.location}/include/",
 		"engine/include/",
-		"vendors/SDL2/build/include"
+		"vendors/SDL2/build/include",
+		"vendors/glm/include"
 	}
 
 	libdirs {
@@ -205,7 +207,8 @@ project "test"
 	includedirs {
 		"%{prj.location}/include/",
 		"engine/include/",
-		"vendors/SDL2/build/include"
+		"vendors/SDL2/build/include",
+		"vendors/glm/include"
 	}
 
 	libdirs {

@@ -5,7 +5,9 @@
 #include <iostream>
 #include <thread>
 
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
+#include <glm/glm.hpp>
 
 #include <se/utils/assert.hpp>
 #include <se/math/vector.hpp>
@@ -80,6 +82,8 @@ public:
 
 	void load() override
 	{
+		se::Application::load();
+
 		if (SDL_Init(SDL_INIT_VIDEO) != 0)
 			throw std::runtime_error("Can't init SDL2");
 	}
@@ -108,14 +112,18 @@ public:
 
 		se::WindowInfos windowInfos {};
 		windowInfos.title = "SteelEngine";
-		windowInfos.size = se::Vec2i(16 * 140, 9 * 140);
-		windowInfos.resizable = false;
+		windowInfos.size = glm::ivec2(16 * 70, 9 * 70);
+		windowInfos.minSize = glm::ivec2(16 * 30, 9 * 30);
+		windowInfos.resizable = true;
 		windowInfos.fullscreen = false;
 		windowInfos.graphicsApi = se::GraphicsApi::eOpenGL;
 		se::SDL2Window window {windowInfos};
 
 		while (true)
 		{
+			window.updateInfos();
+			se::Logging::flush();
+
 			SDL_Event event {};
 			while (SDL_PollEvent(&event))
 			{
@@ -124,6 +132,9 @@ public:
 
 				if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_F)
 					window.toggleFullscreen();
+
+				if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_B)
+					window.toggleBorder();
 			}
 		}
 	}
@@ -131,6 +142,8 @@ public:
 	void unload() override
 	{
 		SDL_Quit();
+		
+		se::Application::unload();
 	}
 };
 
