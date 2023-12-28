@@ -26,6 +26,7 @@
 #include <se/workManager.hpp>
 #include <se/registry.hpp>
 
+#include <se/input/SDL2inputManager.hpp>
 #include <se/window/SDL2window.hpp>
 #include <se/window/windowManager.hpp>
 
@@ -48,29 +49,6 @@ struct Clock
 
 
 	std::chrono::high_resolution_clock::time_point start;
-};
-
-
-class LambdaListener : public se::EventListener
-{
-	public:
-		LambdaListener(se::UUID eventType, se::UUID linkedObject, const std::function<void(se::EventType, se::Event)> &callback) :
-			se::EventListener(eventType, linkedObject),
-			m_callback {callback}
-		{
-
-		}
-
-		virtual ~LambdaListener() override = default;
-
-		virtual void process(se::EventType type, se::Event event) SE_THREAD_SAFE override
-		{
-			m_callback(type, event);
-		}
-
-
-	private:
-		std::function<void(se::EventType, se::Event)> m_callback;
 };
 
 
@@ -107,8 +85,11 @@ public:
 		SE_DEBUG("<int, float> : There is %d match(s)", registry.query<int, float> ().size());
 		SE_DEBUG("<float, int> : There is %d match(s)", registry.query<float, int> ().size());
 
-
-		se::EventManager::flush();
+		se::LayerInfos layerInfos {};
+		layerInfos.enabled = true;
+		layerInfos.level = 1;
+		layerInfos.name = "main-layer";
+		auto mainLayer {se::LayerManager::addLayer(layerInfos)};
 
 
 		se::WindowInfos windowInfos {};
@@ -125,51 +106,33 @@ public:
 		windowInfos.opacity = 0.7f;
 		auto window2 {se::WindowManager::create<se::SDL2Window> (windowInfos)};
 
+		se::SDL2InputManager inputManager {};
 
-		while (true)
+		(void)se::EventManager::addListener<se::LambdaListener> (
+			mainLayer,
+			window->getEventTypes().find(se::InputType::eKeyPressed)->second,
+			window->getUUID(),
+			[] (se::EventType type, se::Event event) -> bool {
+				auto key {std::any_cast<se::Key> (event.data)};
+				auto window {se::WindowManager::getFromUUID(type.linkedObject)};
+				SE_DEBUG("Window : %p", window);
+
+				if (key == se::Key::eB)
+					window->toggleBorder();
+
+				return false;
+			}
+		);
+
+
+		while (!inputManager.shouldClose())
 		{
 			se::WindowManager::update();
 			se::Logging::flush();
 
-			SDL_Event event {};
-			while (SDL_PollEvent(&event))
-			{
-				if (event.type == SDL_QUIT)
-					return;
+			inputManager.update();
 
-				if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE)
-				{
-					for (auto &window : se::WindowManager::getWindows())
-					{
-						auto id {SDL_GetWindowID((SDL_Window*)window->getWindow())};
-						if (event.key.windowID == id)
-						{
-							se::WindowManager::remove(window);
-							break;
-						}
-					}
-				}
-
-				if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_F)
-				{
-					for (auto &window : se::WindowManager::getWindows())
-					{
-						auto id {SDL_GetWindowID((SDL_Window*)window->getWindow())};
-						if (event.key.windowID == id)
-							window->toggleFullscreen();
-					}
-				}
-
-				if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_B)
-				{
-					for (auto &window : se::WindowManager::getWindows())
-					{
-						auto id {SDL_GetWindowID((SDL_Window*)window->getWindow())};
-						if (event.key.windowID == id)
-							window->toggleBorder();
-					}
-				}
-			}
+			se::EventManager::flush();
 		}
 	}
 

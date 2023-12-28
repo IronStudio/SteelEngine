@@ -1,11 +1,13 @@
 #pragma once
 
+#include <map>
 #include <string>
 
 #include <glm/glm.hpp>
 
 #include "../core.hpp"
 #include "../graphicsApi.hpp"
+#include "../input/type.hpp"
 #include "../uuid.hpp"
 
 
@@ -39,10 +41,11 @@ namespace se
 	{
 		public:
 			Window(const se::WindowInfos &infos);
-			virtual ~Window() = default;
+			virtual ~Window();
 
 			inline se::UUID getUUID() const noexcept;
 			inline const se::WindowInfos &getInfos() const noexcept;
+			inline const std::map<se::InputType, se::UUID> &getEventTypes() const noexcept;
 			virtual void *getWindow() const noexcept = 0;
 
 			virtual void toggleFullscreen() = 0;
@@ -64,6 +67,7 @@ namespace se
 		protected:
 			se::UUID m_uuid;
 			se::WindowInfos m_infos;
+			std::map<se::InputType, se::UUID> m_eventTypes;
 	};
 
 

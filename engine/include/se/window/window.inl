@@ -18,4 +18,11 @@ namespace se
 
 
 
+	const std::map<se::InputType, se::UUID> &Window::getEventTypes() const noexcept
+	{
+		return m_eventTypes;
+	}
+
+
+
 } // namespace se

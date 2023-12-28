@@ -3,10 +3,13 @@
 #include <algorithm>
 #include <stdexcept>
 
+#include "layer.hpp"
+
 
 
 namespace se
 {
+	se::UUID WindowManager::s_windowLayer {};
 	std::list<std::unique_ptr<se::Window>> WindowManager::s_windows {};
 
 
@@ -39,6 +42,17 @@ namespace se
 		}
 
 		throw std::invalid_argument("Can't find window with the given UUID");
+	}
+
+
+
+	void WindowManager::load()
+	{
+		se::LayerInfos layerInfos {};
+		layerInfos.enabled = true;
+		layerInfos.level = 0;
+		layerInfos.name = "window-layer";
+		s_windowLayer = se::LayerManager::addLayer(layerInfos);
 	}
 
 

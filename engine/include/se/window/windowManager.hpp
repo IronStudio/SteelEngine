@@ -20,6 +20,7 @@ namespace se
 			static void remove(const se::Window *window);
 			static se::Window *getFromUUID(se::UUID uuid);
 
+			static void load();
 			static void update();
 			static void unload();
 
@@ -27,6 +28,7 @@ namespace se
 
 
 		private:
+			static se::UUID s_windowLayer;
 			static std::list<std::unique_ptr<se::Window>> s_windows;
 	};
 

@@ -79,12 +79,21 @@ namespace se
 				se::LayerManager::forEachEnabledLayer([&] (const se::LayerInfos &layerInfos) -> bool {
 					if (m_listeners[layerInfos.uuid].size() == 0)
 						return false;
-						
+
+					std::list<se::UUID> listenerToRemove {};
+
 					for (const auto &listener : m_listeners[layerInfos.uuid])
 					{
 						if (listener.second->getInfos().eventType == type.uuid)
-							listener.second->process(type, event);
+						{
+							if (listener.second->process(type, event))
+								listenerToRemove.push_back(listener.first);
+						}
 					}
+
+					for (const auto &listener : listenerToRemove)
+						m_listeners[layerInfos.uuid].erase(listener);
+
 					return true;
 				});
 				

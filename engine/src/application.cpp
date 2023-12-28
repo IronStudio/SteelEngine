@@ -3,6 +3,7 @@
 
 #include "eventManager.hpp"
 #include "logging.hpp"
+#include "window/windowManager.hpp"
 #include "workManager.hpp"
 
 
@@ -13,6 +14,7 @@ namespace se
 	{
 		se::Logging::load();
 		se::WorkManager::load();
+		se::WindowManager::load();
 	}
 
 

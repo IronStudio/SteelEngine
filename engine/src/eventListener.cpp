@@ -27,4 +27,20 @@ namespace se
 
 
 
+	LambdaListener::LambdaListener(se::UUID eventType, se::UUID linkedObject, const se::LambdaListener::Callback &callback) :
+		se::EventListener(eventType, linkedObject),
+		m_callback {callback}
+	{
+
+	}
+
+
+
+	bool LambdaListener::process(se::EventType type, se::Event event) SE_THREAD_SAFE
+	{
+		return m_callback(type, event);
+	}
+
+
+
 } // namespace se

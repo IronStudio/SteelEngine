@@ -1,5 +1,8 @@
 #include "windowManager.hpp"
 
+#include "../eventManager.hpp"
+#include "../logging.hpp"
+
 
 
 namespace se
@@ -9,7 +12,17 @@ namespace se
 	se::Window *WindowManager::create(const se::WindowInfos &infos)
 	{
 		s_windows.push_back(std::make_unique<T> (infos));
-		return s_windows.rbegin()->get();
+		auto window {s_windows.rbegin()->get()};
+		(void)se::EventManager::addListener<se::LambdaListener> (
+			s_windowLayer,
+			window->getEventTypes().find(se::InputType::eWindowClosed)->second,
+			window->getUUID(),
+			[window] (se::EventType /* type */, se::Event /* event */) -> bool {
+				se::WindowManager::remove(window);
+				return true;
+			}
+		);
+		return window;
 	}
 
 
