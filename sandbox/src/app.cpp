@@ -15,10 +15,7 @@
 #include <se/utils/hash.hpp>
 #include <se/utils/convert.hpp>
 #include <se/uuid.hpp>
-#include <se/eventManager.hpp>
 #include <se/logging.hpp>
-
-#include <se/layer.hpp>
 #include <se/workManager.hpp>
 
 #include <se/application.hpp>
@@ -52,11 +49,8 @@ public:
 
 	void run() override
 	{
-		se::Logging::setLogLevel(se::LogLevel::debug);
+		se::Logging::setLogLevel(se::LogLevel::trace);
 
-
-
-		se::EventManager::flush();
 	}
 };
 

@@ -1,7 +1,6 @@
 #define SE_ENTRY_POINT_INCLUDED
 #include "application.hpp"
 
-#include "eventManager.hpp"
 #include "logging.hpp"
 #include "workManager.hpp"
 
@@ -19,7 +18,6 @@ namespace se
 
 	void Application::unload()
 	{
-		se::EventManager::unload();
 		se::WorkManager::unload();
 		se::Logging::unload();
 	}

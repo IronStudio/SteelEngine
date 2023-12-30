@@ -46,6 +46,7 @@ namespace se
 		if ((se::Uint8)level < (se::Uint8)m_minimalLevel)
 			return;
 
+		auto duration {std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (std::chrono::steady_clock::now() - s_start)};
 		int logSize {vsnprintf(nullptr, 0, format.c_str(), args)};
 		char *output {new char[logSize + 1]};
 		(void)vsnprintf(output, logSize + 1, format.c_str(), args);
@@ -53,8 +54,7 @@ namespace se
 		{
 			std::lock_guard<std::mutex> _ {s_mutex};
 			*m_stream << m_name << " [" << levelToString[level] << "] ("
-				<< std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::steady_clock::now() - s_start)
-				<< ") \033[35m>\033[0m " << output << "\n";
+				<< duration.count() << "ms) \033[35m>\033[0m " << output << "\n";
 		}
 	}
 
