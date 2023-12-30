@@ -43,29 +43,6 @@ struct Clock
 };
 
 
-class LambdaListener : public se::EventListener
-{
-	public:
-		LambdaListener(se::UUID eventType, se::UUID linkedObject, const std::function<void(se::EventType, se::Event)> &callback) :
-			se::EventListener(eventType, linkedObject),
-			m_callback {callback}
-		{
-
-		}
-
-		virtual ~LambdaListener() override = default;
-
-		virtual void process(se::EventType type, se::Event event) SE_THREAD_SAFE override
-		{
-			m_callback(type, event);
-		}
-
-
-	private:
-		std::function<void(se::EventType, se::Event)> m_callback;
-};
-
-
 
 class SandboxApp : public se::Application
 {
