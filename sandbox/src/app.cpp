@@ -23,8 +23,6 @@
 
 #include <se/application.hpp>
 
-#include <se/registry.hpp>
-
 
 
 struct Clock
@@ -79,19 +77,6 @@ public:
 	{
 		se::Logging::setLogLevel(se::LogLevel::debug);
 
-		se::Registry registry {};
-		auto entities {registry.createEntities(100)};
-		auto entity24 {registry.getEntityFromUUID(entities[24]->getUUID())};
-		entity24->addComponent<int> (42);
-		entity24->addComponent<float> (3.14159f);
-		entities[1]->addComponent<int> (12);
-		entities[58]->addComponent<float> (1.6f);
-		registry.sortEntities();
-		SE_DEBUG("int : %u, float : %u", typeid(int).hash_code(), typeid(float).hash_code());
-		SE_DEBUG("<int> : There is %d match(s)", registry.query<int> ().size());
-		SE_DEBUG("<float> : There is %d match(s)", registry.query<float> ().size());
-		SE_DEBUG("<int, float> : There is %d match(s)", registry.query<int, float> ().size());
-		SE_DEBUG("<float, int> : There is %d match(s)", registry.query<float, int> ().size());
 
 
 		se::EventManager::flush();

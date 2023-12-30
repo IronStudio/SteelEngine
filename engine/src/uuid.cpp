@@ -15,6 +15,7 @@ namespace se
 
 	se::UUID UUIDManager::getUUID(const std::string &name) SE_THREAD_SAFE
 	{
+		std::lock_guard<std::mutex> _ {m_mutex};
 		auto it {m_nameToUUIDs.find(name)};
 		if (it == m_nameToUUIDs.end())
 			return 0;
@@ -26,6 +27,7 @@ namespace se
 
 	se::Uint64 UUIDManager::getType(se::UUID uuid) SE_THREAD_SAFE
 	{
+		std::lock_guard<std::mutex> _ {m_mutex};
 		auto it {m_UUIDToTypes.find(uuid)};
 		if (it == m_UUIDToTypes.end())
 			throw std::invalid_argument("Can't find type of uuid " + se::int64ToString(uuid, SE_UUID_BASE));
@@ -37,6 +39,7 @@ namespace se
 
 	const std::string &UUIDManager::getName(se::UUID uuid) SE_THREAD_SAFE
 	{
+		std::lock_guard<std::mutex> _ {m_mutex};
 		for (const auto &name : m_nameToUUIDs)
 		{
 			if (name.second == uuid)
@@ -50,8 +53,29 @@ namespace se
 
 	bool UUIDManager::isValid(se::UUID uuid) SE_THREAD_SAFE
 	{
+		std::lock_guard<std::mutex> _ {m_mutex};
 		auto it {m_UUIDToTypes.find(uuid)};
 		return it != m_UUIDToTypes.end();
+	}
+
+
+
+	void UUIDManager::remove(se::UUID uuid) SE_THREAD_SAFE
+	{
+		std::lock_guard<std::mutex> _ {m_mutex};
+		auto it {m_UUIDToTypes.find(uuid)};
+		if (it == m_UUIDToTypes.end())
+			throw std::invalid_argument("Can't find uuid " + se::int64ToString(uuid, SE_UUID_BASE) + " to remove");
+
+		m_UUIDToTypes.erase(it);
+		for (auto name {m_nameToUUIDs.begin()}; name != m_nameToUUIDs.end(); ++name)
+		{
+			if (name->second != uuid)
+				continue;
+
+			m_nameToUUIDs.erase(name);
+			break;
+		}
 	}
 
 

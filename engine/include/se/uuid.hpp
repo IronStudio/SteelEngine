@@ -27,6 +27,7 @@ namespace se
 			static se::Uint64 getType(se::UUID uuid) SE_THREAD_SAFE;
 			static const std::string &getName(se::UUID uuid) SE_THREAD_SAFE;
 			static bool isValid(se::UUID uuid) SE_THREAD_SAFE;
+			static void remove(se::UUID uuid) SE_THREAD_SAFE;
 
 
 		private:

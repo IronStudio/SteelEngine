@@ -27,4 +27,11 @@ namespace se
 
 
 
+	EventListener::~EventListener()
+	{
+		se::UUIDManager::remove(m_infos.uuid);
+	}
+
+
+
 } // namespace se

@@ -37,7 +37,12 @@ namespace se
 	void EventManager::removeType(se::UUID eventType) SE_THREAD_SAFE
 	{
 		std::lock_guard<std::mutex> _ {m_typeMutex};
-		m_types.erase(eventType);
+		auto it {m_types.find(eventType)};
+		if (it == m_types.end())
+			return;
+
+		se::UUIDManager::remove(it->second.uuid);
+		m_types.erase(it);
 	}
 
 

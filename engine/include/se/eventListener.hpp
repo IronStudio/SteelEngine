@@ -23,7 +23,7 @@ namespace se
 	{
 		public:
 			EventListener(se::UUID eventType, se::UUID linkedObject);
-			virtual ~EventListener() = default;
+			virtual ~EventListener();
 
 			virtual void process(se::EventType type, se::Event event) SE_THREAD_SAFE = 0;
 
