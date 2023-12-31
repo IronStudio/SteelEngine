@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cinttypes>
+#include <typeindex>
 
 
 
@@ -33,6 +34,8 @@ namespace se
 
 	using Float32 = float;
 	using Float64 = double;
+
+	using Type = std::type_index;
 
 	
 } // namespace se
