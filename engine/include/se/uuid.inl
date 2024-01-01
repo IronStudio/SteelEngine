@@ -86,17 +86,23 @@ namespace se
 	template <typename T>
 	se::Status UUIDManager::s_insertUUID(se::UUID uuid, T *object)
 	{
+		bool inserted {false};
+
 		for (auto it {s_uuids.cbegin()}; it != s_uuids.cend(); ++it)
 		{
-			if (it->first > uuid)
+			if (it->first < uuid)
 				continue;
 
 			if (it->first == uuid)
 				return se::Status::eDuplicate;
 
 			s_uuids.insert(it, {uuid, se::UUIDManager::Data(object, typeid(T))});
+			inserted = true;
 			break;
 		}
+
+		if (inserted)
+			s_uuids.push_back({uuid, se::UUIDManager::Data(object, typeid(T))});
 
 		return se::Status::eSuccess;
 	}

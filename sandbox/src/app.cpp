@@ -50,7 +50,6 @@ public:
 	void run() override
 	{
 		se::Logging::setLogLevel(se::LogLevel::trace);
-
 	}
 };
 
