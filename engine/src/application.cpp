@@ -2,7 +2,6 @@
 #include "application.hpp"
 
 #include "logging.hpp"
-#include "workManager.hpp"
 
 
 
@@ -11,14 +10,12 @@ namespace se
 	void Application::load()
 	{
 		se::Logging::load();
-		se::WorkManager::load();
 	}
 
 
 
 	void Application::unload()
 	{
-		se::WorkManager::unload();
 		se::Logging::unload();
 	}
 

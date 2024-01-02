@@ -1,3 +1,4 @@
+#define SE_USE_MULTITHREADING
 #include "workManager.hpp"
 
 #include "logging.hpp"

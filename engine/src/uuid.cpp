@@ -7,13 +7,12 @@
 
 namespace se
 {
-	std::mutex UUIDManager::s_mutex {};
 	std::map<se::UUID, se::UUIDManager::Data> UUIDManager::s_uuids {};
 	se::UUID UUIDManager::s_lastGeneratedUUID {0};
 
 
 
-	void UUIDManager::remove(se::UUID uuid) SE_THREAD_SAFE
+	void UUIDManager::remove(se::UUID uuid)
 	{
 		for (auto it {s_uuids.cbegin()}; it != s_uuids.cend(); ++it)
 		{
@@ -29,21 +28,21 @@ namespace se
 
 
 
-	bool UUIDManager::isValid(se::UUID uuid) SE_THREAD_SAFE
+	bool UUIDManager::isValid(se::UUID uuid)
 	{
 		return s_uuids.find(uuid) != s_uuids.end();
 	}
 
 
 
-	bool UUIDManager::isValid(const std::string &name) SE_THREAD_SAFE
+	bool UUIDManager::isValid(const std::string &name)
 	{
 		return s_uuids.find(s_convertStringToUUID(name)) != s_uuids.end();
 	}
 
 
 
-	se::UUID UUIDManager::getUUID(const std::string &name) SE_THREAD_SAFE
+	se::UUID UUIDManager::getUUID(const std::string &name)
 	{
 		const se::UUID uuid {UUIDManager::s_convertStringToUUID(name)};
 		SE_ASSERT(UUIDManager::isValid(uuid), "Can't find UUID of given name");
@@ -52,7 +51,7 @@ namespace se
 
 
 
-	se::Type UUIDManager::getType(UUID uuid) SE_THREAD_SAFE
+	se::Type UUIDManager::getType(UUID uuid)
 	{
 		for (auto it {s_uuids.cbegin()}; it != s_uuids.cend(); ++it)
 		{

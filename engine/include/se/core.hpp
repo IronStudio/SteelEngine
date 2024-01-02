@@ -19,6 +19,3 @@
 #else
 	#define SE_CORE
 #endif
-
-
-#define SE_THREAD_SAFE

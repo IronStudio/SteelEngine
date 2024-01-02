@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef SE_USE_MULTITHREADING
+	#error The multithreading part of SteelEngine isn't ready yet. Please avoid using it
+#endif
+
 #include <any>
 #include <functional>
 
@@ -7,6 +11,8 @@
 #include "types.hpp"
 #include "uuid.hpp"
 
+
+#define SE_THREAD_SAFE
 
 
 namespace se

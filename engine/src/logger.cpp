@@ -11,7 +11,6 @@
 namespace se
 {
 	std::chrono::steady_clock::time_point Logger::s_start {std::chrono::steady_clock::now()};
-	std::mutex Logger::s_mutex {};
 
 
 
@@ -51,11 +50,8 @@ namespace se
 		char *output {new char[logSize + 1]};
 		(void)vsnprintf(output, logSize + 1, format.c_str(), args);
 
-		{
-			std::lock_guard<std::mutex> _ {s_mutex};
-			*m_stream << m_name << " [" << levelToString[level] << "] ("
-				<< duration.count() << "ms) \033[35m>\033[0m " << output << "\n";
-		}
+		*m_stream << m_name << " [" << levelToString[level] << "] ("
+			<< duration.count() << "ms) \033[35m>\033[0m " << output << "\n";
 	}
 
 

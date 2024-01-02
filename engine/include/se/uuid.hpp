@@ -20,20 +20,20 @@ namespace se
 	{
 		public:
 			template <typename T>
-			static se::UUID generate(T *object) SE_THREAD_SAFE;
+			static se::UUID generate(T *object);
 			template <typename T>
-			static se::UUID generate(const std::string &name, T *object) SE_THREAD_SAFE;
-			static void remove(se::UUID uuid) SE_THREAD_SAFE;
+			static se::UUID generate(const std::string &name, T *object);
+			static void remove(se::UUID uuid);
 
-			static bool isValid(se::UUID uuid) SE_THREAD_SAFE;
-			static bool isValid(const std::string &name) SE_THREAD_SAFE;
+			static bool isValid(se::UUID uuid);
+			static bool isValid(const std::string &name);
 			template <typename T>
-			static se::UUID getUUID(const T *object) SE_THREAD_SAFE;
-			static se::UUID getUUID(const std::string &name) SE_THREAD_SAFE;
+			static se::UUID getUUID(const T *object);
+			static se::UUID getUUID(const std::string &name);
 
-			static se::Type getType(UUID uuid) SE_THREAD_SAFE;
+			static se::Type getType(UUID uuid);
 			template <typename T>
-			static T *getObject(UUID uuid) SE_THREAD_SAFE;
+			static T *getObject(UUID uuid);
 
 
 		private:
@@ -47,7 +47,6 @@ namespace se
 			static se::Status s_insertUUID(se::UUID uuid, T *object);
 			static se::UUID s_convertStringToUUID(const std::string &text);
 
-			static std::mutex s_mutex;
 			static std::map<se::UUID, se::UUIDManager::Data> s_uuids;
 			static se::UUID s_lastGeneratedUUID;
 	};

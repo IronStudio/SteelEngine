@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+#include "utils/assert.hpp"
 #include "utils/hash.hpp"
 
 
@@ -9,9 +10,8 @@
 namespace se
 {
 	template <typename T>
-	se::UUID UUIDManager::generate(T *object) SE_THREAD_SAFE
+	se::UUID UUIDManager::generate(T *object)
 	{
-		std::lock_guard _ {s_mutex};
 		++s_lastGeneratedUUID;
 		if (s_lastGeneratedUUID >= std::numeric_limits<signed se::UUID>::max())
 		{
@@ -26,8 +26,8 @@ namespace se
 		}
 
 		auto result {UUIDManager::s_insertUUID<T> (s_lastGeneratedUUID, object)};
-		SE_ASSERT(!(result & se::Status::eDuplicate), "Failed to generate new UUID because of duplicate");
-		SE_ASSERT(result & se::Status::eSuccess, "Failed to generate new UUID");
+		SE_ASSERT(!((int)result & (int)se::Status::eDuplicate), "Failed to generate new UUID because of duplicate");
+		SE_ASSERT((int)result & (int)se::Status::eSuccess, "Failed to generate new UUID");
 
 		return s_lastGeneratedUUID;
 	}
@@ -35,13 +35,12 @@ namespace se
 
 
 	template <typename T>
-	se::UUID UUIDManager::generate(const std::string &name, T *object) SE_THREAD_SAFE
+	se::UUID UUIDManager::generate(const std::string &name, T *object)
 	{
 		se::UUID uuid {UUIDManager::s_convertStringToUUID(name)};
-		std::lock_guard _ {s_mutex};
 		auto result {UUIDManager::s_insertUUID<T> (uuid, object)};
-		SE_ASSERT(!(result & se::Status::eDuplicate), "Failed to generate new named UUID because of duplicate");
-		SE_ASSERT(result & se::Status::eSuccess, "Failed to generate new named UUID");
+		SE_ASSERT(!((int)result & (int)se::Status::eDuplicate), "Failed to generate new named UUID because of duplicate");
+		SE_ASSERT((int)result & (int)se::Status::eSuccess, "Failed to generate new named UUID");
 
 		return uuid;
 	}
@@ -49,7 +48,7 @@ namespace se
 
 
 	template <typename T>
-	se::UUID UUIDManager::getUUID(const T *object) SE_THREAD_SAFE
+	se::UUID UUIDManager::getUUID(const T *object)
 	{
 		for (auto it {s_uuids.begin()}; it != s_uuids.end(); ++it)
 		{
@@ -68,7 +67,7 @@ namespace se
 
 
 	template <typename T>
-	T *UUIDManager::getObject(UUID uuid) SE_THREAD_SAFE
+	T *UUIDManager::getObject(UUID uuid)
 	{
 		for (auto it {s_uuids.cbegin()}; it != s_uuids.cend(); ++it)
 		{
@@ -102,7 +101,7 @@ namespace se
 		}
 
 		if (inserted)
-			s_uuids.push_back({uuid, se::UUIDManager::Data(object, typeid(T))});
+			s_uuids.insert(s_uuids.cend(), {uuid, se::UUIDManager::Data(object, typeid(T))});
 
 		return se::Status::eSuccess;
 	}

@@ -13,7 +13,6 @@ namespace se
 	enum class EventPriority
 	{
 		eBlocking,
-		eNow,
 		eCanWait
 	};
 

@@ -6,16 +6,13 @@
 
 namespace se
 {
-	std::mutex LayerManager::s_mutex {};
 	std::list<const se::LayerInfos*> LayerManager::s_enabledLayers {};
 	std::list<se::LayerInfos> LayerManager::s_layers {};
 
 
 
-	se::UUID LayerManager::add(se::LayerInfos layerInfos) SE_THREAD_SAFE
+	se::UUID LayerManager::add(se::LayerInfos layerInfos)
 	{
-		std::lock_guard _ {s_mutex};
-
 		if (layerInfos.level > s_layers.size() || layerInfos.level == se::layerLastPlace)
 			layerInfos.level = s_layers.size();
 
@@ -55,10 +52,8 @@ namespace se
 
 
 
-	void LayerManager::remove(se::UUID layer) SE_THREAD_SAFE
+	void LayerManager::remove(se::UUID layer)
 	{
-		std::lock_guard _ {s_mutex};
-
 		for (auto it {s_layers.cbegin()}; it != s_layers.cend(); ++it)
 		{
 			if (it->uuid != layer)
@@ -83,10 +78,8 @@ namespace se
 
 
 
-	void LayerManager::toggle(se::UUID layer) SE_THREAD_SAFE
+	void LayerManager::toggle(se::UUID layer)
 	{
-		std::lock_guard _ {s_mutex};
-
 		for (auto it {s_layers.cbegin()}; it != s_layers.cend(); ++it)
 		{
 			if (it->uuid != layer)
@@ -107,10 +100,8 @@ namespace se
 
 
 
-	void LayerManager::enable(se::UUID layer) SE_THREAD_SAFE
+	void LayerManager::enable(se::UUID layer)
 	{
-		std::lock_guard _ {s_mutex};
-
 		for (auto it {s_layers.cbegin()}; it != s_layers.cend(); ++it)
 		{
 			if (it->uuid != layer)
@@ -125,10 +116,8 @@ namespace se
 
 
 
-	void LayerManager::disable(se::UUID layer) SE_THREAD_SAFE
+	void LayerManager::disable(se::UUID layer)
 	{
-		std::lock_guard _ {s_mutex};
-
 		for (auto it {s_layers.cbegin()}; it != s_layers.cend(); ++it)
 		{
 			if (it->uuid != layer)
@@ -143,23 +132,21 @@ namespace se
 
 
 
-	void LayerManager::moveUp(se::UUID layer) SE_THREAD_SAFE
+	void LayerManager::moveUp(se::UUID layer)
 	{
-		std::lock_guard _ {s_mutex};
 		se::LayerManager::s_swap(layer, true);
 	}
 
 
 
-	void LayerManager::moveDown(se::UUID layer) SE_THREAD_SAFE
+	void LayerManager::moveDown(se::UUID layer)
 	{
-		std::lock_guard _ {s_mutex};
 		se::LayerManager::s_swap(layer, false);
 	}
 
 
 
-	const se::LayerInfos &LayerManager::get(se::UUID layer) SE_THREAD_SAFE
+	const se::LayerInfos &LayerManager::get(se::UUID layer)
 	{
 		for (auto it {s_layers.cbegin()}; it != s_layers.cend(); ++it)
 		{
@@ -226,7 +213,7 @@ namespace se
 				motionFunction = std::prev<std::list<se::LayerInfos>::iterator>;
 
 			auto toSwap = motionFunction(it, 1);
-			se::Uint8 oldLevel {it->level};
+			se::Int8 oldLevel {it->level};
 			it->level = toSwap->level;
 			toSwap->level = oldLevel;
 			std::swap(it, toSwap);

@@ -12,13 +12,13 @@
 
 namespace se
 {
-	constexpr se::Uint8 layerLastPlace {-1};
+	constexpr se::Int8 layerLastPlace {-1};
 
 
 	struct LayerInfos
 	{
 		se::UUID uuid;
-		se::Uint8 level {se::layerLastPlace};
+		se::Int8 level {se::layerLastPlace};
 		std::string name;
 		bool enabled {true};
 	};
@@ -31,21 +31,19 @@ namespace se
 			using ConstIterator = std::list<const se::LayerInfos*>::const_iterator;
 			using ConstReverseIterator = std::list<const se::LayerInfos*>::const_reverse_iterator;
 
-			static se::UUID add(se::LayerInfos layerInfos) SE_THREAD_SAFE;
-			static void remove(se::UUID layer) SE_THREAD_SAFE;
-			static void toggle(se::UUID layer) SE_THREAD_SAFE;
-			static void enable(se::UUID layer) SE_THREAD_SAFE;
-			static void disable(se::UUID layer) SE_THREAD_SAFE;
-			static void moveUp(se::UUID layer) SE_THREAD_SAFE;
-			static void moveDown(se::UUID layer) SE_THREAD_SAFE;
-			static const se::LayerInfos &get(se::UUID layer) SE_THREAD_SAFE;
+			static se::UUID add(se::LayerInfos layerInfos);
+			static void remove(se::UUID layer);
+			static void toggle(se::UUID layer);
+			static void enable(se::UUID layer);
+			static void disable(se::UUID layer);
+			static void moveUp(se::UUID layer);
+			static void moveDown(se::UUID layer);
+			static const se::LayerInfos &get(se::UUID layer);
 
-			inline static const se::LayerManager::ConstIterator &cbegin();
-			inline static const se::LayerManager::ConstIterator &cend();
-			inline static const se::LayerManager::ConstReverseIterator &crbegin();
-			inline static const se::LayerManager::ConstReverseIterator &crend();
-
-			inline static std::mutex &getIterationMutex();
+			inline static se::LayerManager::ConstIterator cbegin();
+			inline static se::LayerManager::ConstIterator cend();
+			inline static se::LayerManager::ConstReverseIterator crbegin();
+			inline static se::LayerManager::ConstReverseIterator crend();
 
 
 		private:
@@ -53,7 +51,6 @@ namespace se
 			static void s_disable(const std::list<se::LayerInfos>::const_iterator &layer);
 			static void s_swap(se::UUID layer, bool withPrevious);
 
-			static std::mutex s_mutex;
 			static std::list<const se::LayerInfos*> s_enabledLayers;
 			static std::list<se::LayerInfos> s_layers;
 	};

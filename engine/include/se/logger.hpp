@@ -42,12 +42,11 @@ namespace se
 			inline void error(const std::string &format, ...);
 			inline void fatal(const std::string &format, ...);
 
-			void log(se::LogLevel level, const std::string &format, va_list args) SE_THREAD_SAFE;
+			void log(se::LogLevel level, const std::string &format, va_list args);
 
 
 		private:
 			static std::chrono::steady_clock::time_point s_start;
-			static std::mutex s_mutex;
 			
 			std::string m_name;
 			std::ostream *m_stream;
