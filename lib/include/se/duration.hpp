@@ -10,7 +10,7 @@
 namespace se {
 	template <typename T, typename Ratio = se::Ratio<1, 1>>
 	SE_REQUIRES(se::concepts::Number<T> && se::concepts::Ratio<Ratio>)
-	class Duration {
+	class Duration final {
 		public:
 			inline Duration();
 			~Duration() = default;

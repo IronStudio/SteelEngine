@@ -29,12 +29,21 @@ namespace se::concepts {
 			|| std::same_as<T, se::Float64>;
 	};
 
-	template <typename T>
-	concept Allocator = requires(T obj) {
-		T::Handle;
-		{obj.allocate(static_cast<se::ByteCount> (0))} -> std::convertible_to<typename T::Handle>;
-		{obj.free(typename T::Handle())} -> std::same_as<void>;
-		{obj.reallocate(typename T::Handle(), static_cast<se::ByteCount> (0))} -> std::same_as<void>;
+	template <typename Handle, typename T>
+	concept AllocatorHandle = requires(Handle obj) {
+		{obj.operator*()}           -> std::same_as<T&>;
+		{obj.operator->()}          -> std::same_as<T*>;
+		{obj.operator==(Handle())}  -> std::same_as<bool>;
+		{obj.operator bool()}       -> std::same_as<bool>;
+		{obj.operator<<(std::cout)} -> std::same_as<std::ostream&>;
+	};
+
+	template <typename Alloc, typename T>
+	concept Allocator = requires(Alloc obj) {
+		requires se::concepts::AllocatorHandle<typename Alloc::Handle, T>;
+		{obj.allocate(static_cast<se::ByteCount> (0))} -> std::convertible_to<typename Alloc::Handle>;
+		{obj.free(typename Alloc::Handle())} -> std::same_as<void>;
+		{obj.reallocate(typename Alloc::Handle(), static_cast<se::ByteCount> (0))} -> std::same_as<void>;
 	};
 
 
