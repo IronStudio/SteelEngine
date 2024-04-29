@@ -49,6 +49,10 @@ namespace se
 			 */
 			explicit operator std::string() const;
 
+			bool operator==(const se::UUID &uuid) const;
+			explicit operator bool() const;
+
+
 		private:
 			se::Uint64 m_uuid;
 	};

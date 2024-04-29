@@ -9,14 +9,19 @@ using namespace se::literals;
 
 
 int main(int, char**) {
-	srand(time(nullptr));
+	
+	se::memory::PoolAllocator<int> allocator {10};
+	auto ptr {allocator.allocate(1)};
+	auto array {allocator.allocate(2)};
+	auto ptr2 {allocator.allocate(1)};
+	std::cout << "ptr : " << ptr << std::endl;
+	std::cout << "array : " << array << std::endl;
+	std::cout << "ptr2 : " << ptr2 << std::endl;
 
-	std::cout << "Hello World !" << std::endl;
+	array = allocator.reallocate(array, 2);
+	std::cout << "array : " << array << std::endl;
 
-	se::UUID uuid {};
-	std::cout << "uuid : " << uuid << std::endl;
-	se::UUID uuid2 {"123f-20ca-6d8e-eb14"};
-	std::cout << "uuid2 : " << uuid2 << std::endl;
+	
 
 	return 0;
 }

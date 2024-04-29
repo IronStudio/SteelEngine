@@ -31,19 +31,21 @@ namespace se::concepts {
 
 	template <typename Handle, typename T>
 	concept AllocatorHandle = requires(Handle obj) {
-		{obj.operator*()}           -> std::same_as<T&>;
-		{obj.operator->()}          -> std::same_as<T*>;
-		{obj.operator==(Handle())}  -> std::same_as<bool>;
-		{obj.operator bool()}       -> std::same_as<bool>;
-		{obj.operator<<(std::cout)} -> std::same_as<std::ostream&>;
+		{obj.operator*()}             -> std::same_as<T&>;
+		{obj.operator->()}            -> std::same_as<T*>;
+		{obj.operator[](se::Size(0))} -> std::same_as<T&>;
+		{obj.operator==(Handle())}    -> std::same_as<bool>;
+		{obj.operator bool()}         -> std::same_as<bool>;
+		std::cout << obj;
+		{obj.getCount()} -> std::same_as<se::Size>;
 	};
 
 	template <typename Alloc, typename T>
 	concept Allocator = requires(Alloc obj) {
 		requires se::concepts::AllocatorHandle<typename Alloc::Handle, T>;
-		{obj.allocate(static_cast<se::ByteCount> (0))} -> std::convertible_to<typename Alloc::Handle>;
+		{obj.allocate(static_cast<se::Size> (0))} -> std::convertible_to<typename Alloc::Handle>;
 		{obj.free(typename Alloc::Handle())} -> std::same_as<void>;
-		{obj.reallocate(typename Alloc::Handle(), static_cast<se::ByteCount> (0))} -> std::same_as<void>;
+		{obj.reallocate(typename Alloc::Handle(), static_cast<se::Size> (0))} -> std::same_as<typename Alloc::Handle>;
 	};
 
 

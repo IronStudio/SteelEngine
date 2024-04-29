@@ -78,6 +78,18 @@ namespace se
 
 
 
+	bool UUID::operator==(const se::UUID &uuid) const {
+		return m_uuid == uuid.m_uuid;
+	}
+
+
+
+	UUID::operator bool() const {
+		return m_uuid != 0;
+	}
+
+
+
 	std::ostream &operator<<(std::ostream &stream, const se::UUID uuid) {
 		stream << "<" << static_cast<std::string> (uuid) << ">";
 		return stream;
