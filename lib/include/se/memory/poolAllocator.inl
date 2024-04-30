@@ -4,6 +4,9 @@
 #include <iomanip>
 #include <sstream>
 
+#include "se/assertion.hpp"
+#include "se/exceptions.hpp"
+
 
 
 namespace se::memory
@@ -49,6 +52,7 @@ namespace se::memory
 
 	template <typename T>
 	T &PoolHandle<T>::operator*() const {
+		SE_ASSERT(m_ptr != nullptr, "Can't dereference handle if set to nullptr");
 		return *m_ptr;
 	}
 
@@ -56,6 +60,7 @@ namespace se::memory
 
 	template <typename T>
 	T *PoolHandle<T>::operator->() const {
+		SE_ASSERT(m_ptr != nullptr, "Can't dereference handle if set to nullptr");
 		return m_ptr;
 	}
 
@@ -63,6 +68,7 @@ namespace se::memory
 
 	template <typename T>
 	T &PoolHandle<T>::operator[](se::Size index) const {
+		SE_ASSERT(index < m_count, "Can't access index out of range");
 		return m_ptr[index];
 	}
 
@@ -120,8 +126,8 @@ namespace se::memory
 
 
 
-	template <typename T>
-	PoolAllocator<T>::PoolAllocator() :
+	template <typename T, bool A>
+	PoolAllocator<T, A>::PoolAllocator() :
 		m_size {0},
 		m_data {nullptr},
 		m_usedSpace {nullptr}
@@ -131,8 +137,8 @@ namespace se::memory
 
 
 
-	template <typename T>
-	PoolAllocator<T>::PoolAllocator(se::Size size) :
+	template <typename T, bool A>
+	PoolAllocator<T, A>::PoolAllocator(se::Size size) :
 		m_size {size},
 		m_data {nullptr},
 		m_usedSpace {nullptr}
@@ -144,8 +150,11 @@ namespace se::memory
 
 
 
-	template <typename T>
-	PoolAllocator<T>::~PoolAllocator() {
+	template <typename T, bool A>
+	PoolAllocator<T, A>::~PoolAllocator() {
+		for (se::Size i {0}; i < m_size; ++i)
+			m_usedSpace[i];
+
 		if (m_data != nullptr) {
 			::free(m_usedSpace);
 			::free(m_data);
@@ -154,8 +163,8 @@ namespace se::memory
 
 
 
-	template <typename T>
-	PoolAllocator<T>::PoolAllocator(se::memory::PoolAllocator<T> &&allocator) noexcept :
+	template <typename T, bool A>
+	PoolAllocator<T, A>::PoolAllocator(se::memory::PoolAllocator<T, A> &&allocator) noexcept :
 		m_size {allocator.m_size},
 		m_data {allocator.m_data},
 		m_usedSpace {allocator.m_usedSpace}
@@ -167,8 +176,8 @@ namespace se::memory
 
 
 
-	template <typename T>
-	const se::memory::PoolAllocator<T> &PoolAllocator<T>::operator=(se::memory::PoolAllocator<T> &&allocator) noexcept {
+	template <typename T, bool A>
+	const se::memory::PoolAllocator<T, A> &PoolAllocator<T, A>::operator=(se::memory::PoolAllocator<T, A> &&allocator) noexcept {
 		m_size = allocator.m_size;
 		m_data = allocator.m_data;
 		m_usedSpace = allocator.m_usedSpace;
@@ -180,8 +189,8 @@ namespace se::memory
 
 
 
-	template <typename T>
-	se::memory::PoolAllocator<T>::Handle PoolAllocator<T>::allocate(se::Size count) {
+	template <typename T, bool A>
+	se::memory::PoolAllocator<T, A>::Handle PoolAllocator<T, A>::allocate(se::Size count) {
 		for (se::Size i {0}; i < m_size; ++i) {
 			if (m_usedSpace[i])
 				continue;
@@ -200,17 +209,20 @@ namespace se::memory
 			for (se::Size j {i}; j < i + count; ++j)
 				m_usedSpace[j] = true;
 
-			se::memory::PoolAllocator<T>::Handle handle {m_data + i, count};
+			se::memory::PoolAllocator<T, A>::Handle handle {m_data + i, count};
 			return handle;
 		}
+
+		if constexpr (A)
+			throw se::exceptions::BadAllocation("Can't allocate a spot of the wanted size in PoolAllocator");
 
 		return {};
 	}
 
 
 
-	template <typename T>
-	void PoolAllocator<T>::free(const se::memory::PoolAllocator<T>::Handle &handle) {
+	template <typename T, bool A>
+	void PoolAllocator<T, A>::free(const se::memory::PoolAllocator<T, A>::Handle &handle) {
 		se::Size startPosition {static_cast<se::Size> (handle.m_ptr - m_data)};
 		for (se::Size i {startPosition}; i < startPosition + handle.m_count; ++i)
 			m_usedSpace[i] = false;
@@ -218,10 +230,12 @@ namespace se::memory
 
 
 
-	template <typename T>
-	se::memory::PoolAllocator<T>::Handle PoolAllocator<T>::reallocate(const se::memory::PoolAllocator<T>::Handle &handle, se::Size count) {
+	template <typename T, bool A>
+	se::memory::PoolAllocator<T, A>::Handle PoolAllocator<T, A>::reallocate(
+		const se::memory::PoolAllocator<T, A>::Handle &handle, se::Size count
+	) {
 		this->free(handle);
-		se::memory::PoolAllocator<T>::Handle output {this->allocate(handle.m_count + count)};
+		se::memory::PoolAllocator<T, A>::Handle output {this->allocate(handle.m_count + count)};
 		for (se::Size i {0}; i < handle.m_count; ++i)
 			output[i] = handle[i];
 		return output;

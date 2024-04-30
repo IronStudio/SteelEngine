@@ -19,9 +19,7 @@ int main(int, char**) {
 	std::cout << "ptr2 : " << ptr2 << std::endl;
 
 	array = allocator.reallocate(array, 2);
-	std::cout << "array : " << array << std::endl;
-
-	
+	std::cout << "array : " << array << std::endl;	
 
 	return 0;
 }

@@ -1,19 +1,21 @@
 #pragma once
 
+#include "se/core.hpp"
 #include "se/uuid.hpp"
 
 
 
 namespace se::memory
 {
-	template <typename T>
+	template <typename T, bool throwOnAllocationFailure>
 	class PoolAllocator;
 
 
 
 	template <typename T>
 	class PoolHandle final {
-		friend class se::memory::PoolAllocator<T>;
+		friend class se::memory::PoolAllocator<T, true>;
+		friend class se::memory::PoolAllocator<T, false>;
 
 		public:
 			inline PoolHandle();
@@ -48,8 +50,10 @@ namespace se::memory
 
 
 
-	template <typename T>
-	class PoolAllocator final {
+	template <typename T, bool throwOnAllocationFailure = true>
+	class SE_CORE PoolAllocator final {
+		#define A throwOnAllocationFailure
+
 		public:
 			using Handle = se::memory::PoolHandle<T>;
 
@@ -57,15 +61,15 @@ namespace se::memory
 			PoolAllocator(se::Size size);
 			~PoolAllocator();
 
-			PoolAllocator(const se::memory::PoolAllocator<T> &) = delete;
-			const se::memory::PoolAllocator<T> &operator=(const se::memory::PoolAllocator<T> &) = delete;
+			PoolAllocator(const se::memory::PoolAllocator<T, A> &) = delete;
+			const se::memory::PoolAllocator<T, A> &operator=(const se::memory::PoolAllocator<T, A> &) = delete;
 
-			PoolAllocator(se::memory::PoolAllocator<T> &&allocator) noexcept;
-			const se::memory::PoolAllocator<T> &operator=(se::memory::PoolAllocator<T> &&allocator) noexcept;
+			PoolAllocator(se::memory::PoolAllocator<T, A> &&allocator) noexcept;
+			const se::memory::PoolAllocator<T, A> &operator=(se::memory::PoolAllocator<T, A> &&allocator) noexcept;
 
-			se::memory::PoolAllocator<T>::Handle allocate(se::Size count);
-			void free(const se::memory::PoolAllocator<T>::Handle &handle);
-			se::memory::PoolAllocator<T>::Handle reallocate(const se::memory::PoolAllocator<T>::Handle &handle, se::Size count);
+			se::memory::PoolAllocator<T, A>::Handle allocate(se::Size count);
+			void free(const se::memory::PoolAllocator<T, A>::Handle &handle);
+			se::memory::PoolAllocator<T, A>::Handle reallocate(const se::memory::PoolAllocator<T, A>::Handle &handle, se::Size count);
 
 
 
@@ -73,6 +77,8 @@ namespace se::memory
 			se::Size m_size;
 			T *m_data;
 			bool *m_usedSpace;
+
+		#undef A
 	};
 
 
