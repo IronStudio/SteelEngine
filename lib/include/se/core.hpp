@@ -6,10 +6,16 @@
 	#define SE_CORE
 #elif defined(SE_SHARED)
 	#ifdef SE_WINDOWS
-		#ifdef BUILD_LIB
+		#ifdef SE_BUILD_LIB
 			#define SE_CORE __declspec(dllexport)
 		#else
 			#define SE_CORE __declspec(dllimport)
+		#endif
+	#elifdef SE_LINUX
+		#ifdef SE_BUILD_LIB
+			#define SE_CORE __attribute__((visibility("default")))
+		#else
+			#define SE_CORE
 		#endif
 	#else
 		#define SE_CORE

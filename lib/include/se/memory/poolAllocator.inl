@@ -195,6 +195,9 @@ namespace se::memory
 			if (m_usedSpace[i])
 				continue;
 
+			if (m_size - i < count)
+				break;
+
 			bool isSpaceBigEnough {true};
 			for (se::Size j {i + 1}; j < i + count; ++j) {
 				if (!m_usedSpace[j])

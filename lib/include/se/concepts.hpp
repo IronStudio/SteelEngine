@@ -2,6 +2,8 @@
 
 #ifndef SE_APPLE
 
+#include <iostream>
+
 #include "se/types.hpp"
 
 #define SE_REQUIRES(val) requires (val)
