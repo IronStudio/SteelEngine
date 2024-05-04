@@ -6,6 +6,7 @@
 #include <se/duration.hpp>
 #include <se/memory/poolAllocator.hpp>
 #include <se/threads/thread.hpp>
+#include <se/threads/work.hpp>
 
 
 using namespace se::literals;
@@ -13,21 +14,19 @@ using namespace se::literals;
 
 int main(int, char**) {
 	try {
-		int someValue {183};
-
-		se::threads::ThreadInfos infos {};
-		infos.coreIndex = 3;
-		infos.callback = [&someValue] () {
-			printf("HAHHA : %d\n", someValue);
-			std::this_thread::sleep_for(std::chrono::seconds(1));
-			printf("OH\n");
+		se::threads::WorkInfos<int> infos {};
+		infos.priority = se::threads::WorkPriority::eVeryHigh;
+		infos.callback = [] () -> int {
+			return 42;
 		};
-		se::threads::Thread thread {infos};
-		thread.launch();
 
-		printf("Living my life\n");
-		thread.join();
-		printf("End of the world\n");
+		se::threads::Work<int> work {infos};
+		work.start();
+
+		printf("I'm living during this time\n");
+
+		work.join();
+		printf("This is the work result : %d\n", work.get());
 	}
 
 	catch (const se::exceptions::Exception &exception) {

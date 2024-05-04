@@ -15,19 +15,29 @@ namespace se::threads {
 
 
 
+	template <typename T>
 	struct WorkInfos {
 		se::threads::WorkPriority priority {se::threads::WorkPriority::eNormal};
+		std::function<T()> callback;
 	};
 
 
 
+	template <typename T>
 	class Work final {
 		public:
 			Work();
 			~Work();
 
+			Work(const se::threads::WorkInfos<T> &infos);
+
+			void start();
+			void join();
+			T get();
+
 		private:
-			std::function<void()> m_callback;
+			se::threads::WorkInfos<T> m_infos;
+			T m_result;
 	};
 
 
