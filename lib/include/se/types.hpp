@@ -22,6 +22,7 @@ namespace se {
 	using Float   = se::Float32;
 
 	using Size      = se::Uint64;
+	using Count     = se::Uint64;
 	using ByteCount = se::Uint64;
 
 	using Byte = se::Int8;

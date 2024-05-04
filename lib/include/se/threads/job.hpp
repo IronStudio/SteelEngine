@@ -2,27 +2,11 @@
 
 #include <functional>
 
+#include "se/threads/jobInfos.hpp"
+
 
 
 namespace se::threads {
-	enum JobPriority {
-		eVeryHigh,
-		eHigh,
-		eNormal,
-		eLow,
-		eVeryLow
-	};
-
-
-
-	template <typename T>
-	struct JobInfos {
-		se::threads::JobPriority priority {se::threads::JobPriority::eNormal};
-		std::function<T()> callback;
-	};
-
-
-
 	template <typename T>
 	class Job final {
 		public:
@@ -30,6 +14,9 @@ namespace se::threads {
 			~Job();
 
 			Job(const se::threads::JobInfos<T> &infos);
+
+			Job(const se::threads::Job<T> &job);
+			const se::threads::Job<T> &operator=(const se::threads::Job<T> &job);
 
 			void start();
 			void join();
@@ -43,3 +30,7 @@ namespace se::threads {
 
 
 } // namespace se::threads
+
+
+
+#include "se/threads/job.inl"
