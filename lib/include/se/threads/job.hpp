@@ -5,7 +5,7 @@
 
 
 namespace se::threads {
-	enum WorkPriority {
+	enum JobPriority {
 		eVeryHigh,
 		eHigh,
 		eNormal,
@@ -16,27 +16,27 @@ namespace se::threads {
 
 
 	template <typename T>
-	struct WorkInfos {
-		se::threads::WorkPriority priority {se::threads::WorkPriority::eNormal};
+	struct JobInfos {
+		se::threads::JobPriority priority {se::threads::JobPriority::eNormal};
 		std::function<T()> callback;
 	};
 
 
 
 	template <typename T>
-	class Work final {
+	class Job final {
 		public:
-			Work();
-			~Work();
+			Job();
+			~Job();
 
-			Work(const se::threads::WorkInfos<T> &infos);
+			Job(const se::threads::JobInfos<T> &infos);
 
 			void start();
 			void join();
 			T get();
 
 		private:
-			se::threads::WorkInfos<T> m_infos;
+			se::threads::JobInfos<T> m_infos;
 			T m_result;
 	};
 
