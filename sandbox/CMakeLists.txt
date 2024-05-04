@@ -43,7 +43,6 @@ target_link_libraries(
 
 
 if (WIN32)
-	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_WINDOWS)
 	if (BUILD_STATIC)
 	else()
 		message("Copying dll")
@@ -57,10 +56,4 @@ if (WIN32)
 			"${PROJECT_BINARY_DIR}/sandbox"
 		)
 	endif()
-elseif (UNIX)
-	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_LINUX)
-elseif (APPLE)
-	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_APPLE)
-else()
-	message(FATAL_ERROR "Platforms other than Windows, Linux and MacOS aren't supported for now")
 endif()

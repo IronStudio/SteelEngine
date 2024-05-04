@@ -1,140 +1,73 @@
 #pragma once
 
+#include <functional>
 #include <thread>
-#include <tuple>
 
-#if defined(SE_LINUX) || defined(SE_APPLE)
-	extern "C" {
-		#include <pthread.h>
-	}
-#endif
-
-#include "se/core.hpp"
 #include "se/concepts.hpp"
-#include "se/types.hpp"
 
-
-#ifndef SE_APPLE
-
-namespace se::threads {
-	struct SerializedArgs;
-}
-
-namespace se::concepts {
-	template <typename T>
-	concept ThreadImplementation = requires(T obj) {
-		{obj.create()}  -> std::same_as<void>;
-		{obj.destroy()} -> std::same_as<void>;
-		{obj.bind(nullptr)} -> std::same_as<void>;
-		{obj.launch(se::threads::SerializedArgs(), int(0))} -> std::same_as<void>;
-		{obj.detach()}  -> std::same_as<void>;
-		{obj.waitOn()}  -> std::same_as<void>;
-	};
-} // namespace se::concepts
-		
-#endif
 
 
 namespace se::threads {
-	class SE_CORE SerializedArgs {
-		public:
-			SerializedArgs();
-			~SerializedArgs();
-
-			SerializedArgs(const se::threads::SerializedArgs &args);
-			const se::threads::SerializedArgs &operator=(const se::threads::SerializedArgs &args);
-
-			SerializedArgs(se::ByteCount size);
-
-			explicit operator se::Byte* () const noexcept;
-
-		private:
-			se::Byte *m_data;
-			se::ByteCount m_size;
-	};
-
-	template <typename ...Args>
-	se::threads::SerializedArgs serialize(Args ...args);
-
-	template <typename ...Args>
-	std::tuple<Args...> deserialize(const se::threads::SerializedArgs &args);
-
+	using Callback = std::function<void()>;
 
 
 	struct ThreadInfos {
-		int coreIndex {-1};
-	};
+		se::threads::Callback callback;
+		int coreIndex;
+		const int __machineCoreCount;
 
-
-	template <typename Implementation>
-	SE_REQUIRES(se::concepts::ThreadImplementation<Implementation>)
-	class ThreadBase final : public Implementation {
-		public:
-			using Callback = void(*)(se::threads::SerializedArgs);
-
-			inline ThreadBase();
-			inline ~ThreadBase();
-
-			inline ThreadBase(const Callback &callback);
-			inline void bind(const Callback &callback);
-
-			inline void launch(const se::threads::SerializedArgs &args, int coreIndex = -1);
-
-			inline void detach();
-			inline void waitOn();
+		ThreadInfos();
+		ThreadInfos(const se::threads::ThreadInfos &infos);
+		const se::threads::ThreadInfos &operator=(const se::threads::ThreadInfos &infos);
 	};
 
 
 
 #if defined(SE_LINUX) || defined(SE_APPLE)
-	class SE_CORE PthreadImplementation {
+
+	class PthreadConfigurer {
 		public:
-			using Callback = void(*)(se::threads::SerializedArgs);
-
-			void create();
-			void destroy();
-
-			void bind(const Callback &callback);
-			void launch(const se::threads::SerializedArgs &args, int coreIndex);
-
-			void detach();
-			void waitOn();
-
-		private:
-			Callback m_callback;
-			pthread_t m_thread;
+			static void configure(const se::threads::ThreadInfos &infos);
 	};
 
+	using ThreadConfigurer = PthreadConfigurer;
 
-	//using Thread = se::threads::ThreadBase<PthreadImplementation>;
 #endif
 
 
-	class SE_CORE STLthreadImplementation {
+	class NoneThreadConfigurer {
 		public:
-			using Callback = void(*)(se::threads::SerializedArgs);
-
-			void create();
-			void destroy();
-
-			void bind(const Callback &callback);
-			void launch(const se::threads::SerializedArgs &args, int coreIndex);
-
-			void detach();
-			void waitOn();
-
-		private:
-			std::thread m_thread;
-			Callback m_callback;
+			inline static void configure(const se::threads::ThreadInfos &infos) {};
 	};
 
 
-	using Thread = se::threads::ThreadBase<STLthreadImplementation>;
+#if !defined(SE_LINUX) && !defined(SE_APPLE)
+	using ThreadConfigurer = se::threads::NoneThreadConfigurer;
+#endif
 
 
 
+	class Thread {
+		public:
+			Thread();
+			~Thread();
+
+			Thread(const se::threads::ThreadInfos &infos);
+
+			Thread(const se::threads::Thread &thread);
+			const se::threads::Thread &operator=(const se::threads::Thread &thread);
+
+			Thread(se::threads::Thread &&thread) noexcept;
+			const se::threads::Thread &operator=(se::threads::Thread &&thread) noexcept;
+
+
+			void launch();
+			void detach();
+			void join();
+
+		private:
+			std::thread m_thread;
+			se::threads::ThreadInfos m_infos;
+			bool m_launched;
+	};
 } // namespace se::threads
-
-
-
-#include "se/threads/thread.inl"

@@ -13,20 +13,21 @@ using namespace se::literals;
 
 int main(int, char**) {
 	try {
-		se::threads::Thread thread {};
-		thread.bind([] (se::threads::SerializedArgs args) {
-			int age = std::get<int> (se::threads::deserialize<int> (args));
-			printf("HAHA age is %d\n", age);
+		int someValue {183};
+
+		se::threads::ThreadInfos infos {};
+		infos.coreIndex = 3;
+		infos.callback = [&someValue] () {
+			printf("HAHHA : %d\n", someValue);
 			std::this_thread::sleep_for(std::chrono::seconds(1));
-			printf("Ouf, age is %d\n", age);
-		});
+			printf("OH\n");
+		};
+		se::threads::Thread thread {infos};
+		thread.launch();
 
-		thread.launch(se::threads::SerializedArgs(int(18)));
-
-		printf("I'm living my life\n");
-		printf("It's sooooo nice...\n");
-
-		thread.waitOn();
+		printf("Living my life\n");
+		thread.join();
+		printf("End of the world\n");
 	}
 
 	catch (const se::exceptions::Exception &exception) {

@@ -1,11 +1,8 @@
 #include "se/threads/thread.hpp"
 
-#include <cstdlib>
-#include <cstring>
-
 #if defined(SE_LINUX) || defined(SE_APPLE)
 	extern "C" {
-		#include <sys/sysinfo.h>
+		#include <pthread.h>
 	}
 #endif
 
@@ -15,161 +12,156 @@
 
 
 namespace se::threads {
-	SerializedArgs::SerializedArgs() :
-		m_data {nullptr},
-		m_size {0}
+
+#if defined(SE_LINUX) || defined(SE_APPLE)
+
+	void PthreadConfigurer::configure(const se::threads::ThreadInfos &infos) {
+		if (infos.coreIndex < 0)
+			return;
+
+		SE_ASSERT(infos.coreIndex < infos.__machineCoreCount, "Can't affect thread to cpu core that does not exist");
+
+		cpu_set_t *cpuset {CPU_ALLOC(infos.__machineCoreCount)};
+		CPU_ZERO_S(infos.__machineCoreCount, cpuset);
+		CPU_SET_S(infos.coreIndex, infos.__machineCoreCount, cpuset);
+
+		pthread_t currentThread {pthread_self()};
+		if (pthread_setaffinity_np(currentThread, infos.__machineCoreCount, cpuset) != 0) {
+			CPU_FREE(cpuset);
+			throw se::exceptions::RuntimeError("Can't set affinity of the newly created pthread");
+		}
+
+		CPU_FREE(cpuset);
+	}
+
+#endif
+
+
+
+	ThreadInfos::ThreadInfos() :
+		callback {nullptr},
+		coreIndex {-1},
+		__machineCoreCount {(int)std::thread::hardware_concurrency()}
 	{
 
 	}
 
 
 
-	SerializedArgs::~SerializedArgs() {
-		if (m_data != nullptr)
-			free(m_data);
-	}
-
-
-
-	SerializedArgs::SerializedArgs(const se::threads::SerializedArgs &args) :
-		m_data {reinterpret_cast<se::Byte*> (malloc(args.m_size))},
-		m_size {args.m_size}
+	ThreadInfos::ThreadInfos(const se::threads::ThreadInfos &infos) :
+		callback {infos.callback},
+		coreIndex {infos.coreIndex},
+		__machineCoreCount {infos.__machineCoreCount}
 	{
-		memcpy(m_data, args.m_data, m_size);
+
 	}
 
 
 
-	const se::threads::SerializedArgs &SerializedArgs::operator=(const se::threads::SerializedArgs &args) {
-		if (m_data != nullptr)
-			free(m_data);
+	const se::threads::ThreadInfos &ThreadInfos::operator=(const se::threads::ThreadInfos &infos) {
+		callback = infos.callback;
+		coreIndex = infos.coreIndex;
+		return *this;
+	}
 
-		m_data = reinterpret_cast<se::Byte*> (malloc(args.m_size));
-		m_size = args.m_size;
-		memcpy(m_data, args.m_data, m_size);
+
+
+
+
+	Thread::Thread() :
+		m_thread {},
+		m_infos {},
+		m_launched {false}
+	{
+
+	}
+
+
+
+	Thread::~Thread() {
+		
+	}
+
+
+
+	Thread::Thread(const se::threads::ThreadInfos &infos) :
+		m_thread {},
+		m_infos {infos},
+		m_launched {false}
+	{
+		m_infos.callback = [infos] () {
+			se::threads::ThreadConfigurer::configure(infos);
+			infos.callback();
+		};
+	}
+
+
+
+	Thread::Thread(const se::threads::Thread &thread) :
+		m_thread {},
+		m_infos {thread.m_infos},
+		m_launched {false}
+	{
+
+	}
+
+
+
+	const se::threads::Thread &Thread::operator=(const se::threads::Thread &thread)	{
+		SE_ASSERT(!m_launched, "Can't copy thread into already launched thread");
+		m_infos = thread.m_infos;
+		return *this;
+	}
+
+
+
+	Thread::Thread(se::threads::Thread &&thread) noexcept :
+		m_thread {std::move(thread.m_thread)},
+		m_infos {thread.m_infos},
+		m_launched {thread.m_launched}
+	{
+		thread.m_thread = {};
+		thread.m_infos = {};
+		thread.m_launched = false;
+	}
+
+
+
+	const se::threads::Thread &Thread::operator=(se::threads::Thread &&thread) noexcept {
+		SE_ASSERT(!m_launched, "Can't move thread into already launched thread");
+		m_thread = std::move(thread.m_thread);
+		m_infos = thread.m_infos;
+		m_launched = thread.m_launched;
+
+		thread.m_thread = {};
+		thread.m_infos = {};
+		thread.m_launched = false;
 
 		return *this;
 	}
 
 
 
-	SerializedArgs::SerializedArgs(se::ByteCount size) :
-		m_data {reinterpret_cast<se::Byte*> (malloc(size))},
-		m_size {size}
-	{
-
+	void Thread::launch() {
+		SE_ASSERT(!m_launched, "Can't launch thread that has already been launched");
+		m_thread = std::thread(m_infos.callback);
+		m_launched = true;
 	}
 
 
 
-	SerializedArgs::operator se::Byte* () const noexcept {
-		return m_data;
+	void Thread::detach() {
+		SE_ASSERT(m_launched, "Can't detach thread that was not launched");
+		m_thread.detach();
 	}
 
 
 
-#if defined(SE_LINUX) || defined(SE_APPLE)
-
-	void PthreadImplementation::create() {
-		m_thread = 0;
-		m_callback = nullptr;
-	}
-
-
-
-	void PthreadImplementation::destroy() {
-		if (m_thread != 0)
-			pthread_cancel(m_thread);
-		m_thread = 0;
-		m_callback = nullptr;
-	}
-
-
-
-	void PthreadImplementation::bind(const Callback &callback) {
-		m_callback = callback;
-	}
-
-
-
-	void PthreadImplementation::launch(const se::threads::SerializedArgs &args, int coreIndex) {
-		SE_ASSERT(m_thread == 0, "Can't launch thread that was already launched");
-		SE_ASSERT(m_callback != nullptr, "Can't launch thread that has no callback binded");
-
-		int cpuCount {get_nprocs()};
-
-		pthread_attr_t threadAttr;
-		(void)pthread_attr_init(&threadAttr);
-
-		if (coreIndex >= 0) {
-			cpu_set_t *cpuSet {CPU_ALLOC(cpuCount)};
-			CPU_ZERO_S(cpuCount, cpuSet);
-			CPU_SET_S(0, cpuCount, cpuSet);
-			(void)pthread_attr_setaffinity_np(&threadAttr, sizeof(cpuSet), cpuSet);
-			CPU_FREE(cpuSet);
-		}
-
-		if (pthread_create(&m_thread, &threadAttr, reinterpret_cast<void*(*)(void*)> (m_callback), static_cast<se::Byte*> (args)) != 0) {
-			(void)pthread_attr_destroy(&threadAttr);
-			m_thread = 0;
-			throw se::exceptions::RuntimeError("Can't create a pthread");
-		}
-
-		(void)pthread_attr_destroy(&threadAttr);
-	}
-
-
-
-	void PthreadImplementation::detach() {
-		if (pthread_detach(m_thread) != 0)
-			throw se::exceptions::RuntimeError("Can't detach a pthread");
-		m_thread = 0;
-	}
-
-
-
-	void PthreadImplementation::waitOn() {
-		if (pthread_join(m_thread, nullptr) != 0)
-			throw se::exceptions::RuntimeError("Can't join a pthread");
-		m_thread = 0;
-	}
-
-#endif
-
-
-	void STLthreadImplementation::create() {
-		m_thread = {};
-		m_callback = nullptr;
-	}
-
-
-
-	void STLthreadImplementation::destroy() {
-
-	}
-
-
-
-	void STLthreadImplementation::bind(const Callback &callback) {
-		m_callback = callback;
-	}
-
-
-
-	void STLthreadImplementation::launch(const se::threads::SerializedArgs &args, int coreIndex) {
-		m_thread = std::thread(m_callback, args);
-	}
-
-
-
-	void STLthreadImplementation::detach() {
-
-	}
-
-
-
-	void STLthreadImplementation::waitOn() {
+	void Thread::join() {
+		SE_ASSERT(m_launched, "Can't join thread that was not launched");
 		m_thread.join();
 	}
+
+
 
 } // namespace se::threads
