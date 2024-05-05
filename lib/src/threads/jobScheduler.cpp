@@ -36,7 +36,7 @@ namespace se::threads {
 
 	void JobScheduler::load() {
 		se::threads::ThreadInfos infos {};
-		int coreCount {std::thread::hardware_concurrency()};
+		se::Count coreCount {std::thread::hardware_concurrency()};
 		bool setAffinity {true};
 		if (coreCount < SE_MINIMAL_CORE_COUNT) {
 			coreCount = SE_MINIMAL_CORE_COUNT;
@@ -103,8 +103,10 @@ namespace se::threads {
 
 	void JobScheduler::s_taskThreadFunction(se::Count index) {
 		while (true) {
-			std::unique_lock lock {s_newJobCVMutex};
-			s_newJobCV.wait(lock);
+			{
+				std::unique_lock lock {s_newJobCVMutex};
+				s_newJobCV.wait(lock);
+			}
 
 			if (!s_running)
 				return;

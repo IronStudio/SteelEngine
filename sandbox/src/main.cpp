@@ -1,6 +1,8 @@
 #include <iostream>
 #include <thread>
 
+#define SE_APPLICATION_MAIN_FILE
+#include <se/steelEngine.hpp>
 #include <se/core.hpp>
 #include <se/concepts.hpp>
 #include <se/duration.hpp>
@@ -13,31 +15,32 @@
 using namespace se::literals;
 
 
-int main(int, char**) {
-	se::threads::JobScheduler::load();
+class SandboxApp : public se::Application {
+	public:
+		SandboxApp() {
+			this->load();
+		}
 
-	try {
-		se::threads::JobInfos<int> infos {};
-		infos.priority = se::threads::JobPriority::eVeryHigh;
-		infos.callback = [] () -> int {
-			return 42;
-		};
+		~SandboxApp() override {}
 
-		se::threads::Job<int> job {infos};
-		job.start();
+		void run() override {
+			se::threads::JobInfos<int> infos {};
+			infos.priority = se::threads::JobPriority::eVeryHigh;
+			infos.callback = [] () -> int {
+				return 42;
+			};
 
-		printf("I'm living during this time\n");
+			se::threads::Job<int> job {infos};
+			job.start();
 
-		job.join();
-		printf("This is the Job result : %d\n", job.get());
-	}
+			printf("I'm living during this time\n");
 
-	catch (const se::exceptions::Exception &exception) {
-		std::cerr << "ERROR : " << exception.what() << std::endl;
-		se::threads::JobScheduler::unload();
-		return EXIT_FAILURE;
-	}
+			job.join();
+			printf("This is the Job result : %d\n", job.get());
+		}
+};
 
-	se::threads::JobScheduler::unload();
-	return EXIT_SUCCESS;
+
+se::Application *createApplication(const std::vector<std::string> &/*args*/) {
+	return new SandboxApp();
 }
