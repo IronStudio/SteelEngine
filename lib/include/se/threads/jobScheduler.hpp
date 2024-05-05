@@ -54,6 +54,7 @@ namespace se::threads {
 			static std::mutex s_waitingJobMutex;
 			static std::condition_variable s_newJobCV;
 			static std::mutex s_newJobCVMutex;
+			static std::atomic_int s_waitingThreadCount;
 	};
 } // namespace se::threads
 
