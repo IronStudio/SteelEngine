@@ -1,6 +1,6 @@
 #include "se/threads/thread.hpp"
 
-#if defined(SE_LINUX) || defined(SE_APPLE)
+#ifdef SE_LINUX
 	extern "C" {
 		#include <pthread.h>
 	}
@@ -13,7 +13,7 @@
 
 namespace se::threads {
 
-#if defined(SE_LINUX) || defined(SE_APPLE)
+#ifdef SE_LINUX
 
 	void PthreadConfigurer::configure(const se::threads::ThreadInfos &infos) {
 		if (infos.coreIndex < 0)

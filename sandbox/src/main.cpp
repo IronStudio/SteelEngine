@@ -10,6 +10,7 @@
 #include <se/threads/thread.hpp>
 #include <se/threads/job.hpp>
 #include <se/threads/jobScheduler.hpp>
+#include <se/ecs/scene.hpp>
 
 
 using namespace se::literals;

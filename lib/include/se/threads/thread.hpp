@@ -23,7 +23,7 @@ namespace se::threads {
 
 
 
-#if defined(SE_LINUX) || defined(SE_APPLE)
+#ifdef SE_LINUX
 
 	class PthreadConfigurer {
 		public:
@@ -41,7 +41,7 @@ namespace se::threads {
 	};
 
 
-#if !defined(SE_LINUX) && !defined(SE_APPLE)
+#ifndef SE_LINUX
 	using ThreadConfigurer = se::threads::NoneThreadConfigurer;
 #endif
 

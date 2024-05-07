@@ -7,7 +7,7 @@
 
 namespace se::memory
 {
-	template <typename T, bool throwOnAllocationFailure>
+	template <typename T>
 	class PoolAllocator;
 
 
@@ -15,7 +15,6 @@ namespace se::memory
 	template <typename T>
 	class PoolHandle final {
 		friend class se::memory::PoolAllocator<T, true>;
-		friend class se::memory::PoolAllocator<T, false>;
 
 		public:
 			inline PoolHandle();
@@ -37,11 +36,12 @@ namespace se::memory
 
 
 		protected:
-			inline PoolHandle(T *ptr, se::Size count);
+			inline PoolHandle(se::memory::PoolAllocator<T> *allocator, se::Count index, se::Count count);
 
 		private:
-			T *m_ptr;
-			se::Size m_count;
+			se::memory::PoolAllocator<T> *m_allocator;
+			se::Count m_index;
+			se::Count m_count;
 	};
 
 
@@ -50,9 +50,9 @@ namespace se::memory
 
 
 
-	template <typename T, bool throwOnAllocationFailure = true>
+	template <typename T>
 	class SE_CORE PoolAllocator final {
-		#define A throwOnAllocationFailure
+		friend class se::memory::PoolHandle<T>;
 
 		public:
 			using Handle = se::memory::PoolHandle<T>;
@@ -61,17 +61,23 @@ namespace se::memory
 			PoolAllocator(se::Size size);
 			~PoolAllocator();
 
-			PoolAllocator(const se::memory::PoolAllocator<T, A> &) = delete;
-			const se::memory::PoolAllocator<T, A> &operator=(const se::memory::PoolAllocator<T, A> &) = delete;
+			PoolAllocator(const se::memory::PoolAllocator<T> &) = delete;
+			const se::memory::PoolAllocator<T> &operator=(const se::memory::PoolAllocator<T> &) = delete;
 
-			PoolAllocator(se::memory::PoolAllocator<T, A> &&allocator) noexcept;
-			const se::memory::PoolAllocator<T, A> &operator=(se::memory::PoolAllocator<T, A> &&allocator) noexcept;
+			PoolAllocator(se::memory::PoolAllocator<T> &&allocator) noexcept;
+			const se::memory::PoolAllocator<T> &operator=(se::memory::PoolAllocator<T> &&allocator) noexcept;
 
-			se::memory::PoolAllocator<T, A>::Handle allocate(se::Size count);
-			void free(const se::memory::PoolAllocator<T, A>::Handle &handle);
-			se::memory::PoolAllocator<T, A>::Handle reallocate(const se::memory::PoolAllocator<T, A>::Handle &handle, se::Size count);
+			template <bool throwOnAllocationFailure = true>
+			se::memory::PoolAllocator<T>::Handle allocate(se::Count count);
+			void free(const se::memory::PoolAllocator<T>::Handle &handle);
+			template <bool throwOnAllocationFailure = true>
+			se::memory::PoolAllocator<T>::Handle reallocate(const se::memory::PoolAllocator<T>::Handle &handle, se::Size count);
+
+			void resize(se::Size size);
 
 
+		protected:
+			inline T *m_getElementPointer(se::Count index);
 
 		private:
 			se::Size m_size;
