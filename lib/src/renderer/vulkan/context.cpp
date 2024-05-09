@@ -10,19 +10,20 @@
 
 
 namespace se::renderer::vulkan {
-	Context::Context(const se::renderer::ContextInfos &infos) : se::renderer::Context(infos),
-		m_instance{VK_NULL_HANDLE},
+	Context::Context(const se::renderer::ContextInfos &infos) :
+		se::renderer::Context(infos),
+		m_instance {VK_NULL_HANDLE},
 		m_device {nullptr}
 	#ifndef NDEBUG
-		, m_debugMessenger{VK_NULL_HANDLE}
+		, m_debugMessenger {VK_NULL_HANDLE}
 	#endif
 	{
-		std::vector<const char *> layers{
+		std::vector<const char *> layers {
 		#ifndef NDEBUG
 			"VK_LAYER_KHRONOS_validation"
 		#endif
 		};
-		std::vector<const char *> extensions{
+		std::vector<const char *> extensions {
 		#ifndef NDEBUG
 			VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 		#endif
@@ -31,7 +32,7 @@ namespace se::renderer::vulkan {
 		layers = s_checkLayers(layers);
 		extensions = s_checkExtensions(extensions);
 
-		VkApplicationInfo applicationInfos{};
+		VkApplicationInfo applicationInfos {};
 		applicationInfos.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		applicationInfos.apiVersion = VK_API_VERSION_1_3;
 		applicationInfos.pApplicationName = infos.applicationName.c_str();
@@ -40,7 +41,7 @@ namespace se::renderer::vulkan {
 		applicationInfos.pEngineName = "SteelEngine";
 		applicationInfos.engineVersion = VK_MAKE_API_VERSION(0, SE_VERSION_MAJOR, SE_VERSION_MINOR, SE_VERSION_PATCH);
 
-		VkInstanceCreateInfo instanceCreateInfos{};
+		VkInstanceCreateInfo instanceCreateInfos {};
 		instanceCreateInfos.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		instanceCreateInfos.enabledExtensionCount = (se::Uint32)extensions.size();
 		instanceCreateInfos.ppEnabledExtensionNames = extensions.data();
@@ -73,6 +74,10 @@ namespace se::renderer::vulkan {
 		se::renderer::vulkan::DeviceInfos deviceInfos {};
 		deviceInfos.instance = m_instance;
 		deviceInfos.gpuType = m_infos.preferredGPU;
+		deviceInfos.extensions = {
+			
+		};
+		deviceInfos.queueTypeMask = se::renderer::vulkan::QueueType::eGraphics;
 		m_device = new se::renderer::vulkan::Device(deviceInfos);
 	}
 
@@ -111,7 +116,7 @@ namespace se::renderer::vulkan {
 		if (severity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
 			return VK_FALSE;
 
-		std::string typeString{};
+		std::string typeString {};
 
 		switch (type)
 		{
@@ -135,7 +140,7 @@ namespace se::renderer::vulkan {
 
 
 	VkDebugUtilsMessengerEXT Context::s_createDebugMessenger(VkInstance instance) {
-		VkDebugUtilsMessengerEXT debugMessenger{};
+		VkDebugUtilsMessengerEXT debugMessenger {};
 
 		auto vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
 
@@ -164,7 +169,7 @@ namespace se::renderer::vulkan {
 		if (layers.empty())
 			return {};
 
-		se::Uint32 count{};
+		se::Uint32 count {};
 		if (vkEnumerateInstanceLayerProperties(&count, nullptr) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't get instance layer count");
 
@@ -194,9 +199,9 @@ namespace se::renderer::vulkan {
 		if (extensions.empty())
 			return {};
 
-		se::Uint32 count{};
+		se::Uint32 count {};
 		if (vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr) != VK_SUCCESS)
-			throw se::exceptions::RuntimeError("Can't get instance extension count");
+			throw se::exceptions::RuntimeError("Caexplicit operator n't get instance extension count");
 
 		std::vector<VkExtensionProperties> availableExtensions{};
 		availableExtensions.resize(count);

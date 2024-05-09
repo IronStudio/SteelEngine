@@ -9,29 +9,18 @@
 
 #include "se/core.hpp"
 #include "se/types.hpp"
+#include "se/utils/bitField.hpp"
 
 
 
 namespace se {
-	enum class LogSeverity {
+	SE_CREATE_BIT_FIELD(LogSeverity, LogSeverityMask,
 		eVerbose = 0b0000'0001,
 		eInfo    = 0b0000'0010,
 		eWarning = 0b0000'0100,
 		eError   = 0b0000'1000,
 		eFatal   = 0b0001'0000
-	};
-
-
-	struct LogSeverityMask {
-		inline LogSeverityMask();
-		inline LogSeverityMask(se::LogSeverity severity);
-		inline const se::LogSeverityMask &operator=(se::LogSeverity severity);
-		inline LogSeverityMask(const se::LogSeverityMask &mask);
-		inline const se::LogSeverityMask &operator=(const se::LogSeverityMask &mask);
-		inline explicit operator bool() const noexcept {return !!content;}
-
-		se::Uint8 content;
-	};
+	)
 
 
 	inline se::LogSeverityMask operator|(se::LogSeverityMask lhs, se::LogSeverityMask rhs);
