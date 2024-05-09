@@ -1,5 +1,7 @@
 #include "se/threads/jobScheduler.hpp"
 
+#include "se/logger.hpp"
+
 
 
 namespace se::threads {
@@ -62,7 +64,7 @@ namespace se::threads {
 		for (se::Count i {0}; i < (se::Count)se::threads::JobPriority::__count; ++i)
 			s_waitingJobs.push_back(std::queue<OpaqueJobInfos> ());
 
-		std::cout << "Created " << coreCount << " threads" << std::endl;
+		SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Created " << coreCount << " threads" << se::endLog;
 	}
 
 

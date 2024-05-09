@@ -43,6 +43,18 @@ class SandboxApp : public se::Application {
 			job.join();
 			printf("This is the Job result : %d\n", job.get());*/
 
+			SE_LOGGER << se::LogInfos(se::LogSeverity::eVerbose) << "Hello" << se::endLog;
+			SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Hello" << se::endLog;
+			SE_LOGGER << se::LogInfos(se::LogSeverity::eWarning) << "Hello" << se::endLog;
+			SE_LOGGER << se::LogInfos(se::LogSeverity::eError) << "Hello" << se::endLog;
+			SE_LOGGER << se::LogInfos(se::LogSeverity::eFatal) << "Hello" << se::endLog;
+
+			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eVerbose) << "Hello" << se::endLog;
+			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Hello" << se::endLog;
+			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eWarning) << "Hello" << se::endLog;
+			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eError) << "Hello" << se::endLog;
+			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eFatal) << "Hello" << se::endLog;
+
 			se::renderer::ContextInfos contextInfos {};
 			contextInfos.applicationName = "SteelEngine_sandbox";
 			contextInfos.applicationVersion = "1.0.0"_v;

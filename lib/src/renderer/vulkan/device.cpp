@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "se/exceptions.hpp"
+#include "se/logger.hpp"
 
 
 
@@ -56,11 +57,13 @@ namespace se::renderer::vulkan {
 		VkPhysicalDeviceProperties properties{};
 		vkGetPhysicalDeviceProperties(bestDevice, &properties);
 
-		std::cout << "Selected device :\n";
-		std::cout << "\tName               : " << properties.deviceName << "\n";
-		std::cout << "\tVulkan API version : " << VK_API_VERSION_MAJOR(properties.apiVersion)
+		SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo);
+		SE_LOGGER << "Selected device :\n";
+		SE_LOGGER << "\tName               : " << properties.deviceName << "\n";
+		SE_LOGGER << "\tVulkan API version : " << VK_API_VERSION_MAJOR(properties.apiVersion)
 				  << "." << VK_API_VERSION_MINOR(properties.apiVersion) << VK_API_VERSION_PATCH(properties.apiVersion) << "\n";
-		std::cout << "\tType               : " << (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? "intergrated" : "discrete") << "\n";
+		SE_LOGGER << "\tType               : " << (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? "intergrated" : "discrete") << "\n";
+		SE_LOGGER << se::endLog;
 
 		return bestDevice;
 	}

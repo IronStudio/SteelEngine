@@ -5,6 +5,9 @@
 #include <vector>
 
 #include "se/exceptions.hpp"
+#include "se/logger.hpp"
+
+
 
 namespace se::renderer::vulkan {
 	Context::Context(const se::renderer::ContextInfos &infos) : se::renderer::Context(infos),
@@ -48,19 +51,20 @@ namespace se::renderer::vulkan {
 		if (vkCreateInstance(&instanceCreateInfos, nullptr, &m_instance) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create instance");
 
-		std::cout << "Created vulkan instance with the following parameters :\n";
-		std::cout << "\tVulkan API version  : 1.3\n";
-		std::cout << "\tApplication name    : " << m_infos.applicationName << "\n";
-		std::cout << "\tApplication version : " << m_infos.applicationVersion << "\n";
-		std::cout << "\tSteelEngine version : " << se::utils::Version(SE_VERSION_MAJOR, SE_VERSION_MINOR, SE_VERSION_PATCH) << "\n";
-		std::cout << "\tLayers (" << layers.size() << ") :\n";
+		SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo);
+		SE_LOGGER << "Created vulkan instance with the following parameters :\n";
+		SE_LOGGER << "\tVulkan API version  : 1.3\n";
+		SE_LOGGER << "\tApplication name    : " << m_infos.applicationName << "\n";
+		SE_LOGGER << "\tApplication version : " << m_infos.applicationVersion << "\n";
+		SE_LOGGER << "\tSteelEngine version : " << se::utils::Version(SE_VERSION_MAJOR, SE_VERSION_MINOR, SE_VERSION_PATCH) << "\n";
+		SE_LOGGER << "\tLayers (" << layers.size() << ") :\n";
 		for (const auto &layer : layers)
-			std::cout << "\t\t- " << layer << "\n";
-		std::cout << "\tExtensions (" << extensions.size() << ") :\n";
+			SE_LOGGER << "\t\t- " << layer << "\n";
+		SE_LOGGER << "\tExtensions (" << extensions.size() << ") :\n";
 		for (const auto &extension : extensions)
-			std::cout << "\t\t- " << extension << "\n";
+			SE_LOGGER << "\t\t- " << extension << "\n";
 
-		std::cout << std::flush;
+		SE_LOGGER << se::endLog;
 
 		#ifndef NDEBUG
 			m_debugMessenger = s_createDebugMessenger(m_instance);
@@ -98,11 +102,16 @@ namespace se::renderer::vulkan {
 		const VkDebugUtilsMessengerCallbackDataEXT *callbackData,
 		void *userData
 	) {
+		static const std::map<VkDebugUtilsMessageSeverityFlagBitsEXT, se::LogSeverity> severityMap {
+			{VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT, se::LogSeverity::eVerbose},
+			{VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT, se::LogSeverity::eWarning},
+			{VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT, se::LogSeverity::eError}
+		};
+
 		if (severity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
 			return VK_FALSE;
 
 		std::string typeString{};
-		std::string severityString{};
 
 		switch (type)
 		{
@@ -119,23 +128,7 @@ namespace se::renderer::vulkan {
 			typeString = "unknown";
 		}
 
-		switch (severity)
-		{
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-			severityString = "info";
-			break;
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-			severityString = "warning";
-			break;
-		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-			severityString = "error";
-			break;
-		default:
-			severityString = "unknown";
-		}
-
-		std::cout << "Vulkan log [" << typeString << "] " << severityString << " > " << callbackData->pMessage << std::endl;
-
+		SE_LOGGER.log(se::LogInfos(severityMap.find(severity)->second), "Vulkan log [{}] > {}", typeString, callbackData->pMessage);
 		return VK_FALSE;
 	}
 
@@ -158,7 +151,7 @@ namespace se::renderer::vulkan {
 		debugMessengerCreateInfos.pUserData = nullptr;
 
 		if (vkCreateDebugUtilsMessengerEXT(instance, &debugMessengerCreateInfos, nullptr, &debugMessenger) != VK_SUCCESS) {
-			std::cout << "Can't create debug utils messenger" << std::endl;
+			SE_LOGGER.log(se::LogInfos(se::LogSeverity::eError), "Can't create debug utils messenger");
 			return VK_NULL_HANDLE;
 		}
 

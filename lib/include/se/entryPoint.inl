@@ -5,6 +5,7 @@
 
 #include "se/threads/jobScheduler.hpp"
 #include "se/exceptions.hpp"
+#include "se/logger.hpp"
 #include "se/types.hpp"
 
 
@@ -15,6 +16,8 @@ namespace se {
 			Application() = default;
 
 			void load() {
+				SE_LOGGER.setTerminalColor(se::LogColor::brightWhite);
+				SE_APP_LOGGER.setTerminalColor(se::LogColor::white);
 				se::threads::JobScheduler::load();
 			}
 
