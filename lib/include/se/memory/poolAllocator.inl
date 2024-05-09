@@ -221,7 +221,7 @@ namespace se::memory
 			return handle;
 		}
 
-		if constexpr (A)
+		if constexpr (throwOnAllocationFailure)
 			throw se::exceptions::BadAllocation("Can't allocate a spot of the wanted size in PoolAllocator");
 
 		return {};
@@ -253,7 +253,7 @@ namespace se::memory
 
 
 	template <typename T>
-	void se::memory::PoolAllocator<T>::resize(se::Size size) {
+	void PoolAllocator<T>::resize(se::Size size) {
 		T *newData {reinterpret_cast<T*> (malloc(sizeof(T) * size))};
 		memcpy(newData, m_data, std::min(size, m_size));
 		free(m_data);
@@ -264,7 +264,7 @@ namespace se::memory
 
 
 	template <typename T>
-	T *m_getElementPointer(se::Count index) {
+	T *PoolAllocator<T>::m_getElementPointer(se::Count index) {
 		return m_data + index;
 	}
 

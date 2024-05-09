@@ -2,7 +2,7 @@ set(CMAKE_PROJECT_MINIMUM_VERSION 3.20)
 cmake_minimum_required(VERSION 3.20)
 
 project(SteelEngine
-	VERSION 0.0.0
+	VERSION 0.1.0
 	LANGUAGES CXX
 )
 

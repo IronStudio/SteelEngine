@@ -37,7 +37,7 @@ set_target_properties(${SANDBOX_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 #target_link_directories(./lib)
 
 target_link_libraries(
-	${SANDBOX_NAME} PRIVATE ${PROJECT_NAME}
+	${SANDBOX_NAME} PRIVATE ${PROJECT_NAME} vulkan
 )
 
 

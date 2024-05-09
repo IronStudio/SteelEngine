@@ -14,7 +14,7 @@ namespace se::memory
 
 	template <typename T>
 	class PoolHandle final {
-		friend class se::memory::PoolAllocator<T, true>;
+		friend class se::memory::PoolAllocator<T>;
 
 		public:
 			inline PoolHandle();
