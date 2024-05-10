@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -21,6 +22,8 @@ namespace se::renderer::vulkan {
 
 	se::renderer::vulkan::QueueType queueTypeVkToSe(VkQueueFlagBits queue);
 	VkQueueFlagBits queueTypeSeToVk(se::renderer::vulkan::QueueType queue);
+	se::renderer::vulkan::QueueTypeMask queueTypeMaskVkToSe(VkQueueFlags queue);
+	VkQueueFlags queueTypeMaskVkToSe(se::renderer::vulkan::QueueTypeMask queue);
 
 
 	struct DeviceInfos {
@@ -45,14 +48,25 @@ namespace se::renderer::vulkan {
 				se::renderer::vulkan::QueueTypeMask queueTypeMask;
 			};
 
+			struct DeviceCreateInfos {
+				VkPhysicalDevice device;
+				std::vector<const char*> extensions;
+				se::renderer::vulkan::QueueTypeMask queueTypeMask;
+			};
+
+			struct QueueInfos {
+				QueueTypeMask type;
+				se::Count count;
+			};
+
 			static VkPhysicalDevice s_chooseDevice(VkInstance instance, const ScoreCriterias &criterias);
 			static se::Int32 s_scoreDevice(VkPhysicalDevice device, const ScoreCriterias &criterias);
-			static VkDevice s_createDevice(VkPhysicalDevice physicalDevice, const std::vector<const char*> &extensions);
-			static std::vector<VkQueue> s_getQueues(VkDevice device);
+			static VkDevice s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, VkQueue> &queues);
+			static std::vector<VkDeviceQueueCreateInfo> s_chooseQueues(const std::vector<QueueInfos> &queueInfos, QueueTypeMask wantedQueue);
 
 			se::renderer::vulkan::DeviceInfos m_infos;
 			VkDevice m_device;
-			std::vector<VkQueue> m_queues;
+			std::map<QueueType, VkQueue> m_queues;
 	};
 
 } // namespace se::renderer::vulkan

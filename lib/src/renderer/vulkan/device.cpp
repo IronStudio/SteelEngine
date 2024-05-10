@@ -32,6 +32,31 @@ namespace se::renderer::vulkan {
 		return convertMap.find(queue)->second;
 	}
 
+	se::renderer::vulkan::QueueTypeMask queueTypeMaskVkToSe(VkQueueFlags queue) {
+		se::renderer::vulkan::QueueTypeMask output {};
+		if (queue & VK_QUEUE_GRAPHICS_BIT)
+			output |= QueueType::eGraphics;
+		if (queue & VK_QUEUE_COMPUTE_BIT)
+			output |= QueueType::eCompute;
+		if (queue & VK_QUEUE_TRANSFER_BIT)
+			output |= QueueType::eTransfer;
+		if (queue & VK_QUEUE_PROTECTED_BIT)
+			output |= QueueType::eProtected;
+		return output;
+	}
+
+	VkQueueFlags queueTypeMaskVkToSe(se::renderer::vulkan::QueueTypeMask queue) {
+		VkQueueFlags output {};
+		if (queue & QueueType::eGraphics)
+			output |= VK_QUEUE_GRAPHICS_BIT;
+		if (queue & QueueType::eCompute)
+			output |= VK_QUEUE_COMPUTE_BIT;
+		if (queue & QueueType::eTransfer)
+			output |= VK_QUEUE_TRANSFER_BIT;
+		if (queue & QueueType::eProtected)
+			output |= VK_QUEUE_PROTECTED_BIT;
+		return output;
+	}
 
 
 
@@ -45,9 +70,12 @@ namespace se::renderer::vulkan {
 		scoreCriterias.extensions = m_infos.extensions;
 		scoreCriterias.queueTypeMask = m_infos.queueTypeMask;
 
-		VkPhysicalDevice physicalDevice {s_chooseDevice(m_infos.instance, scoreCriterias)};
-		m_device = s_createDevice(physicalDevice, m_infos.extensions);
-		m_queues = s_getQueues(m_device);
+		DeviceCreateInfos deviceCreateInfos {};
+		deviceCreateInfos.device = s_chooseDevice(m_infos.instance, scoreCriterias);
+		deviceCreateInfos.extensions = m_infos.extensions;
+		deviceCreateInfos.queueTypeMask = m_infos.queueTypeMask;
+
+		m_device = s_createDevice(deviceCreateInfos, m_queues);
 	}
 
 
@@ -121,15 +149,7 @@ namespace se::renderer::vulkan {
 
 		se::renderer::vulkan::QueueTypeMask foundQueueTypes {};
 		for (const auto &queue : queueFamilies) {
-			if (queue.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-				foundQueueTypes |= QueueType::eGraphics;
-			if (queue.queueFlags & VK_QUEUE_COMPUTE_BIT)
-				foundQueueTypes |= QueueType::eCompute;
-			if (queue.queueFlags & VK_QUEUE_TRANSFER_BIT)
-				foundQueueTypes |= QueueType::eTransfer;
-			if (queue.queueFlags & VK_QUEUE_PROTECTED_BIT)
-				foundQueueTypes |= QueueType::eProtected;
-
+			foundQueueTypes |= queueTypeMaskVkToSe(queue.queueFlags)
 			//vkGetPhysicalDeviceSurfaceSupportKHR(device, index, surface, &support);
 		}
 
@@ -140,23 +160,51 @@ namespace se::renderer::vulkan {
 	}
 
 
-
-	VkDevice Device::s_createDevice(VkPhysicalDevice physicalDevice, const std::vector<const char*> &extensions) {
+	VkDevice Device::s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, VkQueue> &queues) {
 		VkDevice device {};
 
 		VkPhysicalDeviceFeatures features {};
 
+		se::Uint32 queueCount {};
+		vkGetPhysicalDeviceQueueFamilyProperties(infos.device, &queueCount, nullptr);
+
+		std::vector<VkQueueFamilyProperties> queueFamilies {};
+		queueFamilies.resize(queueCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(infos.device, &queueCount, queueFamilies.data());
+
+		std::vector<QueueInfos> availableQueuesInfos {};
+		availableQueuesInfos.reserve(queueCount);
+
+		for (const auto &queue : queueFamilies) {
+			QueueInfos infos {};
+			infos.type = queueTypeMaskVkToSe(queue.queueFlags);
+			infos.count = queue.queueCount;
+			availableQueuesInfos.push_back(infos);
+		}
+
+		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos {s_chooseQueues(availableQueuesInfos, infos.queueTypeMask)};
+		std::vector<std::vector<float>> priorities {};
+		priorities.reserve(queueCreateInfos.size());
+		for (auto &queue : queueCreateInfos) {
+			priorities.push_back({});
+			priorities.rbegin()->resize(queue.queueCount);
+			for (se::Count i {0}; i < queue.queueCount; ++i)
+				priorities.rbegin()->operator[](i) = 1.f;
+			
+			queue.pQueuePriorities = priorities.rbegin()->data();
+		}
+
 		VkDeviceCreateInfo deviceCreateInfos {};
 		deviceCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		deviceCreateInfos.enabledExtensionCount = extensions.size();
-		deviceCreateInfos.ppEnabledExtensionNames = extensions.data();
+		deviceCreateInfos.enabledExtensionCount = infos.extensions.size();
+		deviceCreateInfos.ppEnabledExtensionNames = infos.extensions.data();
 		deviceCreateInfos.enabledLayerCount = 0;
 		deviceCreateInfos.ppEnabledLayerNames = nullptr;
 		deviceCreateInfos.pEnabledFeatures = &features;
-		deviceCreateInfos.queueCreateInfoCount = 0;
-		deviceCreateInfos.pQueueCreateInfos = nullptr;
+		deviceCreateInfos.queueCreateInfoCount = queueCreateInfos.size();
+		deviceCreateInfos.pQueueCreateInfos = queueCreateInfos.data();
 
-		if (vkCreateDevice(physicalDevice, &deviceCreateInfos, nullptr, &device) != VK_SUCCESS)
+		if (vkCreateDevice(infos.device, &deviceCreateInfos, nullptr, &device) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create logical device");
 
 		return device;
@@ -164,8 +212,10 @@ namespace se::renderer::vulkan {
 
 
 
-	std::vector<VkQueue> Device::s_getQueues(VkDevice device) {
-		//vkGetDeviceQueue(device, );
+	std::vector<VkDeviceQueueCreateInfo> Device::s_chooseQueues(const std::vector<QueueInfos> &queueInfos, QueueTypeMask wantedQueue) {
+		std::vector<VkDeviceQueueCreateInfo> outputs {};
+
+		
 	}
 
 } // namespace se::renderer::vulkan
