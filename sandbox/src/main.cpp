@@ -29,20 +29,6 @@ class SandboxApp : public se::Application {
 		~SandboxApp() override {}
 
 		void run() override {
-			/*se::threads::JobInfos<int> infos {};
-			infos.priority = se::threads::JobPriority::eVeryHigh;
-			infos.callback = [] () -> int {
-				return 42;
-			};
-
-			se::threads::Job<int> job {infos};
-			job.start();
-
-			printf("I'm living during this time\n");
-
-			job.join();
-			printf("This is the Job result : %d\n", job.get());*/
-
 			SE_LOGGER << se::LogInfos(se::LogSeverity::eVerbose) << "Hello" << se::endLog;
 			SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Hello" << se::endLog;
 			SE_LOGGER << se::LogInfos(se::LogSeverity::eWarning) << "Hello" << se::endLog;

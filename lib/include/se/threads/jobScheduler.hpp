@@ -23,7 +23,7 @@ namespace se::threads {
 			std::function<void()> callback;
 		};
 
-		struct JobMutex {
+		struct SE_CORE JobMutex {
 			se::UUID uuid;
 			std::mutex mutex;
 

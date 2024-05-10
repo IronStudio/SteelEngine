@@ -2,13 +2,14 @@
 
 #include <functional>
 
+#include "se/core.hpp"
 #include "se/threads/jobInfos.hpp"
 
 
 
 namespace se::threads {
 	template <typename T>
-	class Job final {
+	class SE_CORE Job final {
 		public:
 			Job();
 			~Job();
