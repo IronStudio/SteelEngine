@@ -90,7 +90,7 @@ namespace se::renderer::vulkan {
 		SE_LOGGER << "Selected device :\n";
 		SE_LOGGER << "\tName               : " << properties.deviceName << "\n";
 		SE_LOGGER << "\tVulkan API version : " << VK_API_VERSION_MAJOR(properties.apiVersion)
-				  << "." << VK_API_VERSION_MINOR(properties.apiVersion) << VK_API_VERSION_PATCH(properties.apiVersion) << "\n";
+				  << "." << VK_API_VERSION_MINOR(properties.apiVersion) << "." << VK_API_VERSION_PATCH(properties.apiVersion) << "\n";
 		SE_LOGGER << "\tType               : " << (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? "intergrated" : "discrete") << "\n";
 		SE_LOGGER << se::endLog;
 

@@ -35,11 +35,6 @@ namespace se {
 se::Application *createApplication(const std::vector<std::string> &args);
 
 
-#ifdef SE_WINDOWS
-	#define main WinMain
-#endif
-
-
 int main(int argc, char **argv) {
 	std::vector<std::string> args {};
 	args.reserve(argc - 1);

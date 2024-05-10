@@ -4,13 +4,14 @@
 
 #include <vulkan/vulkan.h>
 
+#include "se/core.hpp"
 #include "se/renderer/context.hpp"
 #include "se/renderer/vulkan/device.hpp"
 
 
 
 namespace se::renderer::vulkan {
-	class Context : public se::renderer::Context {
+	class SE_CORE Context : public se::renderer::Context {
 		public:
 			Context(const se::renderer::ContextInfos &infos);
 			~Context() override;

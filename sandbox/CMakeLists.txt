@@ -24,6 +24,7 @@ endif()
 include_directories(
 	./include,
 	../lib/include
+	${Vulkan_INCLUDE_DIRS}
 )
 
 file(GLOB_RECURSE SANDBOX_HEADER *.hpp)
@@ -36,9 +37,7 @@ set_target_properties(${SANDBOX_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
 #target_link_directories(./lib)
 
-target_link_libraries(
-	${SANDBOX_NAME} PRIVATE ${PROJECT_NAME} vulkan
-)
+target_link_libraries(${SANDBOX_NAME} PRIVATE ${PROJECT_NAME} ${Vulkan_LIBRARIES})
 
 
 

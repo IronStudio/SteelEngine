@@ -12,6 +12,10 @@ set(PROJECT_CPP_DIALECT 23)
 
 option(BUILD_TESTS "BUILD_TESTS" OFF)
 
+find_package(Vulkan REQUIRED FATAL_ERROR)
+message("Vulkan include directory : " ${Vulkan_INCLUDE_DIRS})
+message("Vulkan libraries : " ${Vulkan_LIBRARIES})
+
 if (WIN32)
 	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_WINDOWS)
 elseif (UNIX)

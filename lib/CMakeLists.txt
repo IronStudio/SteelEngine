@@ -27,7 +27,8 @@ else()
 	)
 endif()
 
-include_directories(include)
+include_directories(include ${Vulkan_INCLUDE_DIRS})
+#link_directories(${VULKAN_PATH}/Lib)
 
 file(GLOB_RECURSE LIBRARY_HEADER *.hpp)
 file(GLOB_RECURSE LIBRARY_INLINE *.inl)
@@ -37,4 +38,4 @@ add_library(${LIBRARY_NAME} ${LIBRARY_TYPE} ${LIBRARY_HEADER} ${LIBRARY_INLINE} 
 set_property(TARGET ${LIBRARY_NAME} PROPERTY CXX_STANDARD ${PROJECT_CPP_DIALECT})
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
-link_libraries(${LIBRARY_NAME} PUBLIC vulkan)
+target_link_libraries(${LIBRARY_NAME} PUBLIC ${Vulkan_LIBRARIES})
