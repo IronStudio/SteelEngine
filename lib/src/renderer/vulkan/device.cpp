@@ -1,5 +1,6 @@
 #include "se/renderer/vulkan/device.hpp"
 
+#include <bitset>
 #include <cstring>
 #include <iostream>
 #include <vector>
@@ -177,6 +178,17 @@ namespace se::renderer::vulkan {
 		std::vector<VkQueueFamilyProperties> queueFamilies {};
 		queueFamilies.resize(queueCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(infos.device, &queueCount, queueFamilies.data());
+
+
+		SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo);
+		SE_LOGGER << "Available queue families :\n";
+		for (se::Count i {0}; i < queueFamilies.size(); ++i) {
+			SE_LOGGER << "\t- Queue index " << i << "\n";
+			SE_LOGGER << "\t\t- Type  : " << std::bitset<8>(queueTypeMaskVkToSe(queueFamilies[i].queueFlags).content) << "\n";
+			SE_LOGGER << "\t\t- Count : " << queueFamilies[i].queueCount << "\n";
+		}
+
+		SE_LOGGER << se::endLog;
 
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos {};

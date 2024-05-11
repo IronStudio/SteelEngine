@@ -25,6 +25,7 @@ include_directories(
 	./include,
 	../lib/include
 	${Vulkan_INCLUDE_DIRS}
+	${WSI_PROVIDER_INCLUDE_DIRS}
 )
 
 file(GLOB_RECURSE SANDBOX_HEADER *.hpp)
@@ -35,9 +36,11 @@ add_executable(${SANDBOX_NAME} ${SANDBOX_HEADER} ${SANDBOX_INLINE} ${SANDBOX_SOU
 set_property(TARGET ${SANDBOX_NAME} PROPERTY CXX_STANDARD ${PROJECT_CPP_DIALECT})
 set_target_properties(${SANDBOX_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
-#target_link_directories(./lib)
-
-target_link_libraries(${SANDBOX_NAME} PRIVATE ${PROJECT_NAME} ${Vulkan_LIBRARIES})
+target_link_libraries(${SANDBOX_NAME} PRIVATE
+	${PROJECT_NAME}
+	${Vulkan_LIBRARIES}
+	${WSI_PROVIDER_LIBRARIES}
+)
 
 
 
@@ -55,4 +58,6 @@ if (WIN32)
 			"${PROJECT_BINARY_DIR}/sandbox"
 		)
 	endif()
+
+	CLONE_WSI_DLL(${SANDBOX_NAME})
 endif()

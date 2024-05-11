@@ -1,6 +1,7 @@
 #include <iostream>
 #include <thread>
 
+#include <SDL3/SDL.h>
 #include <vulkan/vulkan.h>
 
 #define SE_APPLICATION_MAIN_FILE
