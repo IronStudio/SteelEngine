@@ -16,6 +16,7 @@
 #include <se/ecs/scene.hpp>
 #include <se/utils/version.hpp>
 #include <se/renderer/vulkan/context.hpp>
+#include <se/window/window.hpp>
 
 
 using namespace se::literals;
@@ -49,6 +50,30 @@ class SandboxApp : public se::Application {
 			contextInfos.applicationVersion = "1.0.0"_v;
 			contextInfos.preferredGPU = se::renderer::GPUType::eDiscret;
 			se::renderer::vulkan::Context context {contextInfos};
+
+
+			SDL_Init(SDL_INIT_VIDEO);
+			{
+				se::window::WindowInfos windowInfos {};
+				windowInfos.graphicsApi = se::renderer::GraphicsApi::eVulkan;
+				windowInfos.title = "SteelEngine_sandbox";
+				windowInfos.width = 16 * 70;
+				windowInfos.height = 9 * 70;
+				se::window::Window window {windowInfos};
+
+				bool running {true};
+				while (running) {
+					SDL_Event event {};
+					while (SDL_PollEvent(&event)) {
+						if (event.type == SDL_EVENT_QUIT) {
+							running = false;
+							break;
+						}
+					}
+				}
+			}
+
+			SDL_Quit();
 		}
 };
 
