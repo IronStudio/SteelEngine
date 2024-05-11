@@ -12,7 +12,7 @@ set(PROJECT_CPP_DIALECT 23)
 
 option(BUILD_TESTS "BUILD_TESTS" OFF)
 
-find_package(Vulkan REQUIRED FATAL_ERROR)
+find_package(Vulkan REQUIRED)
 message("Vulkan include directory : " ${Vulkan_INCLUDE_DIRS})
 message("Vulkan libraries : " ${Vulkan_LIBRARIES})
 

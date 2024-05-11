@@ -45,7 +45,7 @@ namespace se::renderer::vulkan {
 		return output;
 	}
 
-	VkQueueFlags queueTypeMaskVkToSe(se::renderer::vulkan::QueueTypeMask queue) {
+	VkQueueFlags queueTypeMaskSeToVk(se::renderer::vulkan::QueueTypeMask queue) {
 		VkQueueFlags output {};
 		if (queue & QueueType::eGraphics)
 			output |= VK_QUEUE_GRAPHICS_BIT;
@@ -76,6 +76,12 @@ namespace se::renderer::vulkan {
 		deviceCreateInfos.queueTypeMask = m_infos.queueTypeMask;
 
 		m_device = s_createDevice(deviceCreateInfos, m_queues);
+
+		SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Queues :\n";
+		for (const auto &queue : m_queues)
+			SE_LOGGER << "\t" << (se::Uint64)queue.first << " : " << queue.second.size() << "\n";
+
+		SE_LOGGER << se::endLog;
 	}
 
 
@@ -149,7 +155,7 @@ namespace se::renderer::vulkan {
 
 		se::renderer::vulkan::QueueTypeMask foundQueueTypes {};
 		for (const auto &queue : queueFamilies) {
-			foundQueueTypes |= queueTypeMaskVkToSe(queue.queueFlags)
+			foundQueueTypes |= queueTypeMaskVkToSe(queue.queueFlags);
 			//vkGetPhysicalDeviceSurfaceSupportKHR(device, index, surface, &support);
 		}
 
@@ -160,7 +166,7 @@ namespace se::renderer::vulkan {
 	}
 
 
-	VkDevice Device::s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, VkQueue> &queues) {
+	VkDevice Device::s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, std::vector<VkQueue>> &queues) {
 		VkDevice device {};
 
 		VkPhysicalDeviceFeatures features {};
@@ -172,26 +178,32 @@ namespace se::renderer::vulkan {
 		queueFamilies.resize(queueCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(infos.device, &queueCount, queueFamilies.data());
 
-		std::vector<QueueInfos> availableQueuesInfos {};
-		availableQueuesInfos.reserve(queueCount);
 
-		for (const auto &queue : queueFamilies) {
-			QueueInfos infos {};
-			infos.type = queueTypeMaskVkToSe(queue.queueFlags);
-			infos.count = queue.queueCount;
-			availableQueuesInfos.push_back(infos);
-		}
-
-		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos {s_chooseQueues(availableQueuesInfos, infos.queueTypeMask)};
+		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos {};
 		std::vector<std::vector<float>> priorities {};
-		priorities.reserve(queueCreateInfos.size());
-		for (auto &queue : queueCreateInfos) {
+		std::vector<QueueInfos> queueInfosForSelection {};
+		queueCreateInfos.reserve(queueCount);
+		priorities.reserve(queueCount);
+		queueInfosForSelection.reserve(queueCount);
+
+		for (se::Count i {0}; i < queueFamilies.size(); ++i) {
+			VkDeviceQueueCreateInfo queueInfos {};
+			queueInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueInfos.queueCount = queueFamilies[i].queueCount;
+			queueInfos.queueFamilyIndex = i;
+
 			priorities.push_back({});
-			priorities.rbegin()->resize(queue.queueCount);
-			for (se::Count i {0}; i < queue.queueCount; ++i)
+			priorities.rbegin()->resize(queueInfos.queueCount);
+			for (se::Count i {0}; i < queueInfos.queueCount; ++i)
 				priorities.rbegin()->operator[](i) = 1.f;
-			
-			queue.pQueuePriorities = priorities.rbegin()->data();
+
+			queueInfos.pQueuePriorities = priorities.rbegin()->data();
+			queueCreateInfos.push_back(queueInfos);
+
+			QueueInfos queueInfosSelection {};
+			queueInfosSelection.count = queueInfos.queueCount;
+			queueInfosSelection.type = queueTypeMaskVkToSe(queueFamilies[i].queueFlags);
+			queueInfosForSelection.push_back(queueInfosSelection);
 		}
 
 		VkDeviceCreateInfo deviceCreateInfos {};
@@ -207,15 +219,34 @@ namespace se::renderer::vulkan {
 		if (vkCreateDevice(infos.device, &deviceCreateInfos, nullptr, &device) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create logical device");
 
+		queues = s_getQueues(device, queueInfosForSelection);
 		return device;
 	}
 
 
 
-	std::vector<VkDeviceQueueCreateInfo> Device::s_chooseQueues(const std::vector<QueueInfos> &queueInfos, QueueTypeMask wantedQueue) {
-		std::vector<VkDeviceQueueCreateInfo> outputs {};
+	std::map<QueueType, std::vector<VkQueue>> Device::s_getQueues(VkDevice device, const std::vector<QueueInfos> &queueInfos) {
+		std::map<QueueType, std::vector<VkQueue>> output {};
 
-		
+		for (se::Count i {0}; i < queueInfos.size(); ++i) {
+			std::vector<VkQueue> queues {};
+			queues.resize(queueInfos[i].count);
+			for (se::Count j {0}; j < queueInfos[i].count; ++j) {
+				VkQueue queue {};
+				vkGetDeviceQueue(device, i, j, &queue);
+				queues[j] = queue;
+			}
+
+			for (se::Count j {0}; j < SE_QUEUE_TYPE_COUNT; ++j) {
+				if (!(queueInfos[i].type & static_cast<QueueType> (1 << j)))
+					continue;
+
+				output[static_cast<QueueType> (1 << j)].insert(output[static_cast<QueueType> (1 << j)].begin(), queues.begin(), queues.end());
+				break;
+			}
+		}
+
+		return output;
 	}
 
 } // namespace se::renderer::vulkan
