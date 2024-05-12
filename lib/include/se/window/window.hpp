@@ -4,6 +4,8 @@
 
 #ifdef SE_WSI_SDL3
 	#include <SDL3/SDL.h>
+#elifdef SE_WSI_SDL2
+	#include <SDL2/SDL.h>
 #endif
 
 #include "se/concepts.hpp"
@@ -77,6 +79,24 @@ namespace se::window
 
 
 	using Window = WindowBase<SDL3Window>;
+
+#elifdef SE_WSI_SDL2
+
+	class SE_CORE SDL2Window {
+		public:
+			SDL2Window();
+			~SDL2Window();
+
+			void create(const se::window::WindowInfos &infos);
+			void destroy();
+			void move(SDL2Window &&window);
+
+		private:
+			SDL_Window *m_window;
+	};
+
+
+	using Window = WindowBase<SDL2Window>;
 
 #endif
 

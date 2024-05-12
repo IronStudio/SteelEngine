@@ -11,6 +11,7 @@ string(TOUPPER ${PROJECT_ACRONYM} PROJECT_ACRONYM_UPPERCASE)
 set(PROJECT_CPP_DIALECT 23)
 
 option(BUILD_TESTS "BUILD_TESTS" OFF)
+option(FORCE_SDL2 "FORCE_SDL2" OFF)
 
 # external dependencies
 find_package(Vulkan REQUIRED)
@@ -18,11 +19,10 @@ message("Vulkan include directory : " ${Vulkan_INCLUDE_DIRS})
 message("Vulkan libraries : " ${Vulkan_LIBRARIES})
 
 find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
-if (SDL3_FOUND)
+if (SDL3_FOUND AND NOT FORCE_SDL2)
 	set(WSI_PROVIDER_INCLUDE_DIRS $<TARGET_FILE_DIR:SDL3::SDL3>/../include)
 	set(WSI_PROVIDER_LIBRARIES SDL3::SDL3)
 	set(WSI_PROVIDER SDL3)
-	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_WSI_SDL3)
 	if (WIN32)
 		function(CLONE_WSI_DLL target)
 			add_custom_command(
@@ -37,8 +37,7 @@ else()
 	find_package(SDL2 CONFIG REQUIRED)
 	set(WSI_PROVIDER SDL2)
 	set(WSI_PROVIDER_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
-	set(WSI_PROVIDER_LIBRARIES ${SDL2_INCLUDE_LIBRARIES})
-	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_WSI_SDL2)
+	set(WSI_PROVIDER_LIBRARIES ${SDL2_LIBRARIES})
 	if (WIN32)
 		function(CLONE_WSI_DLL target)
 			add_custom_command(
@@ -50,6 +49,8 @@ else()
 		endfunction(CLONE_WSI_DLL)
 	endif()
 endif()
+
+add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_WSI_${WSI_PROVIDER})
 
 message("WSI provider : " ${WSI_PROVIDER})
 message("WSI include directory : " ${WSI_PROVIDER_INCLUDE_DIRS})

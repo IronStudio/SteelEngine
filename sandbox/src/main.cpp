@@ -1,7 +1,7 @@
 #include <iostream>
 #include <thread>
 
-#include <SDL3/SDL.h>
+#include <SDL2/SDL.h>
 #include <vulkan/vulkan.h>
 
 #define SE_APPLICATION_MAIN_FILE
@@ -65,7 +65,7 @@ class SandboxApp : public se::Application {
 				while (running) {
 					SDL_Event event {};
 					while (SDL_PollEvent(&event)) {
-						if (event.type == SDL_EVENT_QUIT) {
+						if (event.type == SDL_QUIT) {
 							running = false;
 							break;
 						}
