@@ -9,6 +9,7 @@
 #include <se/core.hpp>
 #include <se/concepts.hpp>
 #include <se/duration.hpp>
+#include <se/engine.hpp>
 #include <se/memory/poolAllocator.hpp>
 #include <se/threads/thread.hpp>
 #include <se/threads/job.hpp>
@@ -16,10 +17,16 @@
 #include <se/ecs/scene.hpp>
 #include <se/utils/version.hpp>
 #include <se/renderer/vulkan/context.hpp>
+#include <se/window/input.hpp>
 #include <se/window/window.hpp>
 
 
 using namespace se::literals;
+namespace se {
+	using InputManager = se::window::InputManager;
+	using Key = se::window::Key;
+	using MouseButton = se::window::MouseButton;
+} // namespace se
 
 
 class SandboxApp : public se::Application {
@@ -61,15 +68,10 @@ class SandboxApp : public se::Application {
 				windowInfos.height = 9 * 70;
 				se::window::Window window {windowInfos};
 
-				bool running {true};
-				while (running) {
-					SDL_Event event {};
-					while (SDL_PollEvent(&event)) {
-						if (event.type == SDL_EVENT_QUIT) {
-							running = false;
-							break;
-						}
-					}
+				while (se::Engine::isRunning()) {
+					se::InputManager::update();
+					if (se::InputManager::isKeyDown(se::Key::eEscape))
+						se::Engine::shutdown();
 				}
 			}
 

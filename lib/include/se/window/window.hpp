@@ -36,8 +36,7 @@ namespace se::concepts {
 #endif
 
 
-namespace se::window
-{
+namespace se::window {
 	template <typename Implementation>
 	SE_REQUIRES(se::concepts::WindowImplementation<Implementation>)
 	class WindowBase {
