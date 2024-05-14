@@ -1,7 +1,11 @@
 #include <iostream>
 #include <thread>
 
-#include <SDL3/SDL.h>
+#ifdef SE_WSI_SDL3
+	#include <SDL3/SDL.h>
+#elifdef SE_WSI_SDL2
+	#include <SDL2/SDL.h>
+#endif
 #include <vulkan/vulkan.h>
 
 #define SE_APPLICATION_MAIN_FILE
