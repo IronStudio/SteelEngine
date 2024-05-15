@@ -1,0 +1,3 @@
+[submodule "vendors/SteelEngine-Malge"]
+	path = vendors/SteelEngine-Malge
+	url = git@github.com:IronStudio/SteelEngine-Malge.git

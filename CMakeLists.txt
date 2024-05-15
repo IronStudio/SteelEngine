@@ -57,6 +57,15 @@ message("WSI include directory : " ${WSI_PROVIDER_INCLUDE_DIRS})
 message("WSI libraries : " ${WSI_PROVIDER_LIBRARIES})
 
 
+set(DEPS_INCLUDE_DIRS ${WSI_PROVIDER_INCLUDE_DIRS}
+	${Vulkan_INCLUDE_DIRS}
+	${CMAKE_SOURCE_DIR}/vendors/SteelEngine-Malge/se-malge/include
+)
+set(DEPS_LIBRARIES ${WSI_PROVIDER_LIBRARIES} ${Vulkan_LIBRARIES})
+
+message("Dependencies include path : " ${DEPS_INCLUDE_DIRS})
+message("Dependencies libraries : " ${DEPS_LIBRARIES})
+
 
 if (WIN32)
 	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_WINDOWS)

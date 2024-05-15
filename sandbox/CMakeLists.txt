@@ -21,12 +21,7 @@ else()
 	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_SHARED)
 endif()
 
-include_directories(
-	./include,
-	../lib/include
-	${Vulkan_INCLUDE_DIRS}
-	${WSI_PROVIDER_INCLUDE_DIRS}
-)
+include_directories(./include ../lib/include ${DEPS_INCLUDE_DIRS})
 
 file(GLOB_RECURSE SANDBOX_HEADER *.hpp)
 file(GLOB_RECURSE SANDBOX_INLINE *.inl)
@@ -36,11 +31,7 @@ add_executable(${SANDBOX_NAME} ${SANDBOX_HEADER} ${SANDBOX_INLINE} ${SANDBOX_SOU
 set_property(TARGET ${SANDBOX_NAME} PROPERTY CXX_STANDARD ${PROJECT_CPP_DIALECT})
 set_target_properties(${SANDBOX_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
-target_link_libraries(${SANDBOX_NAME} PRIVATE
-	${PROJECT_NAME}
-	${Vulkan_LIBRARIES}
-	${WSI_PROVIDER_LIBRARIES}
-)
+target_link_libraries(${SANDBOX_NAME} PRIVATE ${PROJECT_NAME} ${DEPS_LIBRARIES})
 
 
 

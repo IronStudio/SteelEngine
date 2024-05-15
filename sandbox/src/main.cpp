@@ -14,6 +14,7 @@
 #include <se/concepts.hpp>
 #include <se/duration.hpp>
 #include <se/engine.hpp>
+#include <se/math.hpp>
 #include <se/memory/poolAllocator.hpp>
 #include <se/threads/thread.hpp>
 #include <se/threads/job.hpp>

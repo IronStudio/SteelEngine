@@ -27,10 +27,7 @@ else()
 	)
 endif()
 
-include_directories(include
-	${Vulkan_INCLUDE_DIRS}
-	${WSI_PROVIDER_INCLUDE_DIRS}
-)
+include_directories(include ${DEPS_INCLUDE_DIRS})
 
 file(GLOB_RECURSE LIBRARY_HEADER *.hpp)
 file(GLOB_RECURSE LIBRARY_INLINE *.inl)
@@ -40,7 +37,4 @@ add_library(${LIBRARY_NAME} ${LIBRARY_TYPE} ${LIBRARY_HEADER} ${LIBRARY_INLINE} 
 set_property(TARGET ${LIBRARY_NAME} PROPERTY CXX_STANDARD ${PROJECT_CPP_DIALECT})
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
-target_link_libraries(${LIBRARY_NAME} PUBLIC
-	${Vulkan_LIBRARIES}
-	${WSI_PROVIDER_LIBRARIES}
-)
+target_link_libraries(${LIBRARY_NAME} PUBLIC ${DEPS_LIBRARIES})
