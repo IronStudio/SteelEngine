@@ -10,6 +10,7 @@
 #include <se/concepts.hpp>
 #include <se/duration.hpp>
 #include <se/engine.hpp>
+#include <se/input/inputManager.hpp>
 #include <se/math.hpp>
 #include <se/memory/poolAllocator.hpp>
 #include <se/threads/thread.hpp>
@@ -65,22 +66,14 @@ class SandboxApp : public se::Application {
 			se::window::Window &window2 {se::window::WindowManager::createWindow(windowInfos)};
 
 			bool running {true};
-			while (running) {
-				SDL_Event event {};
-				while (SDL_PollEvent(&event)) {
-					if (event.type == SDL_QUIT) {
-						running = false;
-						break;
-					}
-
-					if (event.type == SDL_WINDOWEVENT) {
-						if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
-							std::cout << "WINDOW CLOSE" << std::endl;
-							SDL_Window *win {SDL_GetWindowFromID(event.window.windowID)};
-							se::window::WindowManager::destroyWindow(win);
-						}
-					}
-				}
+			while (se::Engine::isRunning()) {
+				se::input::InputManager::update();
+				if (se::input::InputManager::isKeyDown(se::input::Key::eA))
+					std::cout << "A" << std::endl;
+				if (se::input::InputManager::wasKeyPressed(se::input::Key::eD))
+					std::cout << "D" << std::endl;
+				if (se::input::InputManager::wasKeyReleased(se::input::Key::eF))
+					std::cout << "F" << std::endl;
 			}
 		}
 };
