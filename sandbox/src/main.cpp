@@ -1,11 +1,7 @@
 #include <iostream>
 #include <thread>
 
-#ifdef SE_WSI_SDL3
-	#include <SDL3/SDL.h>
-#elifdef SE_WSI_SDL2
-	#include <SDL2/SDL.h>
-#endif
+#include <SDL2/SDL.h>
 #include <vulkan/vulkan.h>
 
 #define SE_APPLICATION_MAIN_FILE
@@ -22,16 +18,9 @@
 #include <se/ecs/scene.hpp>
 #include <se/utils/version.hpp>
 #include <se/renderer/vulkan/context.hpp>
-#include <se/window/input.hpp>
-#include <se/window/window.hpp>
 
 
 using namespace se::literals;
-namespace se {
-	using InputManager = se::window::InputManager;
-	using Key = se::window::Key;
-	using MouseButton = se::window::MouseButton;
-} // namespace se
 
 
 class SandboxApp : public se::Application {
@@ -66,18 +55,7 @@ class SandboxApp : public se::Application {
 
 			SDL_Init(SDL_INIT_VIDEO);
 			{
-				se::window::WindowInfos windowInfos {};
-				windowInfos.graphicsApi = se::renderer::GraphicsApi::eVulkan;
-				windowInfos.title = "SteelEngine_sandbox";
-				windowInfos.width = 16 * 70;
-				windowInfos.height = 9 * 70;
-				se::window::Window window {windowInfos};
 
-				while (se::Engine::isRunning()) {
-					se::InputManager::update();
-					if (se::InputManager::isKeyDown(se::Key::eEscape))
-						se::Engine::shutdown();
-				}
 			}
 
 			SDL_Quit();
