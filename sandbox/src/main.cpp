@@ -72,12 +72,18 @@ class SandboxApp : public se::Application {
 			bool running {true};
 			while (se::Engine::isRunning()) {
 				se::input::InputManager::update();
-				if (se::input::InputManager::isKeyDown(se::input::Key::eA))
-					std::cout << "A" << std::endl;
-				if (se::input::InputManager::wasKeyPressed(se::input::Key::eD))
-					std::cout << "D" << std::endl;
-				if (se::input::InputManager::wasKeyReleased(se::input::Key::eF))
-					std::cout << "F" << std::endl;
+
+				if (se::input::InputManager::getFocusedWindowUUID() == window.getUUID()) {
+					if (se::input::InputManager::isKeyDown(se::input::Key::eA))
+						std::cout << "A" << std::endl;
+					if (se::input::InputManager::wasKeyPressed(se::input::Key::eD))
+						std::cout << "D" << std::endl;
+					if (se::input::InputManager::wasKeyReleased(se::input::Key::eF))
+						std::cout << "F" << std::endl;
+				}
+
+				if (se::input::InputManager::wasKeyPressed(se::input::Key::eEscape) && se::input::InputManager::getFocusedWindowUUID() != 0)
+					se::window::WindowManager::destroyWindow(se::input::InputManager::getFocusedWindowUUID());
 
 				if (se::input::InputManager::wasWindowResized(window2.getUUID()))
 					SE_APP_LOGGER.log({se::LogSeverity::eInfo}, "Window2 resized to {}x{}", window2.getInfos().size.x, window2.getInfos().size.y);

@@ -2,7 +2,6 @@
 
 #include "se/assertion.hpp"
 #include "se/exceptions.hpp"
-#include "se/logger.hpp"
 
 
 

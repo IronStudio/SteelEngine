@@ -58,6 +58,26 @@ namespace se::window {
 	}
 
 
+	bool WindowManager::hasWindow(se::UUID uuid) {
+		for (auto &window : s_windows) {
+			if (window.getUUID() == uuid)
+				return true;
+		}
+
+		return false;
+	}
+
+
+	bool WindowManager::hasWindow(SDL_Window *_window) {
+		for (auto &window : s_windows) {
+			if (window.getInternalObject() == _window)
+				return true;
+		}
+
+		return false;
+	}
+
+
 	void WindowManager::destroyWindow(se::UUID uuid) {
 		for (auto it {s_windows.begin()}; it != s_windows.end(); ++it) {
 			if (it->getUUID() != uuid)

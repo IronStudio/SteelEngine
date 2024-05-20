@@ -19,6 +19,9 @@ namespace se::window {
 			static se::window::Window &getWindow(const std::string &title);
 			static se::window::Window &getWindow(SDL_Window *window);
 
+			static bool hasWindow(se::UUID uuid);
+			static bool hasWindow(SDL_Window *window);
+
 			static void destroyWindow(se::UUID uuid);
 			static void destroyWindow(const se::window::Window &window);
 			static void destroyWindow(SDL_Window *window);

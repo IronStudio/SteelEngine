@@ -133,6 +133,13 @@ namespace se::input {
 				s_focusedWindowUUID = se::window::WindowManager::getWindow(SDL_GetWindowFromID(event.window.windowID)).getUUID();
 				break;
 
+			case SDL_WINDOWEVENT_FOCUS_LOST:
+				if (!se::window::WindowManager::hasWindow(SDL_GetWindowFromID(event.window.windowID)))
+					break;
+				if (s_focusedWindowUUID == se::window::WindowManager::getWindow(SDL_GetWindowFromID(event.window.windowID)).getUUID())
+					s_focusedWindowUUID = 0;
+				break;
+
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
 				se::window::WindowManager::getWindow(SDL_GetWindowFromID(event.window.windowID)).sync(se::window::WindowResync::eSize);
 				s_wasWindowResized[(size_t)se::window::WindowManager::getWindow(SDL_GetWindowFromID(event.window.windowID)).getUUID()] = true;
