@@ -18,7 +18,7 @@
 #include <se/ecs/scene.hpp>
 #include <se/utils/version.hpp>
 #include <se/renderer/vulkan/context.hpp>
-#include <se/window/window.hpp>
+#include <se/window/windowManager.hpp>
 
 
 using namespace se::literals;
@@ -54,28 +54,34 @@ class SandboxApp : public se::Application {
 			se::renderer::vulkan::Context context {contextInfos};
 
 
-			SDL_Init(SDL_INIT_VIDEO);
-			{
-				se::window::WindowInfos windowInfos {};
-				windowInfos.title = "SteelEngine_sandbox";
-				windowInfos.size = {16 * 70, 9 * 70};
-				windowInfos.position = {se::window::centerPosition, se::window::undefinedPosition};
-				windowInfos.graphicsApi = se::renderer::GraphicsApi::eVulkan;
-				se::window::Window window {windowInfos};
+			se::window::WindowInfos windowInfos {};
+			windowInfos.title = "SteelEngine_sandbox";
+			windowInfos.size = {16 * 70, 9 * 70};
+			windowInfos.position = {se::window::centerPosition, se::window::undefinedPosition};
+			windowInfos.graphicsApi = se::renderer::GraphicsApi::eVulkan;
+			se::window::Window &window {se::window::WindowManager::createWindow(windowInfos)};
 
-				bool running {true};
-				while (running) {
-					SDL_Event event {};
-					while (SDL_PollEvent(&event)) {
-						if (event.type == SDL_QUIT) {
-							running = false;
-							break;
+			windowInfos.title = "2nd";
+			se::window::Window &window2 {se::window::WindowManager::createWindow(windowInfos)};
+
+			bool running {true};
+			while (running) {
+				SDL_Event event {};
+				while (SDL_PollEvent(&event)) {
+					if (event.type == SDL_QUIT) {
+						running = false;
+						break;
+					}
+
+					if (event.type == SDL_WINDOWEVENT) {
+						if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
+							std::cout << "WINDOW CLOSE" << std::endl;
+							SDL_Window *win {SDL_GetWindowFromID(event.window.windowID)};
+							se::window::WindowManager::destroyWindow(win);
 						}
 					}
 				}
 			}
-
-			SDL_Quit();
 		}
 };
 
