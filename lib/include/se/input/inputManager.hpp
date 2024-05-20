@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <unordered_map>
 
 #include <SDL2/SDL.h>
@@ -56,6 +57,7 @@ namespace se::input {
 			static bool wasMouseButtonReleased(se::input::MouseButton button);
 
 			static se::UUID getFocusedWindowUUID();
+			static bool wasWindowResized(se::UUID uuid);
 
 
 		private:
@@ -67,6 +69,7 @@ namespace se::input {
 			static std::unordered_map<se::input::MouseButton, bool> s_mouseButtonStates;
 			static std::unordered_map<se::input::MouseButton, bool> s_oldMouseButtonStates;
 			static se::UUID s_focusedWindowUUID;
+			static std::map<size_t, bool> s_wasWindowResized;
 	};
 
 } // namespace se::input

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <bitset>
+#include <ostream>
+
 #include "se/types.hpp"
 
 
@@ -65,6 +68,10 @@ inline mask operator&(name lhs, name rhs) {\
 	mask out {};\
 	out.content = static_cast<se::Uint64> (lhs) & static_cast<se::Uint64> (rhs);\
 	return out;\
+}\
+inline std::ostream &operator<<(std::ostream &stream, const mask &val) {\
+	stream << std::bitset<64> (val.content);\
+	return stream;\
 }
 
 

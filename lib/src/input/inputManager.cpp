@@ -26,6 +26,9 @@ namespace se::input {
 		s_oldKeyStates = s_keyStates;
 		s_oldMouseButtonStates = s_mouseButtonStates;
 
+		for (auto &window : s_wasWindowResized)
+			window.second = false;
+
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 				case SDL_KEYDOWN:
@@ -101,6 +104,14 @@ namespace se::input {
 	}
 
 
+	bool InputManager::wasWindowResized(se::UUID uuid) {
+		auto it {s_wasWindowResized.find((size_t)uuid)};
+		if (it == s_wasWindowResized.end())
+			return false;
+		return it->second;
+	}
+
+
 	void InputManager::s_load() {
 		for (se::Count i {0}; i < (se::Count)se::input::Key::__last; ++i)
 			s_keyStates[(se::input::Key)i] = false;
@@ -122,6 +133,15 @@ namespace se::input {
 				s_focusedWindowUUID = se::window::WindowManager::getWindow(SDL_GetWindowFromID(event.window.windowID)).getUUID();
 				break;
 
+			case SDL_WINDOWEVENT_SIZE_CHANGED:
+				se::window::WindowManager::getWindow(SDL_GetWindowFromID(event.window.windowID)).sync(se::window::WindowResync::eSize);
+				s_wasWindowResized[(size_t)se::window::WindowManager::getWindow(SDL_GetWindowFromID(event.window.windowID)).getUUID()] = true;
+				break;
+
+			case SDL_WINDOWEVENT_MOVED:
+				se::window::WindowManager::getWindow(SDL_GetWindowFromID(event.window.windowID)).sync(se::window::WindowResync::ePosition);
+				break;
+
 			case SDL_WINDOWEVENT_CLOSE:
 				se::window::WindowManager::destroyWindow(SDL_GetWindowFromID(event.window.windowID));
 				break;
@@ -134,6 +154,7 @@ namespace se::input {
 	std::unordered_map<se::input::MouseButton, bool> InputManager::s_mouseButtonStates {};
 	std::unordered_map<se::input::MouseButton, bool> InputManager::s_oldMouseButtonStates {};
 	se::UUID InputManager::s_focusedWindowUUID {0};
+	std::map<size_t, bool> InputManager::s_wasWindowResized {};
 
 	
 	se::input::Key keySDL2ToSe(SDL_Scancode key) {

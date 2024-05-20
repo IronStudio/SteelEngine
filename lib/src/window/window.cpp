@@ -2,6 +2,7 @@
 
 #include "se/assertion.hpp"
 #include "se/exceptions.hpp"
+#include "se/logger.hpp"
 
 
 
@@ -50,12 +51,38 @@ namespace se::window {
 				break;
 		}
 
+		if (m_infos.flags & se::window::WindowFlags::eResizable)
+			flags |= SDL_WINDOW_RESIZABLE;
+
 		m_window = SDL_CreateWindow(m_infos.title.c_str(), m_infos.position.x, m_infos.position.y, m_infos.size.x, m_infos.size.y, flags);
 		if (m_window == nullptr)
 			throw se::exceptions::RuntimeError("Can't create window " + std::string(m_uuid) + " : " + std::string(SDL_GetError()));
 
 		SDL_GetWindowSize(m_window, &m_infos.size.x, &m_infos.size.y);
 		SDL_GetWindowPosition(m_window, &m_infos.position.x, &m_infos.position.y);
+
+		if (m_infos.minSize.x == se::window::sizeLimitFit)
+			m_infos.minSize.x = m_infos.size.x;
+		else if (m_infos.minSize.x == se::window::undefinedLimitSize)
+			m_infos.minSize.x = 0;
+		if (m_infos.minSize.y == se::window::sizeLimitFit)
+			m_infos.minSize.y = m_infos.size.y;
+		else if (m_infos.minSize.y == se::window::undefinedLimitSize)
+			m_infos.minSize.y = 0;
+		SDL_SetWindowMinimumSize(m_window, m_infos.minSize.x, m_infos.minSize.y);
+
+		if (m_infos.maxSize.x == se::window::sizeLimitFit)
+			m_infos.maxSize.x = m_infos.size.x;
+		else if (m_infos.maxSize.x == se::window::undefinedLimitSize)
+			m_infos.maxSize.x = 0;
+		if (m_infos.maxSize.y == se::window::sizeLimitFit)
+			m_infos.maxSize.y = m_infos.size.y;
+		else if (m_infos.maxSize.y == se::window::undefinedLimitSize)
+			m_infos.maxSize.y = 0;
+		SDL_SetWindowMaximumSize(m_window, m_infos.maxSize.x, m_infos.maxSize.y);
+
+		SDL_GetWindowMinimumSize(m_window, &m_infos.minSize.x, &m_infos.minSize.y);
+		SDL_GetWindowMaximumSize(m_window, &m_infos.maxSize.x, &m_infos.maxSize.y);
 	}
 
 
@@ -103,6 +130,14 @@ namespace se::window {
 
 	void Window::setTitle(const std::string &title) {
 		SDL_SetWindowTitle(m_window, title.c_str());
+	}
+
+
+	void Window::sync(se::window::WindowResyncMask mask) {
+		if (mask & se::window::WindowResync::eSize)
+			SDL_GetWindowSize(m_window, &m_infos.size.x, &m_infos.size.y);
+		if (mask & se::window::WindowResync::ePosition)
+			SDL_GetWindowPosition(m_window, &m_infos.position.x, &m_infos.position.y);
 	}
 
 

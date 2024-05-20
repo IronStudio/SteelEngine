@@ -60,9 +60,13 @@ class SandboxApp : public se::Application {
 			windowInfos.size = {16 * 70, 9 * 70};
 			windowInfos.position = {se::window::centerPosition, se::window::undefinedPosition};
 			windowInfos.graphicsApi = se::renderer::GraphicsApi::eVulkan;
+			windowInfos.flags = se::window::WindowFlags::eResizable | se::window::WindowFlags::eMasterWindow;
 			se::window::Window &window {se::window::WindowManager::createWindow(windowInfos)};
 
 			windowInfos.title = "2nd";
+			windowInfos.flags = se::window::WindowFlags::eResizable;
+			windowInfos.minSize = {16 * 10, 9 * 10};
+			windowInfos.maxSize = {16 * 100, 9 * 100};
 			se::window::Window &window2 {se::window::WindowManager::createWindow(windowInfos)};
 
 			bool running {true};
@@ -74,6 +78,9 @@ class SandboxApp : public se::Application {
 					std::cout << "D" << std::endl;
 				if (se::input::InputManager::wasKeyReleased(se::input::Key::eF))
 					std::cout << "F" << std::endl;
+
+				if (se::input::InputManager::wasWindowResized(window2.getUUID()))
+					SE_APP_LOGGER.log({se::LogSeverity::eInfo}, "Window2 resized to {}x{}", window2.getInfos().size.x, window2.getInfos().size.y);
 			}
 		}
 };
