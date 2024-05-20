@@ -1,6 +1,7 @@
 #include "se/window/windowManager.hpp"
 
 #include "se/assertion.hpp"
+#include "se/engine.hpp"
 #include "se/exceptions.hpp"
 
 
@@ -62,6 +63,8 @@ namespace se::window {
 			if (it->getUUID() != uuid)
 				continue;
 
+			if (it->getInfos().flags & se::window::WindowFlags::eMasterWindow)
+				se::Engine::shutdown();
 			s_windows.erase(it);
 			return;
 		}
@@ -75,6 +78,8 @@ namespace se::window {
 			if (&*it != &window)
 				continue;
 
+			if (it->getInfos().flags & se::window::WindowFlags::eMasterWindow)
+				se::Engine::shutdown();
 			s_windows.erase(it);
 			return;
 		}
@@ -88,6 +93,8 @@ namespace se::window {
 			if (it->getInternalObject() != window)
 				continue;
 
+			if (it->getInfos().flags & se::window::WindowFlags::eMasterWindow)
+				se::Engine::shutdown();
 			s_windows.erase(it);
 			return;
 		}
