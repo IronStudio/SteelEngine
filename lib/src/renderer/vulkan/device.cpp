@@ -70,6 +70,7 @@ namespace se::renderer::vulkan {
 		scoreCriterias.gpuType = m_infos.gpuType;
 		scoreCriterias.extensions = m_infos.extensions;
 		scoreCriterias.queueTypeMask = m_infos.queueTypeMask;
+		scoreCriterias.surface = m_infos.surface;
 
 		DeviceCreateInfos deviceCreateInfos {};
 		deviceCreateInfos.device = s_chooseDevice(m_infos.instance, scoreCriterias);
@@ -155,9 +156,15 @@ namespace se::renderer::vulkan {
 			score += 1000;
 
 		se::renderer::vulkan::QueueTypeMask foundQueueTypes {};
+		se::Count index {0};
 		for (const auto &queue : queueFamilies) {
 			foundQueueTypes |= queueTypeMaskVkToSe(queue.queueFlags);
-			//vkGetPhysicalDeviceSurfaceSupportKHR(device, index, surface, &support);
+			VkBool32 support {VK_FALSE};
+			if (vkGetPhysicalDeviceSurfaceSupportKHR(device, index, criterias.surface, &support) != VK_SUCCESS)
+				SE_LOGGER.log({se::LogSeverity::eWarning}, "Can't check surface support of queue family {}", index);
+			if (support == VK_TRUE)
+				foundQueueTypes |= se::renderer::vulkan::QueueType::ePresent;
+			++index;
 		}
 
 		if (criterias.queueTypeMask != (criterias.queueTypeMask & foundQueueTypes))
@@ -184,7 +191,7 @@ namespace se::renderer::vulkan {
 		SE_LOGGER << "Available queue families :\n";
 		for (se::Count i {0}; i < queueFamilies.size(); ++i) {
 			SE_LOGGER << "\t- Queue index " << i << "\n";
-			SE_LOGGER << "\t\t- Type  : " << std::bitset<8>(queueTypeMaskVkToSe(queueFamilies[i].queueFlags).content) << "\n";
+			SE_LOGGER << "\t\t- Type  : " << std::bitset<8> (queueTypeMaskVkToSe(queueFamilies[i].queueFlags).content) << "\n";
 			SE_LOGGER << "\t\t- Count : " << queueFamilies[i].queueCount << "\n";
 		}
 

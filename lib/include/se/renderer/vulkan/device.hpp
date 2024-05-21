@@ -33,6 +33,7 @@ namespace se::renderer::vulkan {
 		se::renderer::GPUType gpuType;
 		std::vector<const char*> extensions;
 		se::renderer::vulkan::QueueTypeMask queueTypeMask;
+		VkSurfaceKHR surface;
 	};
 
 
@@ -48,6 +49,7 @@ namespace se::renderer::vulkan {
 				se::renderer::GPUType gpuType;
 				std::vector<const char*> extensions;
 				se::renderer::vulkan::QueueTypeMask queueTypeMask;
+				VkSurfaceKHR surface;
 			};
 
 			struct DeviceCreateInfos {

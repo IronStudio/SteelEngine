@@ -97,7 +97,8 @@ namespace se::renderer::vulkan {
 		deviceInfos.extensions = {
 			
 		};
-		deviceInfos.queueTypeMask = se::renderer::vulkan::QueueType::eGraphics;
+		deviceInfos.queueTypeMask = se::renderer::vulkan::QueueType::eGraphics | se::renderer::vulkan::QueueType::ePresent;
+		deviceInfos.surface = m_surface->getSurface();
 		m_device = new se::renderer::vulkan::Device(deviceInfos);
 	}
 
