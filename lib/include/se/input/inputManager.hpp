@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h>
 
 #include "se/core.hpp"
+#include "se/math.hpp"
 #include "se/uuid.hpp"
 
 
@@ -59,6 +60,10 @@ namespace se::input {
 			static se::UUID getFocusedWindowUUID();
 			static bool wasWindowResized(se::UUID uuid);
 
+			static const se::Vec2i &getMousePosition();
+			static const se::Vec2i &getMouseMotion();
+			static bool hasMouseMoved();
+
 
 		private:
 			static void s_load();
@@ -70,6 +75,8 @@ namespace se::input {
 			static std::unordered_map<se::input::MouseButton, bool> s_oldMouseButtonStates;
 			static se::UUID s_focusedWindowUUID;
 			static std::map<size_t, bool> s_wasWindowResized;
+			static se::Vec2i s_mousePosition;
+			static se::Vec2i s_mouseMotion;
 	};
 
 } // namespace se::input

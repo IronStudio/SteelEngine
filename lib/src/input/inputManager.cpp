@@ -25,6 +25,7 @@ namespace se::input {
 		SDL_Event event {};
 		s_oldKeyStates = s_keyStates;
 		s_oldMouseButtonStates = s_mouseButtonStates;
+		s_mouseMotion = se::Vec2i(0, 0);
 
 		for (auto &window : s_wasWindowResized)
 			window.second = false;
@@ -45,6 +46,11 @@ namespace se::input {
 
 				case SDL_MOUSEBUTTONUP:
 					s_mouseButtonStates[mouseButtonSDL2ToSe(event.button.button)] = false;
+					break;
+
+				case SDL_MOUSEMOTION:
+					s_mousePosition = {event.motion.x, event.motion.y};
+					s_mouseMotion = {event.motion.xrel, event.motion.yrel};
 					break;
 
 				case SDL_WINDOWEVENT:
@@ -112,6 +118,21 @@ namespace se::input {
 	}
 
 
+	const se::Vec2i &InputManager::getMousePosition() {
+		return s_mousePosition;
+	}
+
+
+	const se::Vec2i &InputManager::getMouseMotion() {
+		return s_mouseMotion;
+	}
+
+
+	bool InputManager::hasMouseMoved() {
+		return s_mouseMotion != se::Vec2i(0, 0);
+	}
+
+
 	void InputManager::s_load() {
 		for (se::Count i {0}; i < (se::Count)se::input::Key::__last; ++i)
 			s_keyStates[(se::input::Key)i] = false;
@@ -162,6 +183,8 @@ namespace se::input {
 	std::unordered_map<se::input::MouseButton, bool> InputManager::s_oldMouseButtonStates {};
 	se::UUID InputManager::s_focusedWindowUUID {0};
 	std::map<size_t, bool> InputManager::s_wasWindowResized {};
+	se::Vec2i InputManager::s_mousePosition {};
+	se::Vec2i InputManager::s_mouseMotion {};
 
 	
 	se::input::Key keySDL2ToSe(SDL_Scancode key) {

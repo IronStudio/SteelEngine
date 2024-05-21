@@ -82,6 +82,11 @@ class SandboxApp : public se::Application {
 						std::cout << "F" << std::endl;
 				}
 
+				if (se::input::InputManager::hasMouseMoved()) {
+					SE_APP_LOGGER.log({se::LogSeverity::eInfo}, "Mouse moved to ({}, {})", se::input::InputManager::getMousePosition().x,
+						se::input::InputManager::getMousePosition().y);
+				}
+
 				if (se::input::InputManager::wasKeyPressed(se::input::Key::eEscape) && se::input::InputManager::getFocusedWindowUUID() != 0)
 					se::window::WindowManager::destroyWindow(se::input::InputManager::getFocusedWindowUUID());
 
