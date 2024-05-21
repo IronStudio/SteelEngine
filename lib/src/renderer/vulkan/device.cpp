@@ -76,7 +76,7 @@ namespace se::renderer::vulkan {
 		deviceCreateInfos.device = s_chooseDevice(m_infos.instance, scoreCriterias);
 		deviceCreateInfos.extensions = m_infos.extensions;
 		deviceCreateInfos.queueTypeMask = m_infos.queueTypeMask;
-		//deviceCreateInfos.surface = m_infos.;
+		deviceCreateInfos.surface = m_infos.surface;
 
 		m_device = s_createDevice(deviceCreateInfos, m_queues);
 
@@ -228,9 +228,17 @@ namespace se::renderer::vulkan {
 			queueInfos.pQueuePriorities = priorities.rbegin()->data();
 			queueCreateInfos.push_back(queueInfos);
 
+			se::renderer::vulkan::QueueTypeMask queueFlags {queueTypeMaskVkToSe(queueFamilies[i].queueFlags)};
+
+			VkBool32 presentSupported {};
+			if (vkGetPhysicalDeviceSurfaceSupportKHR(infos.device, i, infos.surface, &presentSupported) != VK_SUCCESS)
+				presentSupported = VK_FALSE;
+			if (presentSupported)
+				queueFlags |= se::renderer::vulkan::QueueType::ePresent;
+
 			QueueInfos queueInfosSelection {};
 			queueInfosSelection.count = queueInfos.queueCount;
-			queueInfosSelection.type = queueTypeMaskVkToSe(queueFamilies[i].queueFlags);
+			queueInfosSelection.type = queueFlags;
 			queueInfosForSelection.push_back(queueInfosSelection);
 		}
 
@@ -270,7 +278,6 @@ namespace se::renderer::vulkan {
 					continue;
 
 				output[static_cast<QueueType> (1 << j)].insert(output[static_cast<QueueType> (1 << j)].begin(), queues.begin(), queues.end());
-				break;
 			}
 		}
 
