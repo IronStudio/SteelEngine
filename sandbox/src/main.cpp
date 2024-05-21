@@ -48,12 +48,6 @@ class SandboxApp : public se::Application {
 			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eError) << "Hello" << se::endLog;
 			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eFatal) << "Hello" << se::endLog;
 
-			se::renderer::ContextInfos contextInfos {};
-			contextInfos.applicationName = "SteelEngine_sandbox";
-			contextInfos.applicationVersion = "1.0.0"_v;
-			contextInfos.preferredGPU = se::renderer::GPUType::eDiscret;
-			se::renderer::vulkan::Context context {contextInfos};
-
 
 			se::window::WindowInfos windowInfos {};
 			windowInfos.title = "SteelEngine_sandbox";
@@ -68,6 +62,15 @@ class SandboxApp : public se::Application {
 			windowInfos.minSize = {16 * 10, 9 * 10};
 			windowInfos.maxSize = {16 * 100, 9 * 100};
 			se::window::Window &window2 {se::window::WindowManager::createWindow(windowInfos)};
+
+
+			se::renderer::ContextInfos contextInfos {};
+			contextInfos.applicationName = "SteelEngine_sandbox";
+			contextInfos.applicationVersion = "1.0.0"_v;
+			contextInfos.preferredGPU = se::renderer::GPUType::eDiscret;
+			contextInfos.linkedWindow = &window;
+			se::renderer::vulkan::Context context {contextInfos};
+
 
 			bool running {true};
 			while (se::Engine::isRunning()) {

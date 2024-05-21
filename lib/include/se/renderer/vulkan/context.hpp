@@ -7,6 +7,7 @@
 #include "se/core.hpp"
 #include "se/renderer/context.hpp"
 #include "se/renderer/vulkan/device.hpp"
+#include "se/renderer/vulkan/surface.hpp"
 
 
 
@@ -16,7 +17,7 @@ namespace se::renderer::vulkan {
 			Context(const se::renderer::ContextInfos &infos);
 			~Context() override;
 
-			inline VkInstance getInstance() const noexcept {return m_instance;}
+			inline VkInstance getInstance() const noexcept {return s_instance;}
 
 		private:
 			static VKAPI_ATTR VkBool32 VKAPI_CALL s_debugMessageCallback(
@@ -30,7 +31,9 @@ namespace se::renderer::vulkan {
 			static std::vector<const char*> s_checkLayers(const std::vector<const char*> &layers);
 			static std::vector<const char*> s_checkExtensions(const std::vector<const char*> &extensions);
 
-			VkInstance m_instance;
+			static VkInstance s_instance;
+			static se::Count s_instanceCount;
+			se::renderer::vulkan::Surface *m_surface;
 			se::renderer::vulkan::Device *m_device;
 			#ifndef NDEBUG
 				VkDebugUtilsMessengerEXT m_debugMessenger;

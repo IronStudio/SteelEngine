@@ -4,6 +4,7 @@
 
 #include "se/renderer/gpuType.hpp"
 #include "se/utils/version.hpp"
+#include "se/window/window.hpp"
 
 
 
@@ -12,6 +13,7 @@ namespace se::renderer {
 		std::string applicationName;
 		se::utils::Version applicationVersion;
 		GPUType preferredGPU;
+		se::window::Window *linkedWindow;
 	};
 
 	class Context {
