@@ -95,7 +95,7 @@ namespace se::renderer::vulkan {
 		deviceInfos.instance = s_instance;
 		deviceInfos.gpuType = m_infos.preferredGPU;
 		deviceInfos.extensions = {
-			
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
 		deviceInfos.queueTypeMask = se::renderer::vulkan::QueueType::eGraphics | se::renderer::vulkan::QueueType::ePresent;
 		deviceInfos.surface = m_surface->getSurface();

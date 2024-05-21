@@ -86,8 +86,8 @@ class SandboxApp : public se::Application {
 				}
 
 				if (se::input::InputManager::hasMouseMoved()) {
-					SE_APP_LOGGER.log({se::LogSeverity::eInfo}, "Mouse moved to ({}, {})", se::input::InputManager::getMousePosition().x,
-						se::input::InputManager::getMousePosition().y);
+					//SE_APP_LOGGER.log({se::LogSeverity::eInfo}, "Mouse moved to ({}, {})", se::input::InputManager::getMousePosition().x,
+					//	se::input::InputManager::getMousePosition().y);
 				}
 
 				if (se::input::InputManager::wasKeyPressed(se::input::Key::eEscape) && se::input::InputManager::getFocusedWindowUUID() != 0)

@@ -83,7 +83,11 @@ namespace se::renderer::vulkan {
 		SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Queues :\n";
 		for (const auto &queue : m_queues)
 			SE_LOGGER << "\t" << (se::Uint64)queue.first << " : " << queue.second.size() << "\n";
+		SE_LOGGER << se::endLog;
 
+		SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Device extensions :\n";
+		for (const auto &extension : m_infos.extensions)
+			SE_LOGGER << "\t" << extension << "\n";
 		SE_LOGGER << se::endLog;
 	}
 
@@ -222,8 +226,8 @@ namespace se::renderer::vulkan {
 
 			priorities.push_back({});
 			priorities.rbegin()->resize(queueInfos.queueCount);
-			for (se::Count i {0}; i < queueInfos.queueCount; ++i)
-				priorities.rbegin()->operator[](i) = 1.f;
+			for (se::Count j {0}; j < queueInfos.queueCount; ++j)
+				priorities.rbegin()->operator[](j) = 1.f;
 
 			queueInfos.pQueuePriorities = priorities.rbegin()->data();
 			queueCreateInfos.push_back(queueInfos);
