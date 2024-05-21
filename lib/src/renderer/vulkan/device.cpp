@@ -76,6 +76,7 @@ namespace se::renderer::vulkan {
 		deviceCreateInfos.device = s_chooseDevice(m_infos.instance, scoreCriterias);
 		deviceCreateInfos.extensions = m_infos.extensions;
 		deviceCreateInfos.queueTypeMask = m_infos.queueTypeMask;
+		//deviceCreateInfos.surface = m_infos.;
 
 		m_device = s_createDevice(deviceCreateInfos, m_queues);
 
@@ -190,8 +191,16 @@ namespace se::renderer::vulkan {
 		SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo);
 		SE_LOGGER << "Available queue families :\n";
 		for (se::Count i {0}; i < queueFamilies.size(); ++i) {
+			VkBool32 presentSupported {};
+			if (vkGetPhysicalDeviceSurfaceSupportKHR(infos.device, i, infos.surface, &presentSupported) != VK_SUCCESS)
+				presentSupported = VK_FALSE;
+
+			se::renderer::vulkan::QueueTypeMask queueType {queueTypeMaskVkToSe(queueFamilies[i].queueFlags)};
+			if(presentSupported)
+				queueType |= se::renderer::vulkan::QueueType::ePresent;
+
 			SE_LOGGER << "\t- Queue index " << i << "\n";
-			SE_LOGGER << "\t\t- Type  : " << std::bitset<8> (queueTypeMaskVkToSe(queueFamilies[i].queueFlags).content) << "\n";
+			SE_LOGGER << "\t\t- Type  : " << std::bitset<8>(queueType.content) << "\n";
 			SE_LOGGER << "\t\t- Count : " << queueFamilies[i].queueCount << "\n";
 		}
 

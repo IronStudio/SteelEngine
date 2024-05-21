@@ -56,6 +56,7 @@ namespace se::renderer::vulkan {
 				VkPhysicalDevice device;
 				std::vector<const char*> extensions;
 				se::renderer::vulkan::QueueTypeMask queueTypeMask;
+				VkSurfaceKHR surface;
 			};
 
 			struct QueueInfos {
