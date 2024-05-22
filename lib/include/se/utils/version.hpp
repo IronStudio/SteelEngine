@@ -11,6 +11,9 @@ namespace se::utils {
 		se::Int major;
 		se::Int minor;
 		se::Int patch;
+
+		inline bool operator==(const se::utils::Version &version) const noexcept;
+		inline auto operator<=>(const se::utils::Version &version) const noexcept;
 	};
 
 	inline std::ostream &operator<<(std::ostream &stream, const se::utils::Version &version);

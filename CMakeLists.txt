@@ -61,6 +61,4 @@ endif()
 
 add_subdirectory(lib)
 add_subdirectory(sandbox)
-if (BUILD_TESTS)
-	add_subdirectory(tests)
-endif()
+add_subdirectory(tests)
