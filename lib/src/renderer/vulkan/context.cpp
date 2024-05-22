@@ -10,6 +10,14 @@
 #include "se/logger.hpp"
 
 
+#define SETUP_SWAPCHAIN_CREATE_INFOS se::renderer::vulkan::SwapChainInfos swapChainInfos {};\
+	swapChainInfos.device = m_device->getDevice();\
+	swapChainInfos.surface = m_surface->getSurface();\
+	swapChainInfos.formats = m_surface->getSurfaceFormats();\
+	swapChainInfos.presentModes = m_surface->getPresentModes();\
+	swapChainInfos.surfaceCapabilities = m_surface->getSurfaceCapabilites();\
+	swapChainInfos.windowSize = m_infos.linkedWindow->getInfos().size
+
 
 namespace se::renderer::vulkan {
 	Context::Context(const se::renderer::ContextInfos &infos) :
@@ -104,15 +112,10 @@ namespace se::renderer::vulkan {
 
 		m_surface->queryInformations(m_device->getPhysicalDevice());
 
-		se::renderer::vulkan::SwapChainInfos swapChainInfos {};
-		swapChainInfos.device = m_device->getDevice();
-		swapChainInfos.surface = m_surface->getSurface();
-		swapChainInfos.formats = m_surface->getSurfaceFormats();
-		swapChainInfos.presentModes = m_surface->getPresentModes();
-		swapChainInfos.surfaceCapabilities = m_surface->getSurfaceCapabilites();
+
+		SETUP_SWAPCHAIN_CREATE_INFOS;
 		m_swapChain = new se::renderer::vulkan::SwapChain(swapChainInfos);
 	}
-
 
 
 	Context::~Context() {
@@ -137,6 +140,16 @@ namespace se::renderer::vulkan {
 
 		if (s_instance == 0 && s_instance != VK_NULL_HANDLE)
 			vkDestroyInstance(s_instance, nullptr);
+	}
+
+
+	void Context::handleWindowSizeChanged() {
+		if (m_swapChain != nullptr) {
+			delete m_swapChain;
+
+			SETUP_SWAPCHAIN_CREATE_INFOS;
+			m_swapChain = new se::renderer::vulkan::SwapChain(swapChainInfos);
+		}
 	}
 
 

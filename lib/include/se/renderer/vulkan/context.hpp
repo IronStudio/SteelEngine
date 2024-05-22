@@ -18,6 +18,8 @@ namespace se::renderer::vulkan {
 			Context(const se::renderer::ContextInfos &infos);
 			~Context() override;
 
+			void handleWindowSizeChanged() override;
+
 			inline VkInstance getInstance() const noexcept {return s_instance;}
 
 		private:

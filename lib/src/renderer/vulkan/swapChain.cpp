@@ -1,5 +1,7 @@
 #include "se/renderer/vulkan/swapChain.hpp"
 
+#include <algorithm>
+
 #include "se/assertion.hpp"
 #include "se/exceptions.hpp"
 
@@ -11,19 +13,34 @@ namespace se::renderer::vulkan {
 		m_swapchain {VK_NULL_HANDLE},
 		m_chosenPresentMode {}
 	{
-		VkSwapchainCreateInfoKHR swapchainCreateInfos {};
-		swapchainCreateInfos.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		swapchainCreateInfos.surface = m_infos.surface;
-
 		FormatScoreCriterias formatScoreCriterias {};
 		formatScoreCriterias.sRGB = true;
 		formatScoreCriterias.adobeRGB = false;
 		formatScoreCriterias.hdr = false;
 		formatScoreCriterias.formats = m_infos.formats;
 		VkSurfaceFormatKHR choosenFormat {s_chooseFormat(formatScoreCriterias)};
-		//surfaceCapabilities;
 
 		m_chosenPresentMode = s_choosePresentMode(m_infos.presentModes);
+		VkExtent2D chosenExtent {s_chooseExtent(m_infos.surfaceCapabilities, m_infos.windowSize)};
+		se::Uint32 chosenImageCount {s_chooseImageCount(m_infos.surfaceCapabilities)};
+
+		VkSwapchainCreateInfoKHR swapchainCreateInfos {};
+		swapchainCreateInfos.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+		swapchainCreateInfos.surface = m_infos.surface;
+		swapchainCreateInfos.minImageCount = chosenImageCount;
+		swapchainCreateInfos.imageFormat = choosenFormat.format;
+		swapchainCreateInfos.imageColorSpace = choosenFormat.colorSpace;
+		swapchainCreateInfos.imageExtent = chosenExtent;
+		swapchainCreateInfos.imageArrayLayers = 1;
+		swapchainCreateInfos.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		swapchainCreateInfos.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		swapchainCreateInfos.queueFamilyIndexCount = 0;
+		swapchainCreateInfos.pQueueFamilyIndices = nullptr;
+		swapchainCreateInfos.presentMode = m_chosenPresentMode;
+		swapchainCreateInfos.preTransform = m_infos.surfaceCapabilities.currentTransform;
+		swapchainCreateInfos.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+		swapchainCreateInfos.clipped = VK_TRUE;
+		swapchainCreateInfos.oldSwapchain = VK_NULL_HANDLE;
 
 		if (vkCreateSwapchainKHR(m_infos.device, &swapchainCreateInfos, nullptr, &m_swapchain) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create a vulkan swapchain");
@@ -31,7 +48,8 @@ namespace se::renderer::vulkan {
 
 
 	SwapChain::~SwapChain() {
-
+		if (m_swapchain != VK_NULL_HANDLE)
+			vkDestroySwapchainKHR(m_infos.device, m_swapchain, nullptr);
 	}
 
 
@@ -134,8 +152,22 @@ namespace se::renderer::vulkan {
 	}
 
 
-	VkExtent2D SwapChain::s_chooseExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+	VkExtent2D SwapChain::s_chooseExtent(const VkSurfaceCapabilitiesKHR &capabilities, const se::Vec2i &windowSize) {
+		if (capabilities.currentExtent.width != std::numeric_limits<se::Uint32>::max())
+			return capabilities.currentExtent;
 		
+		VkExtent2D extent {};
+		extent.width = std::clamp((se::Uint32)windowSize.x, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+		extent.width = std::clamp((se::Uint32)windowSize.y, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+		return extent;
+	}
+
+
+	se::Uint32 SwapChain::s_chooseImageCount(const VkSurfaceCapabilitiesKHR &capabilities) {
+		se::Uint32 imageCount {capabilities.minImageCount + 1};
+		if (capabilities.maxImageCount != 0 && imageCount > capabilities.maxImageCount)
+			return capabilities.maxImageCount;
+		return imageCount;
 	}
 
 

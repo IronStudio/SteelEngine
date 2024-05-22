@@ -21,6 +21,8 @@ namespace se::renderer {
 			inline Context(const se::renderer::ContextInfos &infos) : m_infos {infos} {}
 			virtual ~Context() = default;
 
+			virtual void handleWindowSizeChanged() = 0;
+
 		protected:
 			se::renderer::ContextInfos m_infos;
 	};
