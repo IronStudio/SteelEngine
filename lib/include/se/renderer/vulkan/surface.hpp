@@ -22,6 +22,9 @@ namespace se::renderer::vulkan {
 			void queryInformations(VkPhysicalDevice physicalDevice);
 
 			inline VkSurfaceKHR getSurface() const noexcept {return m_surface;}
+			inline const std::vector<VkSurfaceFormatKHR> &getSurfaceFormats() const noexcept {return m_surfaceFormats;}
+			inline const std::vector<VkPresentModeKHR> &getPresentModes() const noexcept {return m_presentModes;}
+			inline const VkSurfaceCapabilitiesKHR &getSurfaceCapabilites() const noexcept {return m_surfaceCapabilities;}
 
 		private:
 			se::renderer::vulkan::SurfaceInfos m_infos;

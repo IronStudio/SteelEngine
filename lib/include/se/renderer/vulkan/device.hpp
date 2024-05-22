@@ -43,6 +43,7 @@ namespace se::renderer::vulkan {
 			~Device();
 
 			inline VkDevice getDevice() const noexcept {return m_device;}
+			inline VkPhysicalDevice getPhysicalDevice() const noexcept {return m_physicalDevice;}
 
 		private:
 			struct ScoreCriterias {
@@ -71,6 +72,7 @@ namespace se::renderer::vulkan {
 
 			se::renderer::vulkan::DeviceInfos m_infos;
 			VkDevice m_device;
+			VkPhysicalDevice m_physicalDevice;
 			std::map<QueueType, std::vector<VkQueue>> m_queues;
 	};
 

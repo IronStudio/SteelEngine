@@ -15,7 +15,8 @@ namespace se::renderer::vulkan {
 	Context::Context(const se::renderer::ContextInfos &infos) :
 		se::renderer::Context(infos),
 		m_surface {nullptr},
-		m_device {nullptr}
+		m_device {nullptr},
+		m_swapChain {nullptr}
 	#ifndef NDEBUG
 		, m_debugMessenger {VK_NULL_HANDLE}
 	#endif
@@ -100,12 +101,25 @@ namespace se::renderer::vulkan {
 		deviceInfos.queueTypeMask = se::renderer::vulkan::QueueType::eGraphics | se::renderer::vulkan::QueueType::ePresent;
 		deviceInfos.surface = m_surface->getSurface();
 		m_device = new se::renderer::vulkan::Device(deviceInfos);
+
+		m_surface->queryInformations(m_device->getPhysicalDevice());
+
+		se::renderer::vulkan::SwapChainInfos swapChainInfos {};
+		swapChainInfos.device = m_device->getDevice();
+		swapChainInfos.surface = m_surface->getSurface();
+		swapChainInfos.formats = m_surface->getSurfaceFormats();
+		swapChainInfos.presentModes = m_surface->getPresentModes();
+		swapChainInfos.surfaceCapabilities = m_surface->getSurfaceCapabilites();
+		m_swapChain = new se::renderer::vulkan::SwapChain(swapChainInfos);
 	}
 
 
 
 	Context::~Context() {
 		--s_instanceCount;
+
+		if (m_swapChain != nullptr)
+			delete m_swapChain;
 
 		if (m_device != nullptr)
 			delete m_device;

@@ -64,6 +64,7 @@ namespace se::renderer::vulkan {
 	Device::Device(const se::renderer::vulkan::DeviceInfos &infos) :
 		m_infos {infos},
 		m_device {VK_NULL_HANDLE},
+		m_physicalDevice {VK_NULL_HANDLE},
 		m_queues {}
 	{
 		ScoreCriterias scoreCriterias {};
@@ -71,9 +72,10 @@ namespace se::renderer::vulkan {
 		scoreCriterias.extensions = m_infos.extensions;
 		scoreCriterias.queueTypeMask = m_infos.queueTypeMask;
 		scoreCriterias.surface = m_infos.surface;
+		m_physicalDevice = s_chooseDevice(m_infos.instance, scoreCriterias);
 
 		DeviceCreateInfos deviceCreateInfos {};
-		deviceCreateInfos.device = s_chooseDevice(m_infos.instance, scoreCriterias);
+		deviceCreateInfos.device = m_physicalDevice;
 		deviceCreateInfos.extensions = m_infos.extensions;
 		deviceCreateInfos.queueTypeMask = m_infos.queueTypeMask;
 		deviceCreateInfos.surface = m_infos.surface;

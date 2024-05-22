@@ -53,12 +53,12 @@ int main(int argc, char **argv) {
 	}
 
 	catch (const se::exceptions::Exception &exception) {
-		std::cerr << "ERROR : " << exception.what() << std::endl;
+		SE_APP_LOGGER.log({se::LogSeverity::eFatal}, exception.what());
 		return EXIT_FAILURE;
 	}
 
 	catch (const std::exception &exception) {
-		std::cerr << "ERROR : " << exception.what() << std::endl;
+		SE_APP_LOGGER.log({se::LogSeverity::eFatal}, exception.what());
 		return EXIT_FAILURE;
 	}
 
