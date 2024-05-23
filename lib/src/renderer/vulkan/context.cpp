@@ -10,13 +10,13 @@
 #include "se/logger.hpp"
 
 
-#define SETUP_SWAPCHAIN_CREATE_INFOS se::renderer::vulkan::SwapChainInfos swapChainInfos {};\
-	swapChainInfos.device = m_device->getDevice();\
-	swapChainInfos.surface = m_surface->getSurface();\
-	swapChainInfos.formats = m_surface->getSurfaceFormats();\
-	swapChainInfos.presentModes = m_surface->getPresentModes();\
-	swapChainInfos.surfaceCapabilities = m_surface->getSurfaceCapabilites();\
-	swapChainInfos.windowSize = m_infos.linkedWindow->getInfos().size
+#define SETUP_SWAPCHAIN_CREATE_INFOS se::renderer::vulkan::SwapchainInfos swapchainInfos {};\
+	swapchainInfos.device = m_device->getDevice();\
+	swapchainInfos.surface = m_surface->getSurface();\
+	swapchainInfos.formats = m_surface->getSurfaceFormats();\
+	swapchainInfos.presentModes = m_surface->getPresentModes();\
+	swapchainInfos.surfaceCapabilities = m_surface->getSurfaceCapabilites();\
+	swapchainInfos.windowSize = m_infos.linkedWindow->getInfos().size
 
 
 namespace se::renderer::vulkan {
@@ -24,7 +24,7 @@ namespace se::renderer::vulkan {
 		se::renderer::Context(infos),
 		m_surface {nullptr},
 		m_device {nullptr},
-		m_swapChain {nullptr}
+		m_swapchain {nullptr}
 	#ifndef NDEBUG
 		, m_debugMessenger {VK_NULL_HANDLE}
 	#endif
@@ -114,15 +114,15 @@ namespace se::renderer::vulkan {
 
 
 		SETUP_SWAPCHAIN_CREATE_INFOS;
-		m_swapChain = new se::renderer::vulkan::SwapChain(swapChainInfos);
+		m_swapchain = new se::renderer::vulkan::Swapchain(swapchainInfos);
 	}
 
 
 	Context::~Context() {
 		--s_instanceCount;
 
-		if (m_swapChain != nullptr)
-			delete m_swapChain;
+		if (m_swapchain != nullptr)
+			delete m_swapchain;
 
 		if (m_device != nullptr)
 			delete m_device;
@@ -144,11 +144,11 @@ namespace se::renderer::vulkan {
 
 
 	void Context::handleWindowSizeChanged() {
-		if (m_swapChain != nullptr) {
-			delete m_swapChain;
+		if (m_swapchain != nullptr) {
+			delete m_swapchain;
 
 			SETUP_SWAPCHAIN_CREATE_INFOS;
-			m_swapChain = new se::renderer::vulkan::SwapChain(swapChainInfos);
+			m_swapchain = new se::renderer::vulkan::Swapchain(swapchainInfos);
 		}
 	}
 

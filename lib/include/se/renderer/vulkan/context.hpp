@@ -8,7 +8,7 @@
 #include "se/renderer/context.hpp"
 #include "se/renderer/vulkan/device.hpp"
 #include "se/renderer/vulkan/surface.hpp"
-#include "se/renderer/vulkan/swapChain.hpp"
+#include "se/renderer/vulkan/swapchain.hpp"
 
 
 
@@ -38,7 +38,7 @@ namespace se::renderer::vulkan {
 			static se::Count s_instanceCount;
 			se::renderer::vulkan::Surface *m_surface;
 			se::renderer::vulkan::Device *m_device;
-			se::renderer::vulkan::SwapChain *m_swapChain;
+			se::renderer::vulkan::Swapchain *m_swapchain;
 			#ifndef NDEBUG
 				VkDebugUtilsMessengerEXT m_debugMessenger;
 			#endif

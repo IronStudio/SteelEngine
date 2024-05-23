@@ -11,7 +11,7 @@
 
 
 namespace se::renderer::vulkan {
-	struct SwapChainInfos {
+	struct SwapchainInfos {
 		VkDevice device;
 		VkSurfaceKHR surface;
 		std::vector<VkSurfaceFormatKHR> formats;
@@ -21,10 +21,10 @@ namespace se::renderer::vulkan {
 	};
 
 
-	class SE_CORE SwapChain {
+	class SE_CORE Swapchain {
 		public:
-			SwapChain(const se::renderer::vulkan::SwapChainInfos &infos);
-			~SwapChain();
+			Swapchain(const se::renderer::vulkan::SwapchainInfos &infos);
+			~Swapchain();
 
 			inline VkSwapchainKHR getSwapChain() const noexcept {return m_swapchain;}
 
@@ -42,10 +42,12 @@ namespace se::renderer::vulkan {
 			static VkPresentModeKHR s_choosePresentMode(const std::vector<VkPresentModeKHR> &presentModes);
 			static VkExtent2D s_chooseExtent(const VkSurfaceCapabilitiesKHR &capabilities, const se::Vec2i &windowSize);
 			static se::Uint32 s_chooseImageCount(const VkSurfaceCapabilitiesKHR &capabilities);
+			static std::vector<VkImageView> s_createImageView(VkDevice device, VkSwapchainKHR swapchain, VkFormat format);
 
-			se::renderer::vulkan::SwapChainInfos m_infos;
+			se::renderer::vulkan::SwapchainInfos m_infos;
 			VkSwapchainKHR m_swapchain;
 			VkPresentModeKHR m_chosenPresentMode;
+			std::vector<VkImageView> m_imageViews;
 	};
 
 } // namespace se::renderer::vulkan

@@ -1,24 +1,26 @@
-#include "se/renderer/vulkan/swapChain.hpp"
+#include "se/renderer/vulkan/swapchain.hpp"
 
 #include <algorithm>
 
 #include "se/assertion.hpp"
 #include "se/exceptions.hpp"
+#include "se/logger.hpp"
 
 
 
 namespace se::renderer::vulkan {
-	SwapChain::SwapChain(const se::renderer::vulkan::SwapChainInfos &infos) :
+	Swapchain::Swapchain(const se::renderer::vulkan::SwapchainInfos &infos) :
 		m_infos {infos},
 		m_swapchain {VK_NULL_HANDLE},
-		m_chosenPresentMode {}
+		m_chosenPresentMode {},
+		m_imageViews {}
 	{
 		FormatScoreCriterias formatScoreCriterias {};
 		formatScoreCriterias.sRGB = true;
 		formatScoreCriterias.adobeRGB = false;
 		formatScoreCriterias.hdr = false;
 		formatScoreCriterias.formats = m_infos.formats;
-		VkSurfaceFormatKHR choosenFormat {s_chooseFormat(formatScoreCriterias)};
+		VkSurfaceFormatKHR chosenFormat {s_chooseFormat(formatScoreCriterias)};
 
 		m_chosenPresentMode = s_choosePresentMode(m_infos.presentModes);
 		VkExtent2D chosenExtent {s_chooseExtent(m_infos.surfaceCapabilities, m_infos.windowSize)};
@@ -28,8 +30,8 @@ namespace se::renderer::vulkan {
 		swapchainCreateInfos.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 		swapchainCreateInfos.surface = m_infos.surface;
 		swapchainCreateInfos.minImageCount = chosenImageCount;
-		swapchainCreateInfos.imageFormat = choosenFormat.format;
-		swapchainCreateInfos.imageColorSpace = choosenFormat.colorSpace;
+		swapchainCreateInfos.imageFormat = chosenFormat.format;
+		swapchainCreateInfos.imageColorSpace = chosenFormat.colorSpace;
 		swapchainCreateInfos.imageExtent = chosenExtent;
 		swapchainCreateInfos.imageArrayLayers = 1;
 		swapchainCreateInfos.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -44,16 +46,22 @@ namespace se::renderer::vulkan {
 
 		if (vkCreateSwapchainKHR(m_infos.device, &swapchainCreateInfos, nullptr, &m_swapchain) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create a vulkan swapchain");
+
+		m_imageViews = s_createImageView(m_infos.device, m_swapchain, chosenFormat.format);
+		SE_LOGGER.log({se::LogSeverity::eInfo}, "Swapchain image views count : {}", m_imageViews.size());
 	}
 
 
-	SwapChain::~SwapChain() {
+	Swapchain::~Swapchain() {
+		for (const auto &view : m_imageViews)
+			vkDestroyImageView(m_infos.device, view, nullptr);
+
 		if (m_swapchain != VK_NULL_HANDLE)
 			vkDestroySwapchainKHR(m_infos.device, m_swapchain, nullptr);
 	}
 
 
-	VkSurfaceFormatKHR SwapChain::s_chooseFormat(const FormatScoreCriterias &criterias) {
+	VkSurfaceFormatKHR Swapchain::s_chooseFormat(const FormatScoreCriterias &criterias) {
 		SE_ASSERT(
 			criterias.sRGB && !criterias.adobeRGB
 			|| !criterias.sRGB && criterias.adobeRGB
@@ -83,7 +91,7 @@ namespace se::renderer::vulkan {
 	}
 
 
-	se::Int32 SwapChain::s_scoreFormat(const VkSurfaceFormatKHR &format, const FormatScoreCriterias &criterias) {
+	se::Int32 Swapchain::s_scoreFormat(const VkSurfaceFormatKHR &format, const FormatScoreCriterias &criterias) {
 		static const std::vector<VkFormat> sRGBformats {
 			VK_FORMAT_R8G8B8A8_SRGB,
 			VK_FORMAT_R8G8B8_SRGB,
@@ -142,7 +150,7 @@ namespace se::renderer::vulkan {
 	}
 
 
-	VkPresentModeKHR SwapChain::s_choosePresentMode(const std::vector<VkPresentModeKHR> &presentModes) {
+	VkPresentModeKHR Swapchain::s_choosePresentMode(const std::vector<VkPresentModeKHR> &presentModes) {
 		for (const auto &presentMode : presentModes) {
 			if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
 				return VK_PRESENT_MODE_MAILBOX_KHR;
@@ -152,7 +160,7 @@ namespace se::renderer::vulkan {
 	}
 
 
-	VkExtent2D SwapChain::s_chooseExtent(const VkSurfaceCapabilitiesKHR &capabilities, const se::Vec2i &windowSize) {
+	VkExtent2D Swapchain::s_chooseExtent(const VkSurfaceCapabilitiesKHR &capabilities, const se::Vec2i &windowSize) {
 		if (capabilities.currentExtent.width != std::numeric_limits<se::Uint32>::max())
 			return capabilities.currentExtent;
 		
@@ -163,11 +171,52 @@ namespace se::renderer::vulkan {
 	}
 
 
-	se::Uint32 SwapChain::s_chooseImageCount(const VkSurfaceCapabilitiesKHR &capabilities) {
+	se::Uint32 Swapchain::s_chooseImageCount(const VkSurfaceCapabilitiesKHR &capabilities) {
 		se::Uint32 imageCount {capabilities.minImageCount + 1};
 		if (capabilities.maxImageCount != 0 && imageCount > capabilities.maxImageCount)
 			return capabilities.maxImageCount;
 		return imageCount;
+	}
+
+
+	std::vector<VkImageView> Swapchain::s_createImageView(VkDevice device, VkSwapchainKHR swapchain, VkFormat format) {
+		se::Uint32 imageCount {};
+		if (vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr) != VK_SUCCESS)
+			throw se::exceptions::RuntimeError("Can't get swapchain images count");
+
+		std::vector<VkImage> images {};
+		images.resize(imageCount);
+		if (vkGetSwapchainImagesKHR(device, swapchain, &imageCount, images.data()) != VK_SUCCESS)
+			throw se::exceptions::RuntimeError("Can't get swapchain images");
+
+		std::vector<VkImageView> imageViews {};
+		imageViews.reserve(imageCount);
+
+		VkImageViewCreateInfo createInfos {};
+		createInfos.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		createInfos.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		createInfos.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfos.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfos.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfos.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfos.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		createInfos.subresourceRange.baseMipLevel = 0;
+		createInfos.subresourceRange.levelCount = 1;
+		createInfos.subresourceRange.baseArrayLayer = 0;
+		createInfos.subresourceRange.layerCount = 1;
+		createInfos.format = format;
+
+		for (const auto &image : images) {
+			VkImageView view {};
+			createInfos.image = image;
+
+			if (vkCreateImageView(device, &createInfos, nullptr, &view) != VK_SUCCESS)
+				throw se::exceptions::RuntimeError("Can't create an image view for the swapchain");
+
+			imageViews.push_back(view);
+		}
+
+		return imageViews;
 	}
 
 
