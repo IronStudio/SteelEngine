@@ -28,7 +28,7 @@ namespace se::renderer {
 	class VertexBufferView {
 		public:
 			inline VertexBufferView(const se::renderer::VertexBufferViewInfos &infos) : m_infos {infos} {}
-			virtual ~VertexBufferView();
+			virtual ~VertexBufferView() = default;
 
 			inline const se::renderer::VertexBufferViewInfos &getInfos() const noexcept {return m_infos;}
 

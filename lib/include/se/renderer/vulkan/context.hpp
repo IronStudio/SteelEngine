@@ -21,6 +21,7 @@ namespace se::renderer::vulkan {
 			void handleWindowSizeChanged() override;
 
 			inline VkInstance getInstance() const noexcept {return s_instance;}
+			inline se::renderer::vulkan::Device *getDevice() const noexcept {return m_device;}
 
 		private:
 			static VKAPI_ATTR VkBool32 VKAPI_CALL s_debugMessageCallback(
