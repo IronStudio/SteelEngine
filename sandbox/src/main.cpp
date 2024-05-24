@@ -19,6 +19,7 @@
 #include <se/ecs/scene.hpp>
 #include <se/utils/version.hpp>
 #include <se/renderer/vulkan/context.hpp>
+#include <se/renderer/vulkan/vramAllocator.hpp>
 #include <se/window/windowManager.hpp>
 
 
@@ -81,6 +82,9 @@ class SandboxApp : public se::Application {
 			for (se::Count i {0}; i < memoryProperties.memoryHeapCount; ++i)
 				SE_APP_LOGGER << "\t : " << memoryProperties.memoryHeaps[i].size / (1024.f*1024.f*1024.f) << " GiB\n";
 			SE_APP_LOGGER << se::endLog;
+
+			se::renderer::VramAllocatorInfos allocatorInfos {};
+			SE_APP_INFO("Default vramAllocatorInfos.chunkSize : {}", allocatorInfos.chunkSize);
 
 
 			bool running {true};

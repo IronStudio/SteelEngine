@@ -5,10 +5,13 @@
 #include "se/core.hpp"
 #include "se/renderer/context.hpp"
 #include "se/types.hpp"
+#include "se/utils/byteSize.hpp"
 
 
 
 namespace se::renderer {
+	using namespace se::literals;
+
 	struct VramAllocator;
 
 	class SE_CORE VramAllocatorHandle {
@@ -24,7 +27,7 @@ namespace se::renderer {
 
 	struct VramAllocatorInfos {
 		se::renderer::Context *context;
-		se::ByteCount chunkSize {512};
+		se::ByteCount chunkSize {512_MiB};
 	};
 
 	struct VramAllocationInfos {
