@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "se/core.hpp"
 #include "se/renderer/context.hpp"
 
 
@@ -25,7 +26,7 @@ namespace se::renderer {
 		std::vector<se::renderer::VertexAttribute> attributes;
 	};
 
-	class VertexBufferView {
+	class SE_CORE VertexBufferView {
 		public:
 			inline VertexBufferView(const se::renderer::VertexBufferViewInfos &infos) : m_infos {infos} {}
 			virtual ~VertexBufferView() = default;

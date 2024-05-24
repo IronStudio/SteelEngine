@@ -4,6 +4,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include "se/core.hpp"
 #include "se/window/window.hpp"
 
 
@@ -14,7 +15,7 @@ namespace se::renderer::vulkan {
 		se::window::Window *window;
 	};
 
-	class Surface {
+	class SE_CORE Surface {
 		public:
 			Surface(const se::renderer::vulkan::SurfaceInfos &infos);
 			~Surface();

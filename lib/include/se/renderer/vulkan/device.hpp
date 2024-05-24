@@ -5,6 +5,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include "se/core.hpp"
 #include "se/renderer/gpuType.hpp"
 #include "se/types.hpp"
 #include "se/utils/bitField.hpp"
@@ -22,10 +23,10 @@ namespace se::renderer::vulkan {
 
 	#define SE_QUEUE_TYPE_COUNT 5
 
-	se::renderer::vulkan::QueueType queueTypeVkToSe(VkQueueFlagBits queue);
-	VkQueueFlagBits queueTypeSeToVk(se::renderer::vulkan::QueueType queue);
-	se::renderer::vulkan::QueueTypeMask queueTypeMaskVkToSe(VkQueueFlags queue);
-	VkQueueFlags queueTypeMaskSeToVk(se::renderer::vulkan::QueueTypeMask queue);
+	SE_CORE se::renderer::vulkan::QueueType queueTypeVkToSe(VkQueueFlagBits queue);
+	SE_CORE VkQueueFlagBits queueTypeSeToVk(se::renderer::vulkan::QueueType queue);
+	SE_CORE se::renderer::vulkan::QueueTypeMask queueTypeMaskVkToSe(VkQueueFlags queue);
+	SE_CORE VkQueueFlags queueTypeMaskSeToVk(se::renderer::vulkan::QueueTypeMask queue);
 
 
 	struct DeviceInfos {
@@ -37,7 +38,7 @@ namespace se::renderer::vulkan {
 	};
 
 
-	class Device {
+	class SE_CORE Device {
 		public:
 			Device(const se::renderer::vulkan::DeviceInfos &infos);
 			~Device();

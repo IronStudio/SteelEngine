@@ -2,12 +2,13 @@
 
 #include <vulkan/vulkan.h>
 
+#include "se/core.hpp"
 #include "se/renderer/vertexBufferView.hpp"
 
 
 
 namespace se::renderer::vulkan {
-	class VertexBufferView : public se::renderer::VertexBufferView {
+	class SE_CORE VertexBufferView : public se::renderer::VertexBufferView {
 		public:
 			VertexBufferView(const se::renderer::VertexBufferViewInfos &infos);
 			~VertexBufferView() override;

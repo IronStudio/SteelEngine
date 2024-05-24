@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "se/core.hpp"
 #include "se/renderer/gpuType.hpp"
 #include "se/utils/version.hpp"
 #include "se/window/window.hpp"
@@ -16,7 +17,7 @@ namespace se::renderer {
 		se::window::Window *linkedWindow;
 	};
 
-	class Context {
+	class SE_CORE Context {
 		public:
 			inline Context(const se::renderer::ContextInfos &infos) : m_infos {infos} {}
 			virtual ~Context() = default;

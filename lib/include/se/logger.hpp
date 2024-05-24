@@ -98,5 +98,17 @@ namespace se {
 #define SE_LOGGER ::se::engineLogger
 #define SE_APP_LOGGER ::se::applicationLogger
 
+#define SE_VERBOSE(...) ::se::engineLogger.log({se::LogSeverity::eVerbose}, __VA_ARGS__)
+#define SE_INFO(...)    ::se::engineLogger.log({se::LogSeverity::eInfo},    __VA_ARGS__)
+#define SE_WARNING(...) ::se::engineLogger.log({se::LogSeverity::eWarning}, __VA_ARGS__)
+#define SE_ERROR(...)   ::se::engineLogger.log({se::LogSeverity::eError},   __VA_ARGS__)
+#define SE_FATAL(...)   ::se::engineLogger.log({se::LogSeverity::eFatal},   __VA_ARGS__)
+
+#define SE_APP_VERBOSE(...) ::se::applicationLogger.log({se::LogSeverity::eVerbose}, __VA_ARGS__)
+#define SE_APP_INFO(...)    ::se::applicationLogger.log({se::LogSeverity::eInfo},    __VA_ARGS__)
+#define SE_APP_WARNING(...) ::se::applicationLogger.log({se::LogSeverity::eWarning}, __VA_ARGS__)
+#define SE_APP_ERROR(...)   ::se::applicationLogger.log({se::LogSeverity::eError},   __VA_ARGS__)
+#define SE_APP_FATAL(...)   ::se::applicationLogger.log({se::LogSeverity::eFatal},   __VA_ARGS__)
+
 
 #include "se/logger.inl"

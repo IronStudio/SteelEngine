@@ -2,12 +2,13 @@
 
 #include <vulkan/vulkan.h>
 
+#include "se/core.hpp"
 #include "se/renderer/buffer.hpp"
 
 
 
 namespace se::renderer::vulkan {
-	class Buffer : public se::renderer::Buffer {
+	class SE_CORE Buffer : public se::renderer::Buffer {
 		public:
 			Buffer(const se::renderer::BufferInfos &infos);
 			~Buffer() override;

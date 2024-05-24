@@ -1,5 +1,6 @@
 #pragma once
 
+#include "se/core.hpp"
 #include "se/renderer/context.hpp"
 
 
@@ -21,7 +22,7 @@ namespace se::renderer {
 		se::renderer::BufferUsage usage;
 	};
 
-	class Buffer {
+	class SE_CORE Buffer {
 		public:
 			inline Buffer(const se::renderer::BufferInfos &infos) : m_infos {infos} {}
 			virtual ~Buffer() = default;

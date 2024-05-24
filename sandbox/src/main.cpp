@@ -72,6 +72,17 @@ class SandboxApp : public se::Application {
 			se::renderer::vulkan::Context context {contextInfos};
 
 
+			VkPhysicalDeviceMemoryProperties memoryProperties {};
+			vkGetPhysicalDeviceMemoryProperties(context.getDevice()->getPhysicalDevice(), &memoryProperties);
+
+			SE_APP_INFO("Memory heaps count : {}\n\tMemory types count : {}", memoryProperties.memoryHeapCount, memoryProperties.memoryTypeCount);
+
+			SE_APP_LOGGER << se::LogInfos{se::LogSeverity::eInfo} << "Memory heaps :\n";
+			for (se::Count i {0}; i < memoryProperties.memoryHeapCount; ++i)
+				SE_APP_LOGGER << "\t : " << memoryProperties.memoryHeaps[i].size / (1024.f*1024.f*1024.f) << " GiB\n";
+			SE_APP_LOGGER << se::endLog;
+
+
 			bool running {true};
 			while (se::Engine::isRunning()) {
 				se::input::InputManager::update();

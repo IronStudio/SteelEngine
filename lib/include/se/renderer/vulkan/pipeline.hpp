@@ -1,9 +1,11 @@
 #pragma once
 
+#include "se/core.hpp"
+
 
 
 namespace se::renderer::vulkan {
-	class Pipeline {
+	class SE_CORE Pipeline {
 		public:
 			Pipeline();
 			~Pipeline();
