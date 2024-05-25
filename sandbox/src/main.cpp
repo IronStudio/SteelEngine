@@ -105,8 +105,9 @@ class SandboxApp : public se::Application {
 					//	se::input::InputManager::getMousePosition().y);
 				}
 
-				if (se::input::InputManager::wasKeyPressed(se::input::Key::eEscape) && se::input::InputManager::getFocusedWindowUUID() != 0)
+				if (se::input::InputManager::wasKeyPressed(se::input::Key::eEscape) && se::input::InputManager::getFocusedWindowUUID() != 0) {
 					se::window::WindowManager::destroyWindow(se::input::InputManager::getFocusedWindowUUID());
+				}
 
 				if (se::input::InputManager::wasWindowResized(window2.getUUID()))
 					SE_APP_LOGGER.log({se::LogSeverity::eInfo}, "Window2 resized to {}x{}", window2.getInfos().size.x, window2.getInfos().size.y);

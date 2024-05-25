@@ -6,6 +6,7 @@
 
 #include "se/assertion.hpp"
 #include "se/engine.hpp"
+#include "se/logger.hpp"
 #include "se/window/windowManager.hpp"
 
 
@@ -151,13 +152,14 @@ namespace se::input {
 	void InputManager::s_handleWindowEvent(const SDL_Event &event) {
 		switch (event.window.event) {
 			case SDL_WINDOWEVENT_TAKE_FOCUS:
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
 				s_focusedWindowUUID = se::window::WindowManager::getWindow(SDL_GetWindowFromID(event.window.windowID)).getUUID();
 				break;
 
 			case SDL_WINDOWEVENT_FOCUS_LOST:
 				if (!se::window::WindowManager::hasWindow(SDL_GetWindowFromID(event.window.windowID)))
 					break;
-				if (s_focusedWindowUUID == se::window::WindowManager::getWindow(SDL_GetWindowFromID(event.window.windowID)).getUUID())
+				else if (s_focusedWindowUUID == se::window::WindowManager::getWindow(SDL_GetWindowFromID(event.window.windowID)).getUUID())
 					s_focusedWindowUUID = 0;
 				break;
 

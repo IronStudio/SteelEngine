@@ -1,5 +1,6 @@
 #include "se/renderer/vulkan/vertexBufferView.hpp"
 
+#include <algorithm>
 #include <map>
 
 
