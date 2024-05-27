@@ -27,7 +27,7 @@ namespace se::renderer {
 
 	struct VramAllocatorInfos {
 		se::renderer::Context *context;
-		se::ByteCount chunkSize {512_MiB};
+		se::ByteCount chunkSize {256_MiB};
 	};
 
 	struct VramAllocationInfos {

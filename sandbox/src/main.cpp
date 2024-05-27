@@ -18,9 +18,12 @@
 #include <se/threads/jobScheduler.hpp>
 #include <se/ecs/scene.hpp>
 #include <se/utils/version.hpp>
+#include <se/window/windowManager.hpp>
+
 #include <se/renderer/vulkan/context.hpp>
 #include <se/renderer/vulkan/vramAllocator.hpp>
-#include <se/window/windowManager.hpp>
+
+#include <se/renderer/opengl/context.hpp>
 
 
 using namespace se::literals;
@@ -54,7 +57,7 @@ class SandboxApp : public se::Application {
 			windowInfos.title = "SteelEngine_sandbox";
 			windowInfos.size = {16 * 70, 9 * 70};
 			windowInfos.position = {se::window::centerPosition, se::window::undefinedPosition};
-			windowInfos.graphicsApi = se::renderer::GraphicsApi::eVulkan;
+			windowInfos.graphicsApi = se::renderer::GraphicsApi::eOpenGL;
 			windowInfos.flags = se::window::WindowFlags::eResizable | se::window::WindowFlags::eMasterWindow;
 			se::window::Window &window {se::window::WindowManager::createWindow(windowInfos)};
 
@@ -70,21 +73,7 @@ class SandboxApp : public se::Application {
 			contextInfos.applicationVersion = "1.0.0"_v;
 			contextInfos.preferredGPU = se::renderer::GPUType::eDiscret;
 			contextInfos.linkedWindow = &window;
-			se::renderer::vulkan::Context context {contextInfos};
-
-
-			VkPhysicalDeviceMemoryProperties memoryProperties {};
-			vkGetPhysicalDeviceMemoryProperties(context.getDevice()->getPhysicalDevice(), &memoryProperties);
-
-			SE_APP_INFO("Memory heaps count : {}\n\tMemory types count : {}", memoryProperties.memoryHeapCount, memoryProperties.memoryTypeCount);
-
-			SE_APP_LOGGER << se::LogInfos{se::LogSeverity::eInfo} << "Memory heaps :\n";
-			for (se::Count i {0}; i < memoryProperties.memoryHeapCount; ++i)
-				SE_APP_LOGGER << "\t : " << memoryProperties.memoryHeaps[i].size / (1024.f*1024.f*1024.f) << " GiB\n";
-			SE_APP_LOGGER << se::endLog;
-
-			se::renderer::VramAllocatorInfos allocatorInfos {};
-			SE_APP_INFO("Default vramAllocatorInfos.chunkSize : {}", allocatorInfos.chunkSize);
+			se::renderer::opengl::Context context {contextInfos};
 
 
 			bool running {true};
