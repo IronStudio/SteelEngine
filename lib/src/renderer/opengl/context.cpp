@@ -5,9 +5,14 @@
 
 #include "se/logger.hpp"
 #include "se/exceptions.hpp"
+#include "se/math.hpp"
+#include "se/utils/version.hpp"
 
 #define SET_ATTRIBUTE(attr, val) if (SDL_GL_SetAttribute(SDL_GL_##attr, val) != 0)\
 	throw se::exceptions::RuntimeError("Can't set SDL2 opengl attribute " #attr " : " + std::string(SDL_GetError()))
+#define GET_ATTRIBUTE(attr)	int attr {};\
+if (SDL_GL_GetAttribute(SDL_GL_##attr, &attr) != 0)\
+	throw se::exceptions::RuntimeError("Can't get SDL2 opengl attribute " #attr " : " + std::string(SDL_GetError()))
 
 
 
@@ -39,6 +44,18 @@ namespace se::renderer::opengl {
 			glEnable(GL_DEBUG_OUTPUT);
 			glDebugMessageCallback(s_debugMessageCallback, nullptr);
 		#endif
+
+		GET_ATTRIBUTE(CONTEXT_MAJOR_VERSION);
+		GET_ATTRIBUTE(CONTEXT_MINOR_VERSION);
+		GET_ATTRIBUTE(RED_SIZE);
+		GET_ATTRIBUTE(GREEN_SIZE);
+		GET_ATTRIBUTE(BLUE_SIZE);
+		GET_ATTRIBUTE(ALPHA_SIZE);
+
+		SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Created OpenGL context with the following parameters :\n";
+		SE_LOGGER << "\tVersion           : " << se::utils::Version(CONTEXT_MAJOR_VERSION, CONTEXT_MINOR_VERSION) << "\n";
+		SE_LOGGER << "\tColor buffer size : " << se::Vec4i(RED_SIZE, GREEN_SIZE, BLUE_SIZE, ALPHA_SIZE) << "\n";
+		SE_LOGGER << se::endLog;
 	}
 
 
