@@ -20,6 +20,11 @@ namespace se::renderer::opengl {
 	}
 
 
+	bool VramAllocatorHandle::isValid() {
+		return true;
+	}
+
+
 
 
 	VramAllocator::VramAllocator(const se::renderer::VramAllocatorInfos &infos) :
@@ -29,27 +34,27 @@ namespace se::renderer::opengl {
 	{
 		GLenum usage {};
 		if (m_infos.usageFrequency == se::renderer::VramUsageFrequency::eForgotten) {
-			if (m_infos.usageNature == se::renderer::VramUsageNature::eAppToApi)
+			if (m_infos.usageNature == se::renderer::VramUsageNature::eCpuToGpu)
 				usage = GL_STREAM_DRAW;
-			else if (m_infos.usageNature == se::renderer::VramUsageNature::eApiToApp)
+			else if (m_infos.usageNature == se::renderer::VramUsageNature::eGpuToCpu)
 				usage = GL_STREAM_READ;
 			else
 				usage = GL_STREAM_COPY;
 		}
 
 		else if (m_infos.usageFrequency == se::renderer::VramUsageFrequency::eStatic) {
-			if (m_infos.usageNature == se::renderer::VramUsageNature::eAppToApi)
+			if (m_infos.usageNature == se::renderer::VramUsageNature::eCpuToGpu)
 				usage = GL_STATIC_DRAW;
-			else if (m_infos.usageNature == se::renderer::VramUsageNature::eApiToApp)
+			else if (m_infos.usageNature == se::renderer::VramUsageNature::eGpuToCpu)
 				usage = GL_STATIC_READ;
 			else
 				usage = GL_STATIC_COPY;
 		}
 
 		else {
-			if (m_infos.usageNature == se::renderer::VramUsageNature::eAppToApi)
+			if (m_infos.usageNature == se::renderer::VramUsageNature::eCpuToGpu)
 				usage = GL_DYNAMIC_DRAW;
-			else if (m_infos.usageNature == se::renderer::VramUsageNature::eApiToApp)
+			else if (m_infos.usageNature == se::renderer::VramUsageNature::eGpuToCpu)
 				usage = GL_DYNAMIC_READ;
 			else
 				usage = GL_DYNAMIC_COPY;
@@ -67,7 +72,7 @@ namespace se::renderer::opengl {
 
 
 	std::unique_ptr<VramAllocator::Handle> VramAllocator::allocate(const se::renderer::VramAllocationInfos &allocationInfos) {
-		se::ByteCount start {-1};
+		se::ByteCount start {0};
 		se::ByteCount size {0};
 
 		se::ByteCount lastEnd {0};

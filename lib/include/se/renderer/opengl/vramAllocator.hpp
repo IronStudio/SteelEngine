@@ -15,6 +15,8 @@ namespace se::renderer::opengl {
 			VramAllocatorHandle(se::renderer::VramAllocator *allocator, se::ByteCount start, se::ByteCount size);
 			~VramAllocatorHandle() override;
 
+			bool isValid() override;
+
 			inline se::ByteCount getStart() const noexcept {return m_start;}
 			inline se::ByteCount getSize() const noexcept {return m_size;}
 			inline se::ByteCount getEnd() const noexcept {return m_start + m_size;}

@@ -21,14 +21,16 @@ namespace se::renderer {
 
 			inline se::renderer::VramAllocator *getAllocator() const noexcept {return m_allocator;}
 
+			virtual bool isValid() = 0;
+
 		protected:
 			se::renderer::VramAllocator *m_allocator;
 	};
 
 	enum class VramUsageNature {
-		eAppToApi,
-		eApiToApp,
-		eApiToApi
+		eCpuToGpu,
+		eGpuToCpu,
+		eGpuToGpu
 	};
 
 	enum class VramUsageFrequency {

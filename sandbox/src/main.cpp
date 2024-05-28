@@ -58,7 +58,7 @@ class SandboxApp : public se::Application {
 			windowInfos.title = "SteelEngine_sandbox";
 			windowInfos.size = {16 * 70, 9 * 70};
 			windowInfos.position = {se::window::centerPosition, se::window::undefinedPosition};
-			windowInfos.graphicsApi = se::renderer::GraphicsApi::eOpenGL;
+			windowInfos.graphicsApi = se::renderer::GraphicsApi::eVulkan;
 			windowInfos.flags = se::window::WindowFlags::eResizable | se::window::WindowFlags::eMasterWindow;
 			se::window::Window &window {se::window::WindowManager::createWindow(windowInfos)};
 
@@ -74,14 +74,34 @@ class SandboxApp : public se::Application {
 			contextInfos.applicationVersion = "1.0.0"_v;
 			contextInfos.preferredGPU = se::renderer::GPUType::eDiscret;
 			contextInfos.linkedWindow = &window;
-			se::renderer::opengl::Context context {contextInfos};
+			se::renderer::vulkan::Context context {contextInfos};
 
 			se::renderer::VramAllocatorInfos allocatorInfos {};
 			allocatorInfos.chunkSize = 256_MiB;
 			allocatorInfos.context = &context;
-			allocatorInfos.usageNature = se::renderer::VramUsageNature::eAppToApi;
+			allocatorInfos.usageNature = se::renderer::VramUsageNature::eCpuToGpu;
 			allocatorInfos.usageFrequency = se::renderer::VramUsageFrequency::eDynamic;
-			se::renderer::opengl::VramAllocator allocator {allocatorInfos};
+			se::renderer::vulkan::VramAllocator allocator {allocatorInfos};
+
+			allocator.logAllocationTable();
+
+			se::renderer::VramAllocationInfos allocationInfos {};
+			allocationInfos.alignement = 16;
+			allocationInfos.size = 257;
+			auto handle1 {allocator.allocate(allocationInfos)};
+			allocator.logAllocationTable();
+			auto handle2 {allocator.allocate(allocationInfos)};
+			allocator.logAllocationTable();
+			allocator.free(handle1.get());
+			allocator.logAllocationTable();
+			allocationInfos.alignement = 32;
+			allocationInfos.size = 123;
+			auto handle3 {allocator.allocate(allocationInfos)};
+			allocator.logAllocationTable();
+			auto handle4 {allocator.allocate(allocationInfos)};
+			allocator.logAllocationTable();
+			auto handle5 {allocator.allocate(allocationInfos)};
+			allocator.logAllocationTable();
 
 
 			bool running {true};
