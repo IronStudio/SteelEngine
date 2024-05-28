@@ -40,12 +40,20 @@ if (WIN32)
 	else()
 		message("Copying dll")
 		message("${PROJECT_BINARY_DIR}/lib/lib${PROJECT_NAME}.dll")
+		message("${PROJECT_BINARY_DIR}/vendors/glad/libglad.dll")
 		message("${PROJECT_BINARY_DIR}/sandbox")
 		add_custom_command(
 			TARGET ${SANDBOX_NAME}
 			PRE_BUILD
 			COMMAND ${CMAKE_COMMAND} -E copy_if_different
 			"${PROJECT_BINARY_DIR}/lib/lib${PROJECT_NAME}.dll"
+			"${PROJECT_BINARY_DIR}/sandbox"
+		)
+		add_custom_command(
+			TARGET ${SANDBOX_NAME}
+			PRE_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			"${PROJECT_BINARY_DIR}/vendors/glad/libglad.dll"
 			"${PROJECT_BINARY_DIR}/sandbox"
 		)
 	endif()

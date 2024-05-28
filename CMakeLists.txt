@@ -40,11 +40,15 @@ message("WSI include directory : " ${WSI_PROVIDER_INCLUDE_DIRS})
 message("WSI libraries : " ${WSI_PROVIDER_LIBRARIES})
 
 
+add_subdirectory(vendors/glad)
+
+
 set(DEPS_INCLUDE_DIRS ${WSI_PROVIDER_INCLUDE_DIRS}
 	${Vulkan_INCLUDE_DIRS}
 	${CMAKE_SOURCE_DIR}/vendors/SteelEngine-Malge/se-malge/include
+	${SE_GLAD_INCLUDE_DIR}
 )
-set(DEPS_LIBRARIES ${WSI_PROVIDER_LIBRARIES} ${Vulkan_LIBRARIES})
+set(DEPS_LIBRARIES ${WSI_PROVIDER_LIBRARIES} ${Vulkan_LIBRARIES} glad)
 
 message("Dependencies include path : " ${DEPS_INCLUDE_DIRS})
 message("Dependencies libraries : " ${DEPS_LIBRARIES})
