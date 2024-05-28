@@ -27,20 +27,36 @@ namespace se::renderer::opengl {
 		m_allocationTable {},
 		m_memory {}
 	{
-		SE_ASSERT(m_infos.usage != se::renderer::VramUsageMask(), "You must specify the buffer usage !");
-
 		GLenum usage {};
-		if ((m_infos.usage & se::renderer::VramUsage::eRead) && (m_infos.usage & se::renderer::VramUsage::eWrite))
-			usage = GL_READ_WRITE;
-		else if (m_infos.usage & se::renderer::VramUsage::eRead)
-			usage = GL_READ_ONLY;
-		else if (m_infos.usage & se::renderer::VramUsage::eWrite)
-			usage = GL_WRITE_ONLY;
+		if (m_infos.usageFrequency == se::renderer::VramUsageFrequency::eForgotten) {
+			if (m_infos.usageNature == se::renderer::VramUsageNature::eAppToApi)
+				usage = GL_STREAM_DRAW;
+			else if (m_infos.usageNature == se::renderer::VramUsageNature::eApiToApp)
+				usage = GL_STREAM_READ;
+			else
+				usage = GL_STREAM_COPY;
+		}
 
+		else if (m_infos.usageFrequency == se::renderer::VramUsageFrequency::eStatic) {
+			if (m_infos.usageNature == se::renderer::VramUsageNature::eAppToApi)
+				usage = GL_STATIC_DRAW;
+			else if (m_infos.usageNature == se::renderer::VramUsageNature::eApiToApp)
+				usage = GL_STATIC_READ;
+			else
+				usage = GL_STATIC_COPY;
+		}
 
-		glGenBuffers(1, &m_memory);
-		//glBindBuffer(GL_TEXTURE_BUFFER, m_memory);
-		glNamedBufferData(m_memory, m_infos.chunkSize, nullptr, GL_READ_WRITE);
+		else {
+			if (m_infos.usageNature == se::renderer::VramUsageNature::eAppToApi)
+				usage = GL_DYNAMIC_DRAW;
+			else if (m_infos.usageNature == se::renderer::VramUsageNature::eApiToApp)
+				usage = GL_DYNAMIC_READ;
+			else
+				usage = GL_DYNAMIC_COPY;
+		}
+
+		glCreateBuffers(1, &m_memory);
+		glNamedBufferData(m_memory, m_infos.chunkSize, nullptr, usage);
 	}
 
 
@@ -51,14 +67,25 @@ namespace se::renderer::opengl {
 
 
 	std::unique_ptr<VramAllocator::Handle> VramAllocator::allocate(const se::renderer::VramAllocationInfos &allocationInfos) {
-		se::ByteCount start {};
-		se::ByteCount size {};
+		se::ByteCount start {-1};
+		se::ByteCount size {0};
 
 		se::ByteCount lastEnd {0};
 		se::ByteCount lastStart {m_infos.chunkSize};
 		for (auto it {m_allocationTable.begin()}; it != m_allocationTable.end(); ++it) {
+			if (lastStart - lastEnd >= allocationInfos.size) {
+				start = lastEnd;
+				size = allocationInfos.size;
+				break;
+			}
+
 			lastStart = it->start;
-			//if (lastStart - lastEnd >= allocationInfos.size)
+			lastEnd = it->end;
+		}
+
+		if (m_infos.chunkSize - lastEnd >= allocationInfos.size) {
+			start = lastEnd;
+			size = allocationInfos.size;
 		}
 
 		return std::make_unique<se::renderer::opengl::VramAllocatorHandle> (this, start, size);

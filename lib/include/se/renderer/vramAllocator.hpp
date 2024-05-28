@@ -6,7 +6,6 @@
 #include "se/renderer/context.hpp"
 #include "se/types.hpp"
 #include "se/utils/byteSize.hpp"
-#include "se/utils/bitField.hpp"
 
 
 
@@ -26,15 +25,23 @@ namespace se::renderer {
 			se::renderer::VramAllocator *m_allocator;
 	};
 
-	SE_CREATE_BIT_FIELD(VramUsage, VramUsageMask,
-		eRead  = 0b0000'0001,
-		eWrite = 0b0000'0010
-	);
+	enum class VramUsageNature {
+		eAppToApi,
+		eApiToApp,
+		eApiToApi
+	};
+
+	enum class VramUsageFrequency {
+		eForgotten,
+		eStatic,
+		eDynamic
+	};
 
 	struct VramAllocatorInfos {
 		se::renderer::Context *context;
 		se::ByteCount chunkSize {256_MiB};
-		se::renderer::VramUsageMask usage;
+		se::renderer::VramUsageNature usageNature;
+		se::renderer::VramUsageFrequency usageFrequency;
 	};
 
 	struct VramAllocationInfos {

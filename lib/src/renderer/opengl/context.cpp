@@ -107,7 +107,7 @@ namespace se::renderer::opengl {
 			{GL_DEBUG_SEVERITY_HIGH,         se::LogSeverity::eError}
 		};
 
-		std::string message {msg, length};
+		std::string message {msg, static_cast<se::Size> (length)};
 
 		SE_LOGGER.log({severityMap[severity]}, "[{}] {} > {}", sourceMap[source], typeMap[type], message);
 	}

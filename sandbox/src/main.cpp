@@ -24,6 +24,7 @@
 #include <se/renderer/vulkan/vramAllocator.hpp>
 
 #include <se/renderer/opengl/context.hpp>
+#include <se/renderer/opengl/vramAllocator.hpp>
 
 
 using namespace se::literals;
@@ -74,6 +75,13 @@ class SandboxApp : public se::Application {
 			contextInfos.preferredGPU = se::renderer::GPUType::eDiscret;
 			contextInfos.linkedWindow = &window;
 			se::renderer::opengl::Context context {contextInfos};
+
+			se::renderer::VramAllocatorInfos allocatorInfos {};
+			allocatorInfos.chunkSize = 256_MiB;
+			allocatorInfos.context = &context;
+			allocatorInfos.usageNature = se::renderer::VramUsageNature::eAppToApi;
+			allocatorInfos.usageFrequency = se::renderer::VramUsageFrequency::eDynamic;
+			se::renderer::opengl::VramAllocator allocator {allocatorInfos};
 
 
 			bool running {true};
