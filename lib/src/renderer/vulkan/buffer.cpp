@@ -10,7 +10,8 @@
 namespace se::renderer::vulkan {
 	Buffer::Buffer(const se::renderer::BufferInfos &infos) :
 		se::renderer::Buffer(infos),
-		m_buffer {VK_NULL_HANDLE}
+		m_buffer {VK_NULL_HANDLE},
+		m_allocatorHandle {}
 	{
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
 
@@ -34,6 +35,18 @@ namespace se::renderer::vulkan {
 
 		if (vkCreateBuffer(device, &bufferCreateInfos, nullptr, &m_buffer) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create buffer of size " + std::to_string(m_infos.size));
+
+		VkMemoryRequirements memoryRequirements {};
+		vkGetBufferMemoryRequirements(device, m_buffer, &memoryRequirements);
+
+		se::renderer::VramAllocationInfos allocationInfos {};
+		allocationInfos.alignement = memoryRequirements.alignment;
+		allocationInfos.size = memoryRequirements.size;
+		m_allocatorHandle = m_infos.allocator->allocate(allocationInfos);
+
+		auto handle {reinterpret_cast<se::renderer::vulkan::VramAllocatorHandle*> (m_allocatorHandle.get())};
+		if (vkBindBufferMemory(device, m_buffer, handle->getMemory(), handle->getOffset()) != VK_SUCCESS)
+			throw se::exceptions::RuntimeError("Can't bind buffer to memory");
 	}
 
 

@@ -20,6 +20,7 @@
 #include <se/utils/version.hpp>
 #include <se/window/windowManager.hpp>
 
+#include <se/renderer/vulkan/buffer.hpp>
 #include <se/renderer/vulkan/context.hpp>
 #include <se/renderer/vulkan/vramAllocator.hpp>
 
@@ -85,22 +86,13 @@ class SandboxApp : public se::Application {
 
 			allocator.logAllocationTable();
 
-			se::renderer::VramAllocationInfos allocationInfos {};
-			allocationInfos.alignement = 16;
-			allocationInfos.size = 257;
-			auto handle1 {allocator.allocate(allocationInfos)};
-			allocator.logAllocationTable();
-			auto handle2 {allocator.allocate(allocationInfos)};
-			allocator.logAllocationTable();
-			allocator.free(handle1.get());
-			allocator.logAllocationTable();
-			allocationInfos.alignement = 32;
-			allocationInfos.size = 123;
-			auto handle3 {allocator.allocate(allocationInfos)};
-			allocator.logAllocationTable();
-			auto handle4 {allocator.allocate(allocationInfos)};
-			allocator.logAllocationTable();
-			auto handle5 {allocator.allocate(allocationInfos)};
+			se::renderer::BufferInfos bufferInfos {};
+			bufferInfos.context = &context;
+			bufferInfos.allocator = &allocator;
+			bufferInfos.usage = se::renderer::BufferUsage::eVertex;
+			bufferInfos.size = 10_MiB;
+			se::renderer::vulkan::Buffer buffer {bufferInfos};
+
 			allocator.logAllocationTable();
 
 

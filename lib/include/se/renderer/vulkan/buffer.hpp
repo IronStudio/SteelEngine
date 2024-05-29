@@ -4,6 +4,7 @@
 
 #include "se/core.hpp"
 #include "se/renderer/buffer.hpp"
+#include "se/renderer/vulkan/vramAllocator.hpp"
 
 
 
@@ -17,6 +18,7 @@ namespace se::renderer::vulkan {
 
 		private:
 			VkBuffer m_buffer;
+			std::unique_ptr<se::renderer::VramAllocatorHandle> m_allocatorHandle;
 	};
 
 } // namespace se::renderer::vulkan

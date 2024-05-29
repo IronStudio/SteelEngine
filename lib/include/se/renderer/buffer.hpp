@@ -2,6 +2,7 @@
 
 #include "se/core.hpp"
 #include "se/renderer/context.hpp"
+#include "se/renderer/vramAllocator.hpp"
 
 
 
@@ -20,6 +21,7 @@ namespace se::renderer {
 		se::renderer::Context *context;
 		se::ByteCount size;
 		se::renderer::BufferUsage usage;
+		se::renderer::VramAllocator *allocator;
 	};
 
 	class SE_CORE Buffer {
