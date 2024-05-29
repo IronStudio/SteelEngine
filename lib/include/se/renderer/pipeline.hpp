@@ -2,6 +2,8 @@
 
 #include "se/core.hpp"
 #include "se/renderer/context.hpp"
+#include "se/renderer/renderPass.hpp"
+#include "se/renderer/shader.hpp"
 #include "se/renderer/vertexBufferView.hpp"
 
 
@@ -10,6 +12,8 @@ namespace se::renderer {
 	struct PipelineInfos {
 		se::renderer::Context *context;
 		se::renderer::VertexBufferView *vertexBufferView;
+		std::vector<se::renderer::Shader*> shaders;
+		se::renderer::RenderPass *renderPass;
 	};
 
 	class SE_CORE Pipeline {

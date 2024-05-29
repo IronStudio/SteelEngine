@@ -27,6 +27,7 @@ namespace se::renderer::vulkan {
 			~Swapchain();
 
 			inline VkSwapchainKHR getSwapChain() const noexcept {return m_swapchain;}
+			inline const VkSurfaceFormatKHR &getFormat() const noexcept {return m_chosenFormat;}
 
 
 		private:
@@ -47,6 +48,7 @@ namespace se::renderer::vulkan {
 			se::renderer::vulkan::SwapchainInfos m_infos;
 			VkSwapchainKHR m_swapchain;
 			VkPresentModeKHR m_chosenPresentMode;
+			VkSurfaceFormatKHR m_chosenFormat;
 			std::vector<VkImageView> m_imageViews;
 	};
 

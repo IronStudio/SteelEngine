@@ -13,6 +13,7 @@ namespace se::renderer::vulkan {
 		m_infos {infos},
 		m_swapchain {VK_NULL_HANDLE},
 		m_chosenPresentMode {},
+		m_chosenFormat {},
 		m_imageViews {}
 	{
 		FormatScoreCriterias formatScoreCriterias {};
@@ -20,7 +21,7 @@ namespace se::renderer::vulkan {
 		formatScoreCriterias.adobeRGB = false;
 		formatScoreCriterias.hdr = false;
 		formatScoreCriterias.formats = m_infos.formats;
-		VkSurfaceFormatKHR chosenFormat {s_chooseFormat(formatScoreCriterias)};
+		m_chosenFormat = s_chooseFormat(formatScoreCriterias);
 
 		m_chosenPresentMode = s_choosePresentMode(m_infos.presentModes);
 		VkExtent2D chosenExtent {s_chooseExtent(m_infos.surfaceCapabilities, m_infos.windowSize)};
@@ -30,8 +31,8 @@ namespace se::renderer::vulkan {
 		swapchainCreateInfos.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 		swapchainCreateInfos.surface = m_infos.surface;
 		swapchainCreateInfos.minImageCount = chosenImageCount;
-		swapchainCreateInfos.imageFormat = chosenFormat.format;
-		swapchainCreateInfos.imageColorSpace = chosenFormat.colorSpace;
+		swapchainCreateInfos.imageFormat = m_chosenFormat.format;
+		swapchainCreateInfos.imageColorSpace = m_chosenFormat.colorSpace;
 		swapchainCreateInfos.imageExtent = chosenExtent;
 		swapchainCreateInfos.imageArrayLayers = 1;
 		swapchainCreateInfos.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -47,7 +48,7 @@ namespace se::renderer::vulkan {
 		if (vkCreateSwapchainKHR(m_infos.device, &swapchainCreateInfos, nullptr, &m_swapchain) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create a vulkan swapchain");
 
-		m_imageViews = s_createImageView(m_infos.device, m_swapchain, chosenFormat.format);
+		m_imageViews = s_createImageView(m_infos.device, m_swapchain, m_chosenFormat.format);
 		SE_LOGGER.log({se::LogSeverity::eInfo}, "Swapchain image views count : {}", m_imageViews.size());
 	}
 

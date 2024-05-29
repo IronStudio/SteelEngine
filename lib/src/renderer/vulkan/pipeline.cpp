@@ -3,6 +3,8 @@
 #include <vulkan/vulkan.h>
 
 #include "se/renderer/vulkan/context.hpp"
+#include "se/renderer/vulkan/renderPass.hpp"
+#include "se/renderer/vulkan/shader.hpp"
 #include "se/renderer/vulkan/vertexBufferView.hpp"
 
 
@@ -14,6 +16,7 @@ namespace se::renderer::vulkan {
 		m_pipelineLayout {VK_NULL_HANDLE}
 	{
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
+		VkRenderPass renderPass {reinterpret_cast<se::renderer::vulkan::RenderPass*> (m_infos.renderPass)->getRenderPass()};
 
 		VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfos {};
 		vertexInputStateCreateInfos.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -106,12 +109,41 @@ namespace se::renderer::vulkan {
 
 		if (vkCreatePipelineLayout(device, &pipelineLayoutCreateInfos, nullptr, &m_pipelineLayout) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create pipeline layout");
-		
+
+		std::vector<VkPipelineShaderStageCreateInfo> shaderStageCreateInfos {};
+		shaderStageCreateInfos.reserve(m_infos.shaders.size());
+		for (const auto &shader : m_infos.shaders) {
+			shaderStageCreateInfos.push_back(reinterpret_cast<const se::renderer::vulkan::Shader*> (shader)->getShaderStageCreateInfos());
+		}
+
+		VkGraphicsPipelineCreateInfo pipelineCreateInfos {};
+		pipelineCreateInfos.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineCreateInfos.stageCount = shaderStageCreateInfos.size();
+		pipelineCreateInfos.pStages = shaderStageCreateInfos.data();
+		pipelineCreateInfos.pVertexInputState = &vertexInputStateCreateInfos;
+		pipelineCreateInfos.pInputAssemblyState = &inputAssemblyStateCreateInfos;
+		pipelineCreateInfos.pViewportState = &viewportStateCreateInfos;
+		pipelineCreateInfos.pRasterizationState = &rasterizationStateCreateInfos;
+		pipelineCreateInfos.pMultisampleState = &multisampleStateCreateInfos;
+		pipelineCreateInfos.pDepthStencilState = nullptr;
+		pipelineCreateInfos.pColorBlendState = &colorBlendStateCreateInfos;
+		pipelineCreateInfos.pDynamicState = &dynamicStateCreateInfos;
+		pipelineCreateInfos.layout = m_pipelineLayout;
+		pipelineCreateInfos.renderPass = renderPass;
+		pipelineCreateInfos.subpass = 0;
+		pipelineCreateInfos.basePipelineHandle = VK_NULL_HANDLE;
+		pipelineCreateInfos.basePipelineIndex = -1;
+
+		if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfos, nullptr, &m_pipeline) != VK_SUCCESS)
+			throw se::exceptions::RuntimeError("Can't create graphics pipeline");
 	}
 
 
 	Pipeline::~Pipeline() {
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
+
+		if (m_pipeline != VK_NULL_HANDLE)
+			vkDestroyPipeline(device, m_pipeline, nullptr);
 
 		if (m_pipelineLayout != VK_NULL_HANDLE)
 			vkDestroyPipelineLayout(device, m_pipelineLayout, nullptr);
