@@ -13,6 +13,8 @@ namespace se::renderer::vulkan {
 			Pipeline(const se::renderer::PipelineInfos &infos);
 			~Pipeline() override;
 
+			inline VkPipeline getPipeline() const noexcept {return m_pipeline;}
+
 		private:
 			VkPipeline m_pipeline;
 			VkPipelineLayout m_pipelineLayout;

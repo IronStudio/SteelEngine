@@ -45,6 +45,7 @@ namespace se::renderer::vulkan {
 
 			inline VkDevice getDevice() const noexcept {return m_device;}
 			inline VkPhysicalDevice getPhysicalDevice() const noexcept {return m_physicalDevice;}
+			inline const std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> &getQueues() const noexcept {return m_queues;}
 
 		private:
 			struct ScoreCriterias {
@@ -68,13 +69,13 @@ namespace se::renderer::vulkan {
 
 			static VkPhysicalDevice s_chooseDevice(VkInstance instance, const ScoreCriterias &criterias);
 			static se::Int32 s_scoreDevice(VkPhysicalDevice device, const ScoreCriterias &criterias);
-			static VkDevice s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, std::vector<VkQueue>> &queues);
-			static std::map<QueueType, std::vector<VkQueue>> s_getQueues(VkDevice device, const std::vector<QueueInfos> &queues);
+			static VkDevice s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> &queues);
+			static std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> s_getQueues(VkDevice device, const std::vector<QueueInfos> &queues);
 
 			se::renderer::vulkan::DeviceInfos m_infos;
 			VkDevice m_device;
 			VkPhysicalDevice m_physicalDevice;
-			std::map<QueueType, std::vector<VkQueue>> m_queues;
+			std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> m_queues;
 	};
 
 } // namespace se::renderer::vulkan

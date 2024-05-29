@@ -132,6 +132,86 @@ class SandboxApp : public se::Application {
 			pipelineInfos.renderPass = &renderPass;
 			se::renderer::vulkan::Pipeline pipeline {pipelineInfos};
 
+			std::vector<VkFramebuffer> framebuffers {};
+			framebuffers.reserve(context.getSwapchain()->getImageViews().size());
+
+			VkFramebufferCreateInfo framebufferCreateInfos {};
+			framebufferCreateInfos.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferCreateInfos.renderPass = renderPass.getRenderPass();
+			framebufferCreateInfos.attachmentCount = 1;
+			framebufferCreateInfos.width = context.getSwapchain()->getExtent().width;
+			framebufferCreateInfos.height = context.getSwapchain()->getExtent().height;
+			framebufferCreateInfos.layers = 1;
+
+			for (const auto &imageView : context.getSwapchain()->getImageViews()) {
+				framebufferCreateInfos.pAttachments = &imageView;
+
+				VkFramebuffer framebuffer {VK_NULL_HANDLE};
+				if (vkCreateFramebuffer(context.getDevice()->getDevice(), &framebufferCreateInfos, nullptr, &framebuffer) != VK_SUCCESS)
+					throw se::exceptions::RuntimeError("Can't create framebuffer");
+				framebuffers.push_back(framebuffer);
+			}
+
+
+			VkCommandPoolCreateInfo commandPoolCreateInfos {};
+			commandPoolCreateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			commandPoolCreateInfos.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+			commandPoolCreateInfos.queueFamilyIndex
+				= context.getDevice()->getQueues().find(se::renderer::vulkan::QueueType::eGraphics)->second.begin()->first;
+
+			VkCommandPool commandPool {VK_NULL_HANDLE};
+			if (vkCreateCommandPool(context.getDevice()->getDevice(), &commandPoolCreateInfos, nullptr, &commandPool) != VK_SUCCESS)
+				throw se::exceptions::RuntimeError("Can't create command pool");
+
+			se::Uint32 imageIndex {0};
+
+
+			VkCommandBufferAllocateInfo commandBufferAllocateInfos {};
+			commandBufferAllocateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			commandBufferAllocateInfos.commandBufferCount = 1;
+			commandBufferAllocateInfos.commandPool = commandPool;
+			commandBufferAllocateInfos.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			VkCommandBuffer commandBuffer {VK_NULL_HANDLE};
+
+
+			VkCommandBufferBeginInfo commandBufferBeginInfos {};
+			commandBufferBeginInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			commandBufferBeginInfos.pInheritanceInfo = nullptr;
+			(void)vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfos);
+
+			VkClearValue clearColor {{{0, 0, 0, 0}}};
+
+			VkRenderPassBeginInfo renderPassBeginInfos {};
+			renderPassBeginInfos.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassBeginInfos.renderPass = renderPass.getRenderPass();
+			renderPassBeginInfos.framebuffer = framebuffers[imageIndex];
+			renderPassBeginInfos.renderArea.offset = {0, 0};
+			renderPassBeginInfos.renderArea.extent = context.getSwapchain()->getExtent();
+			renderPassBeginInfos.clearValueCount = 1;
+			renderPassBeginInfos.pClearValues = &clearColor;
+			vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfos, VK_SUBPASS_CONTENTS_INLINE);
+
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getPipeline());
+
+			VkViewport viewport {};
+			viewport.x = 0.f;
+			viewport.y = 0.f;
+			viewport.width = static_cast<se::Float> (context.getSwapchain()->getExtent().width);
+			viewport.height = static_cast<se::Float> (context.getSwapchain()->getExtent().height);
+			viewport.minDepth = 0.f;
+			viewport.maxDepth = 1.f;
+			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+			VkRect2D scissor {};
+			scissor.offset = {0, 0};
+			scissor.extent = context.getSwapchain()->getExtent();
+			vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+			vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+			vkCmdEndRenderPass(commandBuffer);
+			(void)vkEndCommandBuffer(commandBuffer);
+
 
 			bool running {true};
 			while (se::Engine::isRunning()) {
@@ -158,6 +238,12 @@ class SandboxApp : public se::Application {
 				if (se::input::InputManager::wasWindowResized(window2.getUUID()))
 					SE_APP_LOGGER.log({se::LogSeverity::eInfo}, "Window2 resized to {}x{}", window2.getInfos().size.x, window2.getInfos().size.y);
 			}
+
+
+			vkDestroyCommandPool(context.getDevice()->getDevice(), commandPool, nullptr);
+
+			for (const auto &framebuffer : framebuffers)
+				vkDestroyFramebuffer(context.getDevice()->getDevice(), framebuffer, nullptr);
 		}
 };
 
