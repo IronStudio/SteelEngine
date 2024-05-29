@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "se/core.hpp"
 #include "se/renderer/context.hpp"
 
 
@@ -10,8 +11,7 @@ namespace se::renderer {
 	enum class ShaderType {
 		eVertex,
 		eFragment,
-		eGeometry,
-		eTessellation
+		eGeometry
 	};
 
 	struct ShaderInfos {
@@ -21,8 +21,13 @@ namespace se::renderer {
 		std::string entryPoint;
 	};
 
-	class Shader {
+	class SE_CORE Shader {
+		public:
+			inline Shader(const se::renderer::ShaderInfos &infos) : m_infos {infos} {}
+			virtual ~Shader() = default;
 
+		protected:
+			se::renderer::ShaderInfos m_infos;
 	};
 
 } // namespace se::renderer
