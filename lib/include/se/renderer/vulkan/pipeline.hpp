@@ -15,6 +15,7 @@ namespace se::renderer::vulkan {
 
 		private:
 			VkPipeline m_pipeline;
+			VkPipelineLayout m_pipelineLayout;
 	};
 
 } // namespace se::renderer::vulkan

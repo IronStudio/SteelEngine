@@ -22,6 +22,8 @@
 
 #include <se/renderer/vulkan/buffer.hpp>
 #include <se/renderer/vulkan/context.hpp>
+#include <se/renderer/vulkan/pipeline.hpp>
+#include <se/renderer/vulkan/vertexBufferView.hpp>
 #include <se/renderer/vulkan/vramAllocator.hpp>
 
 #include <se/renderer/opengl/context.hpp>
@@ -94,6 +96,18 @@ class SandboxApp : public se::Application {
 			se::renderer::vulkan::Buffer buffer {bufferInfos};
 
 			allocator.logAllocationTable();
+
+			se::renderer::VertexBufferViewInfos vertexBufferViewInfos {};
+			vertexBufferViewInfos.context = &context;
+			vertexBufferViewInfos.attributes = {
+				{se::renderer::VertexType::eFloat32, 0, 2, 0}
+			};
+			se::renderer::vulkan::VertexBufferView vertexBufferView {vertexBufferViewInfos};
+
+			se::renderer::PipelineInfos pipelineInfos {};
+			pipelineInfos.context = &context;
+			pipelineInfos.vertexBufferView = &vertexBufferView;
+			se::renderer::vulkan::Pipeline pipeline {pipelineInfos};
 
 
 			bool running {true};
