@@ -181,7 +181,7 @@ namespace se::renderer::vulkan {
 	}
 
 
-	VkDevice Device::s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> &queues) {
+	VkDevice Device::s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, std::vector<VkQueue>> &queues) {
 		VkDevice device {};
 
 		VkPhysicalDeviceFeatures features {};
@@ -267,23 +267,23 @@ namespace se::renderer::vulkan {
 
 
 
-	std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> Device::s_getQueues(VkDevice device, const std::vector<QueueInfos> &queueInfos) {
-		std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> output {};
+	std::map<QueueType, std::vector<VkQueue>> Device::s_getQueues(VkDevice device, const std::vector<QueueInfos> &queueInfos) {
+		std::map<QueueType, std::vector<VkQueue>> output {};
 
 		for (se::Count i {0}; i < queueInfos.size(); ++i) {
-			std::map<se::Count, std::vector<VkQueue>> queues {};
-			queues[i].resize(queueInfos[i].count);
+			std::vector<VkQueue> queues {};
+			queues.resize(queueInfos[i].count);
 			for (se::Count j {0}; j < queueInfos[i].count; ++j) {
 				VkQueue queue {};
 				vkGetDeviceQueue(device, i, j, &queue);
-				queues[i][j] = queue;
+				queues[j] = queue;
 			}
 
 			for (se::Count j {0}; j < SE_QUEUE_TYPE_COUNT; ++j) {
 				if (!(queueInfos[i].type & static_cast<QueueType> (1 << j)))
 					continue;
 
-				output[static_cast<QueueType> (1 << j)][i].insert(output[static_cast<QueueType> (1 << j)][i].begin(), queues[i].begin(), queues[i].end());
+				output[static_cast<QueueType> (1 << j)].insert(output[static_cast<QueueType> (1 << j)].begin(), queues.begin(), queues.end());
 			}
 		}
 
