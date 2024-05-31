@@ -15,10 +15,30 @@ namespace se::renderer::vulkan {
 			~Buffer() override;
 
 			inline VkBuffer getBuffer() const noexcept {return m_buffer;}
+			inline const se::renderer::VramAllocatorHandle *getAllocatorHandle() const noexcept {return m_allocatorHandle.get();}
 
 		private:
 			VkBuffer m_buffer;
 			std::unique_ptr<se::renderer::VramAllocatorHandle> m_allocatorHandle;
+	};
+
+
+	class SE_CORE BufferTransferor : public se::renderer::BufferTransferor {
+		public:
+			BufferTransferor(const se::renderer::BufferTransferorInfos &infos);
+			~BufferTransferor() override;
+
+			virtual void transfer(const se::renderer::BufferTransferInfos &infos);
+
+
+		private:
+			static void s_loadCommandPool(const se::renderer::BufferTransferorInfos &infos);
+			static void s_unloadCommandPool();
+
+			static se::Count s_instanceCount;
+			static VkCommandPool s_commandPool;
+
+			VkCommandBuffer m_commandBuffer;
 	};
 
 } // namespace se::renderer::vulkan

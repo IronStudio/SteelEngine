@@ -24,6 +24,7 @@ namespace se::renderer {
 	struct VertexBufferViewInfos {
 		se::renderer::Context *context;
 		std::vector<se::renderer::VertexAttribute> attributes;
+		se::ByteCount offset;
 	};
 
 	class SE_CORE VertexBufferView {

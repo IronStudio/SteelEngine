@@ -58,6 +58,7 @@ class SandboxApp : public se::Application {
 			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eFatal) << "Hello" << se::endLog;
 
 
+			/** @brief Window */
 			se::window::WindowInfos windowInfos {};
 			windowInfos.title = "SteelEngine_sandbox";
 			windowInfos.size = {16 * 70, 9 * 70};
@@ -73,6 +74,7 @@ class SandboxApp : public se::Application {
 			se::window::Window &window2 {se::window::WindowManager::createWindow(windowInfos)};
 
 
+			/** @brief Context */
 			se::renderer::ContextInfos contextInfos {};
 			contextInfos.applicationName = "SteelEngine_sandbox";
 			contextInfos.applicationVersion = "1.0.0"_v;
@@ -80,24 +82,43 @@ class SandboxApp : public se::Application {
 			contextInfos.linkedWindow = &window;
 			se::renderer::vulkan::Context context {contextInfos};
 
+
+			/** @brief Staging memory */
 			se::renderer::VramAllocatorInfos allocatorInfos {};
 			allocatorInfos.chunkSize = 256_MiB;
 			allocatorInfos.context = &context;
 			allocatorInfos.usageNature = se::renderer::VramUsageNature::eCpuToGpu;
 			allocatorInfos.usageFrequency = se::renderer::VramUsageFrequency::eDynamic;
-			se::renderer::vulkan::VramAllocator allocator {allocatorInfos};
+			se::renderer::vulkan::VramAllocator stagingAllocator {allocatorInfos};
 
-			allocator.logAllocationTable();
+			stagingAllocator.logAllocationTable();
 
+			/** @brief Staging buffer */
 			se::renderer::BufferInfos bufferInfos {};
 			bufferInfos.context = &context;
-			bufferInfos.allocator = &allocator;
-			bufferInfos.usage = se::renderer::BufferUsage::eVertex;
+			bufferInfos.allocator = &stagingAllocator;
+			bufferInfos.usage = se::renderer::BufferUsage::eTransferSrc;
 			bufferInfos.size = 10_MiB;
-			se::renderer::vulkan::Buffer buffer {bufferInfos};
+			se::renderer::vulkan::Buffer stagingBuffer {bufferInfos};
 
-			allocator.logAllocationTable();
+			stagingAllocator.logAllocationTable();
 
+			/** @brief GPU Memory */
+			allocatorInfos.chunkSize = 256_MiB;
+			allocatorInfos.context = &context;
+			allocatorInfos.usageNature = se::renderer::VramUsageNature::eGpuToGpu;
+			allocatorInfos.usageFrequency = se::renderer::VramUsageFrequency::eDynamic;
+			se::renderer::vulkan::VramAllocator gpuAllocator {allocatorInfos};
+
+			/** @brief Vertex buffer */
+			bufferInfos.context = &context;
+			bufferInfos.allocator = &gpuAllocator;
+			bufferInfos.usage = se::renderer::BufferUsage::eVertex | se::renderer::BufferUsage::eTransferDst;
+			bufferInfos.size = 10_MiB;
+			se::renderer::vulkan::Buffer vertexBuffer {bufferInfos};
+
+
+			/** @brief VB view */
 			se::renderer::VertexBufferViewInfos vertexBufferViewInfos {};
 			vertexBufferViewInfos.context = &context;
 			vertexBufferViewInfos.attributes = {
@@ -106,6 +127,7 @@ class SandboxApp : public se::Application {
 			se::renderer::vulkan::VertexBufferView vertexBufferView {vertexBufferViewInfos};
 
 
+			/** @brief Shaders */
 			se::renderer::ShaderInfos shaderInfos {};
 			shaderInfos.context = &context;
 			shaderInfos.entryPoint = "main";
@@ -119,6 +141,7 @@ class SandboxApp : public se::Application {
 			se::renderer::vulkan::Shader fragmentShader {shaderInfos};
 
 
+			/** @brief Pipeline */
 			se::renderer::PipelineInfos pipelineInfos {};
 			pipelineInfos.context = &context;
 			pipelineInfos.vertexBufferView = &vertexBufferView;

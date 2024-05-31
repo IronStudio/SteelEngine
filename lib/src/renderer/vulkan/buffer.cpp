@@ -15,9 +15,9 @@ namespace se::renderer::vulkan {
 	{
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
 
-		static std::map<se::renderer::BufferUsage, VkBufferUsageFlags> bufferUsageMap {
-			{se::renderer::BufferUsage::eTransfertSrc, VK_BUFFER_USAGE_TRANSFER_SRC_BIT},
-			{se::renderer::BufferUsage::eTransfertDst, VK_BUFFER_USAGE_TRANSFER_DST_BIT},
+		std::map<se::renderer::BufferUsage, VkBufferUsageFlags> bufferUsageMap {
+			{se::renderer::BufferUsage::eTransferSrc, VK_BUFFER_USAGE_TRANSFER_SRC_BIT},
+			{se::renderer::BufferUsage::eTransferDst, VK_BUFFER_USAGE_TRANSFER_DST_BIT},
 			{se::renderer::BufferUsage::eUniform, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT},
 			{se::renderer::BufferUsage::eStorage, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT},
 			{se::renderer::BufferUsage::eIndex, VK_BUFFER_USAGE_INDEX_BUFFER_BIT},
@@ -25,13 +25,21 @@ namespace se::renderer::vulkan {
 			{se::renderer::BufferUsage::eIndirect, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT}
 		};
 
+		VkBufferUsageFlags usage {0};
+		for (se::Count i {0}; i < bufferUsageMap.size(); ++i) {
+			if (!(m_infos.usage & (se::renderer::BufferUsage)(1 << i)))
+				continue;
+
+			usage |= bufferUsageMap[(se::renderer::BufferUsage)(1 << i)];
+		}
+
 		VkBufferCreateInfo bufferCreateInfos {};
 		bufferCreateInfos.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		bufferCreateInfos.queueFamilyIndexCount = 0;
 		bufferCreateInfos.pQueueFamilyIndices = nullptr;
 		bufferCreateInfos.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		bufferCreateInfos.size = m_infos.size;
-		bufferCreateInfos.usage = bufferUsageMap[m_infos.usage];
+		bufferCreateInfos.usage = usage;
 
 		if (vkCreateBuffer(device, &bufferCreateInfos, nullptr, &m_buffer) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create buffer of size " + std::to_string(m_infos.size));
@@ -57,5 +65,41 @@ namespace se::renderer::vulkan {
 			vkDestroyBuffer(device, m_buffer, nullptr);
 	}
 
+
+
+
+	BufferTransferor::BufferTransferor(const se::renderer::BufferTransferorInfos &infos) :
+		se::renderer::BufferTransferor(infos),
+		m_commandBuffer {VK_NULL_HANDLE}
+	{
+
+	}
+
+
+	BufferTransferor::~BufferTransferor() {
+
+	}
+
+
+	void BufferTransferor::transfer(const se::renderer::BufferTransferInfos &infos) {
+
+	}
+
+
+	void BufferTransferor::s_loadCommandPool(const se::renderer::BufferTransferorInfos &infos) {
+		VkCommandPoolCreateInfo commandPoolCreateInfos {};
+		commandPoolCreateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		commandPoolCreateInfos.queueFamilyIndex = ;
+		s_commandPool;
+	}
+
+
+	void BufferTransferor::s_unloadCommandPool() {
+
+	}
+
+
+	se::Count BufferTransferor::s_instanceCount {0};
+	VkCommandPool BufferTransferor::s_commandPool {VK_NULL_HANDLE};
 
 } // namespace se::renderer::vulkan
