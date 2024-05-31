@@ -23,7 +23,6 @@
 #include <se/renderer/vulkan/buffer.hpp>
 #include <se/renderer/vulkan/context.hpp>
 #include <se/renderer/vulkan/pipeline.hpp>
-#include <se/renderer/vulkan/renderPass.hpp>
 #include <se/renderer/vulkan/shader.hpp>
 #include <se/renderer/vulkan/vertexBufferView.hpp>
 #include <se/renderer/vulkan/vramAllocator.hpp>
@@ -120,16 +119,10 @@ class SandboxApp : public se::Application {
 			se::renderer::vulkan::Shader fragmentShader {shaderInfos};
 
 
-			se::renderer::RenderPassInfos renderPassInfos {};
-			renderPassInfos.context = &context;
-			se::renderer::vulkan::RenderPass renderPass {renderPassInfos};
-
-
 			se::renderer::PipelineInfos pipelineInfos {};
 			pipelineInfos.context = &context;
 			pipelineInfos.vertexBufferView = &vertexBufferView;
 			pipelineInfos.shaders = {&vertexShader, &fragmentShader};
-			pipelineInfos.renderPass = &renderPass;
 			se::renderer::vulkan::Pipeline pipeline {pipelineInfos};
 
 

@@ -79,6 +79,7 @@ namespace se::renderer::vulkan {
 		deviceCreateInfos.extensions = m_infos.extensions;
 		deviceCreateInfos.queueTypeMask = m_infos.queueTypeMask;
 		deviceCreateInfos.surface = m_infos.surface;
+		deviceCreateInfos.features = m_infos.requiredFeatures;
 
 		m_device = s_createDevice(deviceCreateInfos, m_queues);
 
@@ -184,8 +185,6 @@ namespace se::renderer::vulkan {
 	VkDevice Device::s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, std::vector<VkQueue>> &queues) {
 		VkDevice device {};
 
-		VkPhysicalDeviceFeatures features {};
-
 		se::Uint32 queueCount {};
 		vkGetPhysicalDeviceQueueFamilyProperties(infos.device, &queueCount, nullptr);
 
@@ -254,9 +253,10 @@ namespace se::renderer::vulkan {
 		deviceCreateInfos.ppEnabledExtensionNames = infos.extensions.data();
 		deviceCreateInfos.enabledLayerCount = 0;
 		deviceCreateInfos.ppEnabledLayerNames = nullptr;
-		deviceCreateInfos.pEnabledFeatures = &features;
+		deviceCreateInfos.pEnabledFeatures = nullptr;
 		deviceCreateInfos.queueCreateInfoCount = queueCreateInfos.size();
 		deviceCreateInfos.pQueueCreateInfos = queueCreateInfos.data();
+		deviceCreateInfos.pNext = &infos.features;
 
 		if (vkCreateDevice(infos.device, &deviceCreateInfos, nullptr, &device) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create logical device");

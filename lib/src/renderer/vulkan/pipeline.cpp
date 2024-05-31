@@ -3,7 +3,6 @@
 #include <vulkan/vulkan.h>
 
 #include "se/renderer/vulkan/context.hpp"
-#include "se/renderer/vulkan/renderPass.hpp"
 #include "se/renderer/vulkan/shader.hpp"
 #include "se/renderer/vulkan/vertexBufferView.hpp"
 
@@ -16,7 +15,6 @@ namespace se::renderer::vulkan {
 		m_pipelineLayout {VK_NULL_HANDLE}
 	{
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
-		VkRenderPass renderPass {reinterpret_cast<se::renderer::vulkan::RenderPass*> (m_infos.renderPass)->getRenderPass()};
 
 		VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfos {};
 		vertexInputStateCreateInfos.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -129,7 +127,7 @@ namespace se::renderer::vulkan {
 		pipelineCreateInfos.pColorBlendState = &colorBlendStateCreateInfos;
 		pipelineCreateInfos.pDynamicState = &dynamicStateCreateInfos;
 		pipelineCreateInfos.layout = m_pipelineLayout;
-		pipelineCreateInfos.renderPass = renderPass;
+		pipelineCreateInfos.renderPass = VK_NULL_HANDLE;
 		pipelineCreateInfos.subpass = 0;
 		pipelineCreateInfos.basePipelineHandle = VK_NULL_HANDLE;
 		pipelineCreateInfos.basePipelineIndex = -1;

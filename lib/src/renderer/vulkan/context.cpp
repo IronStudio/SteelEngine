@@ -100,6 +100,11 @@ namespace se::renderer::vulkan {
 		surfaceInfos.window = m_infos.linkedWindow;
 		m_surface = new se::renderer::vulkan::Surface(surfaceInfos);
 
+		VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures {};
+		dynamicRenderingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+		dynamicRenderingFeatures.dynamicRendering = VK_TRUE;
+		dynamicRenderingFeatures.pNext = nullptr;
+
 		se::renderer::vulkan::DeviceInfos deviceInfos {};
 		deviceInfos.instance = s_instance;
 		deviceInfos.gpuType = m_infos.preferredGPU;
@@ -108,6 +113,9 @@ namespace se::renderer::vulkan {
 		};
 		deviceInfos.queueTypeMask = se::renderer::vulkan::QueueType::eGraphics | se::renderer::vulkan::QueueType::ePresent;
 		deviceInfos.surface = m_surface->getSurface();
+		deviceInfos.requiredFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		deviceInfos.requiredFeatures.features = {};
+		deviceInfos.requiredFeatures.pNext = &dynamicRenderingFeatures;
 		m_device = new se::renderer::vulkan::Device(deviceInfos);
 
 		m_surface->queryInformations(m_device->getPhysicalDevice());

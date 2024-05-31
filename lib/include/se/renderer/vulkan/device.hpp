@@ -35,6 +35,7 @@ namespace se::renderer::vulkan {
 		std::vector<const char*> extensions;
 		se::renderer::vulkan::QueueTypeMask queueTypeMask;
 		VkSurfaceKHR surface;
+		VkPhysicalDeviceFeatures2 requiredFeatures;
 	};
 
 
@@ -59,6 +60,7 @@ namespace se::renderer::vulkan {
 				std::vector<const char*> extensions;
 				se::renderer::vulkan::QueueTypeMask queueTypeMask;
 				VkSurfaceKHR surface;
+				VkPhysicalDeviceFeatures2 features;
 			};
 
 			struct QueueInfos {
