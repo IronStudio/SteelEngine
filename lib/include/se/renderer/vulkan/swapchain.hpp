@@ -28,6 +28,8 @@ namespace se::renderer::vulkan {
 
 			inline VkSwapchainKHR getSwapChain() const noexcept {return m_swapchain;}
 			inline const VkSurfaceFormatKHR &getFormat() const noexcept {return m_chosenFormat;}
+			inline const VkExtent2D &getExtent() const noexcept {return m_chosenExtent;}
+			inline const std::vector<VkImageView> &getImageViews() const noexcept {return m_imageViews;}
 
 
 		private:
@@ -49,6 +51,7 @@ namespace se::renderer::vulkan {
 			VkSwapchainKHR m_swapchain;
 			VkPresentModeKHR m_chosenPresentMode;
 			VkSurfaceFormatKHR m_chosenFormat;
+			VkExtent2D m_chosenExtent;
 			std::vector<VkImageView> m_imageViews;
 	};
 

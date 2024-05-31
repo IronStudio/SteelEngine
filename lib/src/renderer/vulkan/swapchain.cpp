@@ -14,6 +14,7 @@ namespace se::renderer::vulkan {
 		m_swapchain {VK_NULL_HANDLE},
 		m_chosenPresentMode {},
 		m_chosenFormat {},
+		m_chosenExtent {},
 		m_imageViews {}
 	{
 		FormatScoreCriterias formatScoreCriterias {};
@@ -24,7 +25,7 @@ namespace se::renderer::vulkan {
 		m_chosenFormat = s_chooseFormat(formatScoreCriterias);
 
 		m_chosenPresentMode = s_choosePresentMode(m_infos.presentModes);
-		VkExtent2D chosenExtent {s_chooseExtent(m_infos.surfaceCapabilities, m_infos.windowSize)};
+		m_chosenExtent = s_chooseExtent(m_infos.surfaceCapabilities, m_infos.windowSize);
 		se::Uint32 chosenImageCount {s_chooseImageCount(m_infos.surfaceCapabilities)};
 
 		VkSwapchainCreateInfoKHR swapchainCreateInfos {};
@@ -33,7 +34,7 @@ namespace se::renderer::vulkan {
 		swapchainCreateInfos.minImageCount = chosenImageCount;
 		swapchainCreateInfos.imageFormat = m_chosenFormat.format;
 		swapchainCreateInfos.imageColorSpace = m_chosenFormat.colorSpace;
-		swapchainCreateInfos.imageExtent = chosenExtent;
+		swapchainCreateInfos.imageExtent = m_chosenExtent;
 		swapchainCreateInfos.imageArrayLayers = 1;
 		swapchainCreateInfos.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		swapchainCreateInfos.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;

@@ -126,6 +126,40 @@ class SandboxApp : public se::Application {
 			se::renderer::vulkan::Pipeline pipeline {pipelineInfos};
 
 
+
+			/********************************************/
+			/******** playing a bit with vulkan *********/
+			/********************************************/
+
+
+			VkRenderingAttachmentInfo renderingAttachmentInfos {};
+			renderingAttachmentInfos.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			renderingAttachmentInfos.clearValue.color = {0.f, 0.f, 0.f, 1.f};
+			renderingAttachmentInfos.clearValue.depthStencil = {0.f, 0};
+			renderingAttachmentInfos.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			renderingAttachmentInfos.imageView = context.getSwapchain()->getImageViews()[0];
+			renderingAttachmentInfos.resolveImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			renderingAttachmentInfos.resolveImageView = VK_NULL_HANDLE;
+			renderingAttachmentInfos.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			renderingAttachmentInfos.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			renderingAttachmentInfos.resolveMode = VK_RESOLVE_MODE_NONE;
+
+			VkRenderingInfo renderingInfos {};
+			renderingInfos.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+			renderingInfos.colorAttachmentCount = 1;
+			renderingInfos.pColorAttachments = &renderingAttachmentInfos;
+			renderingInfos.renderArea.offset = {0, 0};
+			renderingInfos.renderArea.extent = context.getSwapchain()->getExtent();
+			renderingInfos.layerCount = 1;
+			renderingInfos.viewMask = 0;
+
+
+			/********************************************/
+			/******** playing a bit with vulkan *********/
+			/********************************************/
+
+
+
 			bool running {true};
 			while (se::Engine::isRunning()) {
 				se::input::InputManager::update();
