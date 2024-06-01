@@ -29,6 +29,7 @@ namespace se::renderer::vulkan {
 			inline VkSwapchainKHR getSwapChain() const noexcept {return m_swapchain;}
 			inline const VkSurfaceFormatKHR &getFormat() const noexcept {return m_chosenFormat;}
 			inline const VkExtent2D &getExtent() const noexcept {return m_chosenExtent;}
+			inline const std::vector<VkImage> &getImages() const noexcept {return m_images;}
 			inline const std::vector<VkImageView> &getImageViews() const noexcept {return m_imageViews;}
 
 
@@ -45,13 +46,14 @@ namespace se::renderer::vulkan {
 			static VkPresentModeKHR s_choosePresentMode(const std::vector<VkPresentModeKHR> &presentModes);
 			static VkExtent2D s_chooseExtent(const VkSurfaceCapabilitiesKHR &capabilities, const se::Vec2i &windowSize);
 			static se::Uint32 s_chooseImageCount(const VkSurfaceCapabilitiesKHR &capabilities);
-			static std::vector<VkImageView> s_createImageView(VkDevice device, VkSwapchainKHR swapchain, VkFormat format);
+			static std::vector<VkImageView> s_createImageView(VkDevice device, VkSwapchainKHR swapchain, VkFormat format, std::vector<VkImage> &images);
 
 			se::renderer::vulkan::SwapchainInfos m_infos;
 			VkSwapchainKHR m_swapchain;
 			VkPresentModeKHR m_chosenPresentMode;
 			VkSurfaceFormatKHR m_chosenFormat;
 			VkExtent2D m_chosenExtent;
+			std::vector<VkImage> m_images;
 			std::vector<VkImageView> m_imageViews;
 	};
 

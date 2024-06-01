@@ -110,6 +110,27 @@ namespace se::renderer::vulkan {
 
 
 
+	VkQueue Device::getQueue(QueueType queueType) const {
+		auto it {m_queues.find(queueType)};
+		if (it == m_queues.end())
+			throw se::exceptions::RuntimeError("Can't find queue of the wanted type");
+
+		static std::map<QueueType, se::Count> currentQueues {};
+		auto current {currentQueues.find(queueType)};
+		if (current == currentQueues.end()) {
+			currentQueues[queueType] = 0;
+			current = currentQueues.find(queueType);
+		}
+		se::Count index {m_queueFamilyIndices.find(queueType)->second};
+		VkQueue queue {it->second.find(index)->second.at(current->second)};
+		++current->second;
+		if (current->second >= it->second.find(index)->second.size())
+			current->second = 0;
+		return queue;
+	}
+
+
+
 	VkPhysicalDevice Device::s_chooseDevice(VkInstance instance, const ScoreCriterias &criterias) {
 		se::Uint32 count {};
 		if (vkEnumeratePhysicalDevices(instance, &count, nullptr) != VK_SUCCESS)

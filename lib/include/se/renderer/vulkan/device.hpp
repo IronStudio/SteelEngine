@@ -48,6 +48,7 @@ namespace se::renderer::vulkan {
 			inline VkPhysicalDevice getPhysicalDevice() const noexcept {return m_physicalDevice;}
 			inline const std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> &getQueues() const noexcept {return m_queues;}
 			inline const std::map<QueueType, se::Count> &getQueueFamilyIndices() const noexcept {return m_queueFamilyIndices;}
+			VkQueue getQueue(QueueType queueType) const;
 
 		private:
 			struct ScoreCriterias {

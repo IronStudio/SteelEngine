@@ -193,6 +193,8 @@ namespace se::renderer::vulkan {
 		if (vkWaitForFences(device, m_inUseFences.size(), m_inUseFences.data(), VK_TRUE, UINT64_MAX) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't wait for transfer fences");
 		m_freeFences.insert(m_freeFences.end(), m_inUseFences.begin(), m_inUseFences.end());
+		if (vkResetFences(device, m_inUseFences.size(), m_inUseFences.data()) != VK_SUCCESS)
+			throw se::exceptions::RuntimeError("Can't reset transfer fences");
 		m_inUseFences.clear();
 	}
 

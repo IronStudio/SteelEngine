@@ -15,6 +15,7 @@ namespace se::renderer::vulkan {
 		m_chosenPresentMode {},
 		m_chosenFormat {},
 		m_chosenExtent {},
+		m_images {},
 		m_imageViews {}
 	{
 		FormatScoreCriterias formatScoreCriterias {};
@@ -49,7 +50,7 @@ namespace se::renderer::vulkan {
 		if (vkCreateSwapchainKHR(m_infos.device, &swapchainCreateInfos, nullptr, &m_swapchain) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create a vulkan swapchain");
 
-		m_imageViews = s_createImageView(m_infos.device, m_swapchain, m_chosenFormat.format);
+		m_imageViews = s_createImageView(m_infos.device, m_swapchain, m_chosenFormat.format, m_images);
 		SE_LOGGER.log({se::LogSeverity::eInfo}, "Swapchain image views count : {}", m_imageViews.size());
 	}
 
@@ -181,12 +182,11 @@ namespace se::renderer::vulkan {
 	}
 
 
-	std::vector<VkImageView> Swapchain::s_createImageView(VkDevice device, VkSwapchainKHR swapchain, VkFormat format) {
+	std::vector<VkImageView> Swapchain::s_createImageView(VkDevice device, VkSwapchainKHR swapchain, VkFormat format, std::vector<VkImage> &images) {
 		se::Uint32 imageCount {};
 		if (vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't get swapchain images count");
 
-		std::vector<VkImage> images {};
 		images.resize(imageCount);
 		if (vkGetSwapchainImagesKHR(device, swapchain, &imageCount, images.data()) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't get swapchain images");
@@ -197,10 +197,10 @@ namespace se::renderer::vulkan {
 		VkImageViewCreateInfo createInfos {};
 		createInfos.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		createInfos.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		createInfos.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfos.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfos.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfos.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfos.components.r = VK_COMPONENT_SWIZZLE_R;
+		createInfos.components.g = VK_COMPONENT_SWIZZLE_G;
+		createInfos.components.b = VK_COMPONENT_SWIZZLE_B;
+		createInfos.components.a = VK_COMPONENT_SWIZZLE_A;
 		createInfos.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		createInfos.subresourceRange.baseMipLevel = 0;
 		createInfos.subresourceRange.levelCount = 1;
