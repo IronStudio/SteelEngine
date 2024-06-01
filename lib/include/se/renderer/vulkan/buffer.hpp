@@ -14,6 +14,8 @@ namespace se::renderer::vulkan {
 			Buffer(const se::renderer::BufferInfos &infos);
 			~Buffer() override;
 
+			void write(const se::renderer::BufferWriteInfos &writeInfos) override;
+
 			inline VkBuffer getBuffer() const noexcept {return m_buffer;}
 			inline const se::renderer::VramAllocatorHandle *getAllocatorHandle() const noexcept {return m_allocatorHandle.get();}
 
@@ -28,17 +30,21 @@ namespace se::renderer::vulkan {
 			BufferTransferor(const se::renderer::BufferTransferorInfos &infos);
 			~BufferTransferor() override;
 
-			virtual void transfer(const se::renderer::BufferTransferInfos &infos);
+			virtual void transfer(const se::renderer::BufferTransferInfos &infos) override;
+			virtual void sync() override;
 
 
 		private:
 			static void s_loadCommandPool(const se::renderer::BufferTransferorInfos &infos);
-			static void s_unloadCommandPool();
+			static void s_unloadCommandPool(const se::renderer::BufferTransferorInfos &infos);
 
 			static se::Count s_instanceCount;
 			static VkCommandPool s_commandPool;
 
 			VkCommandBuffer m_commandBuffer;
+			std::vector<VkFence> m_inUseFences;
+			std::vector<VkFence> m_freeFences;
+			std::mutex m_fenceMutex;
 	};
 
 } // namespace se::renderer::vulkan

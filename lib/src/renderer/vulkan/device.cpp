@@ -65,7 +65,8 @@ namespace se::renderer::vulkan {
 		m_infos {infos},
 		m_device {VK_NULL_HANDLE},
 		m_physicalDevice {VK_NULL_HANDLE},
-		m_queues {}
+		m_queues {},
+		m_queueFamilyIndices {}
 	{
 		ScoreCriterias scoreCriterias {};
 		scoreCriterias.gpuType = m_infos.gpuType;
@@ -82,6 +83,7 @@ namespace se::renderer::vulkan {
 		deviceCreateInfos.features = m_infos.requiredFeatures;
 
 		m_device = s_createDevice(deviceCreateInfos, m_queues);
+		m_queueFamilyIndices = s_dispatchQueueFamilies(m_queues);
 
 		SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Queues :\n";
 		for (const auto &queue : m_queues)
@@ -182,7 +184,7 @@ namespace se::renderer::vulkan {
 	}
 
 
-	VkDevice Device::s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, std::vector<VkQueue>> &queues) {
+	VkDevice Device::s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> &queues) {
 		VkDevice device {};
 
 		se::Uint32 queueCount {};
@@ -267,8 +269,8 @@ namespace se::renderer::vulkan {
 
 
 
-	std::map<QueueType, std::vector<VkQueue>> Device::s_getQueues(VkDevice device, const std::vector<QueueInfos> &queueInfos) {
-		std::map<QueueType, std::vector<VkQueue>> output {};
+	std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> Device::s_getQueues(VkDevice device, const std::vector<QueueInfos> &queueInfos) {
+		std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> output {};
 
 		for (se::Count i {0}; i < queueInfos.size(); ++i) {
 			std::vector<VkQueue> queues {};
@@ -283,8 +285,32 @@ namespace se::renderer::vulkan {
 				if (!(queueInfos[i].type & static_cast<QueueType> (1 << j)))
 					continue;
 
-				output[static_cast<QueueType> (1 << j)].insert(output[static_cast<QueueType> (1 << j)].begin(), queues.begin(), queues.end());
+				output[static_cast<QueueType> (1 << j)][i].insert(output[static_cast<QueueType> (1 << j)][i].begin(), queues.begin(), queues.end());
 			}
+		}
+
+		return output;
+	}
+
+
+	std::map<QueueType, se::Count> Device::s_dispatchQueueFamilies(const std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> &queues) {
+		std::map<QueueType, se::Count> output {};
+
+		for (se::Count queueTypeIndex {0}; queueTypeIndex < SE_QUEUE_TYPE_COUNT; ++queueTypeIndex) {
+			auto queueType {static_cast<QueueType> (1 << queueTypeIndex)};
+			auto it {queues.find(queueType)};
+			if (it == queues.end())
+				continue;
+			se::Count chosenFamily {0};
+			se::Count chosenFamilySize {0};
+			for (const auto &family : it->second) {
+				if (family.second.size() <= chosenFamilySize)
+					continue;
+				chosenFamilySize = family.second.size();
+				chosenFamily = family.first;
+			}
+
+			output[queueType] = chosenFamily;
 		}
 
 		return output;

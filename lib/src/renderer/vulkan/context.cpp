@@ -111,7 +111,9 @@ namespace se::renderer::vulkan {
 		deviceInfos.extensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
-		deviceInfos.queueTypeMask = se::renderer::vulkan::QueueType::eGraphics | se::renderer::vulkan::QueueType::ePresent;
+		deviceInfos.queueTypeMask = se::renderer::vulkan::QueueType::eGraphics
+			| se::renderer::vulkan::QueueType::ePresent
+			| se::renderer::vulkan::QueueType::eTransfer;
 		deviceInfos.surface = m_surface->getSurface();
 		deviceInfos.requiredFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 		deviceInfos.requiredFeatures.features = {};

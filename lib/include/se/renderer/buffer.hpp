@@ -1,8 +1,11 @@
 #pragma once
 
+#include <vector>
+
 #include "se/core.hpp"
 #include "se/renderer/context.hpp"
 #include "se/renderer/vramAllocator.hpp"
+#include "se/types.hpp"
 #include "se/utils/bitField.hpp"
 
 
@@ -25,10 +28,17 @@ namespace se::renderer {
 		se::renderer::VramAllocator *allocator;
 	};
 
+	struct BufferWriteInfos {
+		std::vector<se::Byte> value;
+		se::ByteCount offset;
+	};
+
 	class SE_CORE Buffer {
 		public:
 			inline Buffer(const se::renderer::BufferInfos &infos) : m_infos {infos} {}
 			virtual ~Buffer() = default;
+
+			virtual void write(const se::renderer::BufferWriteInfos &writeInfos) = 0;
 
 			inline const se::renderer::BufferInfos &getInfos() const noexcept {return m_infos;}
 
@@ -43,6 +53,9 @@ namespace se::renderer {
 	struct BufferTransferInfos {
 		se::renderer::Buffer *source;
 		se::renderer::Buffer *destination;
+		se::ByteCount srcOffset;
+		se::ByteCount dstOffset;
+		se::ByteCount size;
 	};
 
 	class SE_CORE BufferTransferor {
@@ -51,6 +64,7 @@ namespace se::renderer {
 			virtual ~BufferTransferor() = default;
 
 			virtual void transfer(const se::renderer::BufferTransferInfos &infos) = 0;
+			virtual void sync() = 0;
 
 			inline const se::renderer::BufferTransferorInfos &getInfos() const noexcept {return m_infos;}
 

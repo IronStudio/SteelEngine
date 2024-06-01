@@ -23,7 +23,6 @@ namespace se::renderer::vulkan {
 			inline VkInstance getInstance() const noexcept {return s_instance;}
 			inline se::renderer::vulkan::Device *getDevice() const noexcept {return m_device;}
 			inline se::renderer::vulkan::Swapchain *getSwapchain() const noexcept {return m_swapchain;}
-			inline VkCommandPool getCommandPool() const noexcept {return m_commandPool;}
 
 		private:
 			static VKAPI_ATTR VkBool32 VKAPI_CALL s_debugMessageCallback(

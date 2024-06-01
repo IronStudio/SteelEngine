@@ -83,9 +83,17 @@ class SandboxApp : public se::Application {
 			se::renderer::vulkan::Context context {contextInfos};
 
 
+			/** @brief Vertices */
+			std::vector<se::Float> vertices {
+				0.5f, 0.5f,
+				0.f, -0.5f,
+				-0.5f, 0.5f
+			};
+
+
 			/** @brief Staging memory */
 			se::renderer::VramAllocatorInfos allocatorInfos {};
-			allocatorInfos.chunkSize = 256_MiB;
+			allocatorInfos.chunkSize = 64_MiB;
 			allocatorInfos.context = &context;
 			allocatorInfos.usageNature = se::renderer::VramUsageNature::eCpuToGpu;
 			allocatorInfos.usageFrequency = se::renderer::VramUsageFrequency::eDynamic;
@@ -98,8 +106,13 @@ class SandboxApp : public se::Application {
 			bufferInfos.context = &context;
 			bufferInfos.allocator = &stagingAllocator;
 			bufferInfos.usage = se::renderer::BufferUsage::eTransferSrc;
-			bufferInfos.size = 10_MiB;
+			bufferInfos.size = vertices.size() * sizeof(se::Float);
 			se::renderer::vulkan::Buffer stagingBuffer {bufferInfos};
+
+			se::renderer::BufferWriteInfos bufferWriteInfos {};
+			bufferWriteInfos.offset = 0;
+			bufferWriteInfos.value.assign(vertices.data(), vertices.data() + vertices.size());
+			stagingBuffer.write(bufferWriteInfos);
 
 			stagingAllocator.logAllocationTable();
 
@@ -114,8 +127,23 @@ class SandboxApp : public se::Application {
 			bufferInfos.context = &context;
 			bufferInfos.allocator = &gpuAllocator;
 			bufferInfos.usage = se::renderer::BufferUsage::eVertex | se::renderer::BufferUsage::eTransferDst;
-			bufferInfos.size = 10_MiB;
+			bufferInfos.size = vertices.size() * sizeof(se::Float);
 			se::renderer::vulkan::Buffer vertexBuffer {bufferInfos};
+
+
+			/** @brief Transfer */
+			se::renderer::BufferTransferorInfos bufferTransferorInfos {};
+			bufferTransferorInfos.context = &context;
+			se::renderer::vulkan::BufferTransferor bufferTransferor {bufferTransferorInfos};
+
+			se::renderer::BufferTransferInfos bufferTransferInfos {};
+			bufferTransferInfos.source = &stagingBuffer;
+			bufferTransferInfos.destination = &vertexBuffer;
+			bufferTransferInfos.srcOffset = 0;
+			bufferTransferInfos.dstOffset = 0;
+			bufferTransferInfos.size = vertices.size() * sizeof(se::Float);
+			bufferTransferor.transfer(bufferTransferInfos);
+			bufferTransferor.sync();
 
 
 			/** @brief VB view */

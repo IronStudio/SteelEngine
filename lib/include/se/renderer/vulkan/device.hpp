@@ -14,8 +14,8 @@
 
 namespace se::renderer::vulkan {
 	SE_CREATE_BIT_FIELD(QueueType, QueueTypeMask,
-		ePresent   = 0b0000'0001,
-		eGraphics  = 0b0000'0010,
+		eGraphics  = 0b0000'0001,
+		ePresent   = 0b0000'0010,
 		eCompute   = 0b0000'0100,
 		eTransfer  = 0b0000'1000,
 		eProtected = 0b0001'0000
@@ -46,6 +46,8 @@ namespace se::renderer::vulkan {
 
 			inline VkDevice getDevice() const noexcept {return m_device;}
 			inline VkPhysicalDevice getPhysicalDevice() const noexcept {return m_physicalDevice;}
+			inline const std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> &getQueues() const noexcept {return m_queues;}
+			inline const std::map<QueueType, se::Count> &getQueueFamilyIndices() const noexcept {return m_queueFamilyIndices;}
 
 		private:
 			struct ScoreCriterias {
@@ -70,13 +72,15 @@ namespace se::renderer::vulkan {
 
 			static VkPhysicalDevice s_chooseDevice(VkInstance instance, const ScoreCriterias &criterias);
 			static se::Int32 s_scoreDevice(VkPhysicalDevice device, const ScoreCriterias &criterias);
-			static VkDevice s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, std::vector<VkQueue>> &queues);
-			static std::map<QueueType, std::vector<VkQueue>> s_getQueues(VkDevice device, const std::vector<QueueInfos> &queues);
+			static VkDevice s_createDevice(const DeviceCreateInfos &infos, std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> &queues);
+			static std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> s_getQueues(VkDevice device, const std::vector<QueueInfos> &queues);
+			static std::map<QueueType, se::Count> s_dispatchQueueFamilies(const std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> &queues);
 
 			se::renderer::vulkan::DeviceInfos m_infos;
 			VkDevice m_device;
 			VkPhysicalDevice m_physicalDevice;
-			std::map<QueueType, std::vector<VkQueue>> m_queues;
+			std::map<QueueType, std::map<se::Count, std::vector<VkQueue>>> m_queues;
+			std::map<QueueType, se::Count> m_queueFamilyIndices;
 	};
 
 } // namespace se::renderer::vulkan
