@@ -143,7 +143,6 @@ class SandboxApp : public se::Application {
 			bufferTransferInfos.dstOffset = 0;
 			bufferTransferInfos.size = vertices.size() * sizeof(se::Float);
 			bufferTransferor.transfer(bufferTransferInfos);
-			bufferTransferor.sync();
 
 
 			/** @brief VB view */
@@ -176,6 +175,8 @@ class SandboxApp : public se::Application {
 			pipelineInfos.shaders = {&vertexShader, &fragmentShader};
 			se::renderer::vulkan::Pipeline pipeline {pipelineInfos};
 
+
+			bufferTransferor.sync();
 
 
 			/********************************************/

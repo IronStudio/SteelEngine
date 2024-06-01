@@ -90,6 +90,11 @@ namespace se::renderer::vulkan {
 			SE_LOGGER << "\t" << (se::Uint64)queue.first << " : " << queue.second.size() << "\n";
 		SE_LOGGER << se::endLog;
 
+		SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Queue families dispatch :\n";
+		for (const auto &queueFamilyIndex : m_queueFamilyIndices)
+			SE_LOGGER << "\t" << (se::Uint64)queueFamilyIndex.first << " : " << queueFamilyIndex.second << "\n";
+		SE_LOGGER << se::endLog;
+
 		SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Device extensions :\n";
 		for (const auto &extension : m_infos.extensions)
 			SE_LOGGER << "\t" << extension << "\n";
@@ -301,16 +306,39 @@ namespace se::renderer::vulkan {
 			auto it {queues.find(queueType)};
 			if (it == queues.end())
 				continue;
-			se::Count chosenFamily {0};
-			se::Count chosenFamilySize {0};
+			std::vector<se::Count> rankedFamilies {};
+			std::vector<se::Count> rankedFamiliesSize {};
 			for (const auto &family : it->second) {
-				if (family.second.size() <= chosenFamilySize)
+				bool placed {false};
+				for (se::Count i {0}; i < rankedFamilies.size(); ++i) {
+					if (family.second.size() <= rankedFamiliesSize[i])
+						continue;
+
+					rankedFamiliesSize.insert(rankedFamiliesSize.begin() + i, family.second.size());
+					rankedFamilies.insert(rankedFamilies.begin() + i, family.first);
+					placed = true;
+					break;
+				}
+
+				if (placed)
 					continue;
-				chosenFamilySize = family.second.size();
-				chosenFamily = family.first;
+
+				rankedFamiliesSize.push_back(family.second.size());
+				rankedFamilies.push_back(family.first);
 			}
 
-			output[queueType] = chosenFamily;
+			se::Count chosenIndex {0};
+			for (auto alreadyChosen {output.crbegin()}; alreadyChosen != output.crend(); ++alreadyChosen) {
+				if (alreadyChosen->second != rankedFamilies[chosenIndex])
+					continue;
+
+				if (chosenIndex < rankedFamilies.size() - 1)
+					++chosenIndex;
+				else if (chosenIndex > 0)
+					--chosenIndex;
+			}
+
+			output[queueType] = rankedFamilies[chosenIndex];
 		}
 
 		return output;
