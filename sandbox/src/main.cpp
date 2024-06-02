@@ -85,9 +85,9 @@ class SandboxApp : public se::Application {
 
 			/** @brief Vertices */
 			std::vector<se::Float> vertices {
-				0.5f, 0.5f,
-				0.f, -0.5f,
-				-0.5f, 0.5f
+				0.5f, 0.5f,    1.f, 0.f, 0.f,
+				0.f, -0.5f,    0.f, 1.f, 0.f,
+				-0.5f, 0.5f,   0.f, 0.f, 1.f,
 			};
 
 
@@ -149,7 +149,8 @@ class SandboxApp : public se::Application {
 			se::renderer::VertexBufferViewInfos vertexBufferViewInfos {};
 			vertexBufferViewInfos.context = &context;
 			vertexBufferViewInfos.attributes = {
-				{se::renderer::VertexType::eFloat32, 0, 2, 0}
+				{se::renderer::VertexType::eFloat32, 0, 2, 0},
+				{se::renderer::VertexType::eFloat32, 1, 3, 0}
 			};
 			se::renderer::vulkan::VertexBufferView vertexBufferView {vertexBufferViewInfos};
 
@@ -215,8 +216,49 @@ class SandboxApp : public se::Application {
 
 			VkFenceCreateInfo fenceCreateInfos {};
 			fenceCreateInfos.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-			fenceCreateInfos.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+			//fenceCreateInfos.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 			(void)vkCreateFence(context.getDevice()->getDevice(), &fenceCreateInfos, nullptr, &previousFrameReadyFence);
+
+
+			VkCommandBufferBeginInfo beginInfos {};
+			beginInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			beginInfos.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+			beginInfos.pInheritanceInfo = nullptr;
+			(void)vkBeginCommandBuffer(graphicsCommandBuffer, &beginInfos);
+
+			for (se::Count i {0}; i < context.getSwapchain()->getImages().size(); ++i) {
+				VkImageMemoryBarrier imageMemoryBarrier {};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				//imageMemoryBarrier.dstAccessMask = ;
+				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+				imageMemoryBarrier.image = context.getSwapchain()->getImages()[i];
+				imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				imageMemoryBarrier.subresourceRange.levelCount = 1;
+				imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+				imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+				imageMemoryBarrier.subresourceRange.layerCount = 1;
+				vkCmdPipelineBarrier(
+					graphicsCommandBuffer,
+					VK_PIPELINE_STAGE_HOST_BIT,
+					VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+					0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier
+				);
+			}
+
+			(void)vkEndCommandBuffer(graphicsCommandBuffer);
+
+			VkSubmitInfo submitInfos {};
+			VkPipelineStageFlags dstStageMask {VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT};
+			submitInfos.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfos.commandBufferCount = 1;
+			submitInfos.pCommandBuffers = &graphicsCommandBuffer;
+			submitInfos.waitSemaphoreCount = 0;
+			submitInfos.pWaitSemaphores = nullptr;
+			submitInfos.pWaitDstStageMask = &dstStageMask;
+			submitInfos.signalSemaphoreCount = 0;
+			submitInfos.pSignalSemaphores = nullptr;
+			(void)vkQueueSubmit(context.getDevice()->getQueue(se::renderer::vulkan::QueueType::eGraphics), 1, &submitInfos, previousFrameReadyFence);
 
 			/********************************************/
 			/******** playing a bit with vulkan *********/
@@ -274,11 +316,11 @@ class SandboxApp : public se::Application {
 				renderingAttachmentInfos.clearValue.color = {{0.1f, 0.1f, 0.1f, 1.f}};
 				renderingAttachmentInfos.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				renderingAttachmentInfos.imageView = context.getSwapchain()->getImageViews()[imageIndex];
-				renderingAttachmentInfos.resolveImageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-				renderingAttachmentInfos.resolveImageView = context.getSwapchain()->getImageViews()[imageIndex];
 				renderingAttachmentInfos.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 				renderingAttachmentInfos.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 				renderingAttachmentInfos.resolveMode = VK_RESOLVE_MODE_NONE;
+				renderingAttachmentInfos.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				renderingAttachmentInfos.resolveImageView = VK_NULL_HANDLE;
 
 				VkRenderingInfo renderingInfos {};
 				renderingInfos.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
@@ -335,7 +377,7 @@ class SandboxApp : public se::Application {
 				VkDeviceSize offset {vertexBufferView.getInfos().offset};
 				vkCmdBindVertexBuffers(graphicsCommandBuffer, 0, 1, &buffer, &offset);
 
-				vkCmdDraw(graphicsCommandBuffer, vertices.size() / 2, vertices.size() / 6, 0, 0);
+				vkCmdDraw(graphicsCommandBuffer, vertices.size() / 5, vertices.size() / 15, 0, 0);
 
 				vkCmdEndRendering(graphicsCommandBuffer);
 
