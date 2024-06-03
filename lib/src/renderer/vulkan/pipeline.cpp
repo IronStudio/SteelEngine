@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 
 #include "se/renderer/vulkan/context.hpp"
+#include "se/renderer/vulkan/format.hpp"
 #include "se/renderer/vulkan/shader.hpp"
 #include "se/renderer/vulkan/vertexBufferView.hpp"
 
@@ -115,14 +116,19 @@ namespace se::renderer::vulkan {
 			shaderStageCreateInfos.push_back(reinterpret_cast<const se::renderer::vulkan::Shader*> (shader)->getShaderStageCreateInfos());
 		}
 
+		std::vector<VkFormat> colorAttachmentFormats {};
+		colorAttachmentFormats.reserve(m_infos.colorAttachmentFormats.size());
+		for (const auto &format : m_infos.colorAttachmentFormats)
+			colorAttachmentFormats.push_back(se::renderer::vulkan::formatSeToVk(format));
+
 		const auto &swapchain {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getSwapchain()};
 		VkFormat colorAttachmentFormat {swapchain->getFormat().format};
 		VkPipelineRenderingCreateInfo pipelineRenderingCreateInfos {};
 		pipelineRenderingCreateInfos.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-		pipelineRenderingCreateInfos.colorAttachmentCount = 1;
-		pipelineRenderingCreateInfos.pColorAttachmentFormats = &colorAttachmentFormat;
-		pipelineRenderingCreateInfos.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
-		pipelineRenderingCreateInfos.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+		pipelineRenderingCreateInfos.colorAttachmentCount = colorAttachmentFormats.size();
+		pipelineRenderingCreateInfos.pColorAttachmentFormats = colorAttachmentFormats.data();
+		pipelineRenderingCreateInfos.depthAttachmentFormat = se::renderer::vulkan::formatSeToVk(m_infos.depthAttachmentFormat);
+		pipelineRenderingCreateInfos.stencilAttachmentFormat = se::renderer::vulkan::formatSeToVk(m_infos.stencilAttachmentFormat);
 		pipelineRenderingCreateInfos.viewMask = 0;
 
 		VkGraphicsPipelineCreateInfo pipelineCreateInfos {};

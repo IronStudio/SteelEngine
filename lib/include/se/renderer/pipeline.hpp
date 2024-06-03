@@ -2,6 +2,7 @@
 
 #include "se/core.hpp"
 #include "se/renderer/context.hpp"
+#include "se/renderer/format.hpp"
 #include "se/renderer/shader.hpp"
 #include "se/renderer/vertexBufferView.hpp"
 
@@ -12,6 +13,9 @@ namespace se::renderer {
 		se::renderer::Context *context;
 		se::renderer::VertexBufferView *vertexBufferView;
 		std::vector<se::renderer::Shader*> shaders;
+		std::vector<se::renderer::Format> colorAttachmentFormats;
+		se::renderer::Format depthAttachmentFormat;
+		se::renderer::Format stencilAttachmentFormat;
 	};
 
 	class SE_CORE Pipeline {

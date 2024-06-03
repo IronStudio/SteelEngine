@@ -22,6 +22,7 @@
 
 #include <se/renderer/vulkan/buffer.hpp>
 #include <se/renderer/vulkan/context.hpp>
+#include <se/renderer/vulkan/format.hpp>
 #include <se/renderer/vulkan/pipeline.hpp>
 #include <se/renderer/vulkan/shader.hpp>
 #include <se/renderer/vulkan/vertexBufferView.hpp>
@@ -174,6 +175,9 @@ class SandboxApp : public se::Application {
 			pipelineInfos.context = &context;
 			pipelineInfos.vertexBufferView = &vertexBufferView;
 			pipelineInfos.shaders = {&vertexShader, &fragmentShader};
+			pipelineInfos.colorAttachmentFormats = {se::renderer::vulkan::formatVkToSe(context.getSwapchain()->getFormat().format)};
+			pipelineInfos.depthAttachmentFormat = se::renderer::Format::eNone;
+			pipelineInfos.stencilAttachmentFormat = se::renderer::Format::eNone;
 			se::renderer::vulkan::Pipeline pipeline {pipelineInfos};
 
 
