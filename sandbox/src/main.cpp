@@ -384,6 +384,7 @@ class SandboxApp : public se::Application {
 				imageMemoryBarrier = {};
 				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 				imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				imageMemoryBarrier.dstAccessMask = 0;
 				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 				imageMemoryBarrier.image = context.getSwapchain()->getImages()[imageIndex];

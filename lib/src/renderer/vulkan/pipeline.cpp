@@ -80,7 +80,7 @@ namespace se::renderer::vulkan {
 
 		VkPipelineColorBlendAttachmentState colorBlendAttachment {};
 		colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		colorBlendAttachment.blendEnable = VK_TRUE;
+		colorBlendAttachment.blendEnable = VK_FALSE;
 		colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
 		colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
 		colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
@@ -115,8 +115,19 @@ namespace se::renderer::vulkan {
 			shaderStageCreateInfos.push_back(reinterpret_cast<const se::renderer::vulkan::Shader*> (shader)->getShaderStageCreateInfos());
 		}
 
+		const auto &swapchain {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getSwapchain()};
+		VkFormat colorAttachmentFormat {swapchain->getFormat().format};
+		VkPipelineRenderingCreateInfo pipelineRenderingCreateInfos {};
+		pipelineRenderingCreateInfos.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+		pipelineRenderingCreateInfos.colorAttachmentCount = 1;
+		pipelineRenderingCreateInfos.pColorAttachmentFormats = &colorAttachmentFormat;
+		pipelineRenderingCreateInfos.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
+		pipelineRenderingCreateInfos.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+		pipelineRenderingCreateInfos.viewMask = 0;
+
 		VkGraphicsPipelineCreateInfo pipelineCreateInfos {};
 		pipelineCreateInfos.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineCreateInfos.pNext = &pipelineRenderingCreateInfos;
 		pipelineCreateInfos.stageCount = shaderStageCreateInfos.size();
 		pipelineCreateInfos.pStages = shaderStageCreateInfos.data();
 		pipelineCreateInfos.pVertexInputState = &vertexInputStateCreateInfos;
