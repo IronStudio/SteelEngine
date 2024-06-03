@@ -9,6 +9,11 @@
 
 
 namespace se::renderer {
+	enum class BlendMode {
+		eNone,
+		eSrcAlpha
+	};
+
 	struct PipelineInfos {
 		se::renderer::Context *context;
 		se::renderer::VertexBufferView *vertexBufferView;
@@ -16,6 +21,7 @@ namespace se::renderer {
 		std::vector<se::renderer::Format> colorAttachmentFormats;
 		se::renderer::Format depthAttachmentFormat;
 		se::renderer::Format stencilAttachmentFormat;
+		se::renderer::BlendMode blendMode {se::renderer::BlendMode::eSrcAlpha};
 	};
 
 	class SE_CORE Pipeline {

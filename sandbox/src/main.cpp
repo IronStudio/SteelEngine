@@ -86,9 +86,9 @@ class SandboxApp : public se::Application {
 
 			/** @brief Vertices */
 			std::vector<se::Float> vertices {
-				0.5f, 0.5f,    1.f, 0.f, 0.f,
-				0.f, -0.5f,    0.f, 1.f, 0.f,
-				-0.5f, 0.5f,   0.f, 0.f, 1.f,
+				0.5f, 0.5f,    1.f, 0.f, 0.f, 0.f,
+				0.f, -0.5f,    0.f, 1.f, 0.f, 0.5f,
+				-0.5f, 0.5f,   0.f, 0.f, 1.f, 1.f
 			};
 
 
@@ -151,7 +151,7 @@ class SandboxApp : public se::Application {
 			vertexBufferViewInfos.context = &context;
 			vertexBufferViewInfos.attributes = {
 				{se::renderer::VertexType::eFloat32, 0, 2, 0},
-				{se::renderer::VertexType::eFloat32, 1, 3, 0}
+				{se::renderer::VertexType::eFloat32, 1, 4, 0}
 			};
 			se::renderer::vulkan::VertexBufferView vertexBufferView {vertexBufferViewInfos};
 
@@ -178,6 +178,7 @@ class SandboxApp : public se::Application {
 			pipelineInfos.colorAttachmentFormats = {se::renderer::vulkan::formatVkToSe(context.getSwapchain()->getFormat().format)};
 			pipelineInfos.depthAttachmentFormat = se::renderer::Format::eNone;
 			pipelineInfos.stencilAttachmentFormat = se::renderer::Format::eNone;
+			pipelineInfos.blendMode = se::renderer::BlendMode::eSrcAlpha;
 			se::renderer::vulkan::Pipeline pipeline {pipelineInfos};
 
 
