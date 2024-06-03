@@ -38,16 +38,23 @@ namespace se::renderer::vulkan {
 			}}
 		};
 
+		static std::map<se::renderer::VertexRate, VkVertexInputRate> rateMap {
+			{se::renderer::VertexRate::eVertex,   VK_VERTEX_INPUT_RATE_VERTEX},
+			{se::renderer::VertexRate::eInstance, VK_VERTEX_INPUT_RATE_INSTANCE}
+		};
+
 		se::Uint64 stride {};
 		m_attributeDescriptions.reserve(m_infos.attributes.size());
 
 		std::vector<se::Uint64> bindings {};
 		std::map<se::Uint64, se::ByteCount> strides {};
+		std::map<se::Uint64, VkVertexInputRate> rates {};
 
 		for (const auto &attribute : m_infos.attributes) {
 			if (std::find(bindings.begin(), bindings.end(), attribute.binding) == bindings.end()) {
 				bindings.push_back(attribute.binding);
 				strides[attribute.binding] = 0;
+				rates[attribute.binding] = VK_VERTEX_INPUT_RATE_VERTEX;
 			}
 
 			VkVertexInputAttributeDescription description {};
@@ -58,6 +65,7 @@ namespace se::renderer::vulkan {
 
 			m_attributeDescriptions.push_back(description);
 			strides[attribute.binding] += attribute.dimension * vertexTypeToSizeMap[attribute.type];
+			rates[attribute.binding] = rateMap[attribute.rate];
 		}
 		
 		m_bindingDescriptions.reserve(bindings.size());
@@ -66,7 +74,7 @@ namespace se::renderer::vulkan {
 			VkVertexInputBindingDescription inputBindingDescription {};
 			inputBindingDescription.binding = binding;
 			inputBindingDescription.stride = strides[binding];
-			inputBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+			inputBindingDescription.inputRate =  rates[binding];
 
 			m_bindingDescriptions.push_back(inputBindingDescription);
 		}

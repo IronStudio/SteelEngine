@@ -14,11 +14,17 @@ namespace se::renderer {
 		eUint32
 	};
 
+	enum class VertexRate {
+		eVertex,
+		eInstance
+	};
+
 	struct VertexAttribute {
 		se::renderer::VertexType type;
 		se::Uint64 location;
 		se::Uint64 dimension;
 		se::Uint64 binding;
+		se::renderer::VertexRate rate {se::renderer::VertexRate::eVertex};
 	};
 
 	struct VertexBufferViewInfos {

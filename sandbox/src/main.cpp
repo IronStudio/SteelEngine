@@ -87,13 +87,15 @@ class SandboxApp : public se::Application {
 
 			/** @brief Vertices */
 			std::vector<se::Float> vertices {
-				0.5f, 0.5f, 0.f,    1.f, 0.f, 0.f,
-				0.f, -0.5f, 0.f,    0.f, 1.f, 0.f,
-				-0.5f, 0.5f, 0.f,   0.f, 0.f, 1.f,
+				0.5f, 0.5f,    1.f, 0.f, 0.f,
+				0.f, -0.5f,    0.f, 1.f, 0.f,
+				-0.5f, 0.5f,   0.f, 0.f, 1.f
+			};
 
-				1.f, 1.f, 1.f,      1.f, 1.f, 0.f,
-				0.5f, 0.f, 1.f,     0.f, 1.f, 1.f,
-				0.f, 1.f, 1.f,      1.f, 0.f, 1.f
+			/** @brief PerInstanceDatas */
+			std::vector<se::Float> perInstanceDatas {
+				0.f,  0.f, 1.f,
+				0.5f, 1.f, 0.5f
 			};
 
 
@@ -107,7 +109,7 @@ class SandboxApp : public se::Application {
 
 			stagingAllocator.logAllocationTable();
 
-			/** @brief Staging buffer */
+			/** @brief Staging buffers */
 			se::renderer::BufferInfos bufferInfos {};
 			bufferInfos.context = &context;
 			bufferInfos.allocator = &stagingAllocator;
@@ -115,10 +117,20 @@ class SandboxApp : public se::Application {
 			bufferInfos.size = vertices.size() * sizeof(se::Float);
 			se::renderer::vulkan::Buffer stagingBuffer {bufferInfos};
 
+			bufferInfos.context = &context;
+			bufferInfos.allocator = &stagingAllocator;
+			bufferInfos.usage = se::renderer::BufferUsage::eTransferSrc;
+			bufferInfos.size = perInstanceDatas.size() * sizeof(se::Float);
+			se::renderer::vulkan::Buffer perInstanceStagingBuffer {bufferInfos};
+
 			se::renderer::BufferWriteInfos bufferWriteInfos {};
 			bufferWriteInfos.offset = 0;
 			bufferWriteInfos.value.assign((se::Byte*)vertices.data(), (se::Byte*)(vertices.data() + vertices.size()));
 			stagingBuffer.write(bufferWriteInfos);
+
+			bufferWriteInfos.offset = 0;
+			bufferWriteInfos.value.assign((se::Byte*)perInstanceDatas.data(), (se::Byte*)(perInstanceDatas.data() + perInstanceDatas.size()));
+			perInstanceStagingBuffer.write(bufferWriteInfos);
 
 			stagingAllocator.logAllocationTable();
 
@@ -136,13 +148,12 @@ class SandboxApp : public se::Application {
 			bufferInfos.size = vertices.size() * sizeof(se::Float);
 			se::renderer::vulkan::Buffer vertexBuffer {bufferInfos};
 
-			/** @brief Depth buffer */
-			se::renderer::DepthBufferInfos depthBufferInfos {};
-			depthBufferInfos.context = &context;
-			depthBufferInfos.allocator = &gpuAllocator;
-			depthBufferInfos.format = se::renderer::Format::eD32;
-			depthBufferInfos.size = {context.getSwapchain()->getExtent().width, context.getSwapchain()->getExtent().height};
-			se::renderer::vulkan::DepthBuffer depthBuffer {depthBufferInfos};
+			/** @brief Per instance data buffer */
+			bufferInfos.context = &context;
+			bufferInfos.allocator = &gpuAllocator;
+			bufferInfos.usage = se::renderer::BufferUsage::eVertex | se::renderer::BufferUsage::eTransferDst;
+			bufferInfos.size = perInstanceDatas.size() * sizeof(se::Float);
+			se::renderer::vulkan::Buffer perInstanceBuffer {bufferInfos};
 
 			/** @brief Transfer */
 			se::renderer::BufferTransferorInfos bufferTransferorInfos {};
@@ -157,13 +168,32 @@ class SandboxApp : public se::Application {
 			bufferTransferInfos.size = vertices.size() * sizeof(se::Float);
 			bufferTransferor.transfer(bufferTransferInfos);
 
+			bufferTransferor.sync();
+			bufferTransferInfos.source = &perInstanceStagingBuffer;
+			bufferTransferInfos.destination = &perInstanceBuffer;
+			bufferTransferInfos.srcOffset = 0;
+			bufferTransferInfos.dstOffset = 0;
+			bufferTransferInfos.size = perInstanceDatas.size() * sizeof(se::Float);
+			bufferTransferor.transfer(bufferTransferInfos);
+
+
+			/** @brief Depth buffer */
+			se::renderer::DepthBufferInfos depthBufferInfos {};
+			depthBufferInfos.context = &context;
+			depthBufferInfos.allocator = &gpuAllocator;
+			depthBufferInfos.format = se::renderer::Format::eD32;
+			depthBufferInfos.size = {context.getSwapchain()->getExtent().width, context.getSwapchain()->getExtent().height};
+			se::renderer::vulkan::DepthBuffer depthBuffer {depthBufferInfos};
 
 			/** @brief VB view */
 			se::renderer::VertexBufferViewInfos vertexBufferViewInfos {};
 			vertexBufferViewInfos.context = &context;
 			vertexBufferViewInfos.attributes = {
-				{se::renderer::VertexType::eFloat32, 0, 3, 0},
-				{se::renderer::VertexType::eFloat32, 1, 3, 0}
+				{se::renderer::VertexType::eFloat32, 0, 2, 0},
+				{se::renderer::VertexType::eFloat32, 1, 3, 0},
+				{se::renderer::VertexType::eFloat32, 2, 1, 1, se::renderer::VertexRate::eInstance},
+				{se::renderer::VertexType::eFloat32, 3, 1, 1, se::renderer::VertexRate::eInstance},
+				{se::renderer::VertexType::eFloat32, 4, 1, 1, se::renderer::VertexRate::eInstance}
 			};
 			se::renderer::vulkan::VertexBufferView vertexBufferView {vertexBufferViewInfos};
 
@@ -419,11 +449,11 @@ class SandboxApp : public se::Application {
 				scissor.extent = context.getSwapchain()->getExtent();
 				vkCmdSetScissor(graphicsCommandBuffer, 0, 1, &scissor);
 
-				VkBuffer buffer {vertexBuffer.getBuffer()};
-				VkDeviceSize offset {vertexBufferView.getInfos().offset};
-				vkCmdBindVertexBuffers(graphicsCommandBuffer, 0, 1, &buffer, &offset);
+				VkBuffer buffers[2] {vertexBuffer.getBuffer(), perInstanceBuffer.getBuffer()};
+				VkDeviceSize offsets[2] {vertexBufferView.getInfos().offset, vertexBufferView.getInfos().offset};
+				vkCmdBindVertexBuffers(graphicsCommandBuffer, 0, 2, buffers, offsets);
 
-				vkCmdDraw(graphicsCommandBuffer, vertices.size() / 5, vertices.size() / 15, 0, 0);
+				vkCmdDraw(graphicsCommandBuffer, vertices.size() / 5, perInstanceDatas.size() / 3, 0, 0);
 
 				vkCmdEndRendering(graphicsCommandBuffer);
 

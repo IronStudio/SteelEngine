@@ -210,6 +210,7 @@ namespace se::renderer::vulkan {
 
 		VkCommandPoolCreateInfo commandPoolCreateInfos {};
 		commandPoolCreateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		commandPoolCreateInfos.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		commandPoolCreateInfos.queueFamilyIndex = queueFamilyIndex;
 		if (vkCreateCommandPool(device, &commandPoolCreateInfos, nullptr, &s_commandPool) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create command pool for buffer transfer");
