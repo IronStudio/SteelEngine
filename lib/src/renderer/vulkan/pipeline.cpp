@@ -143,6 +143,27 @@ namespace se::renderer::vulkan {
 		pipelineRenderingCreateInfos.stencilAttachmentFormat = se::renderer::vulkan::formatSeToVk(m_infos.stencilAttachmentFormat);
 		pipelineRenderingCreateInfos.viewMask = 0;
 
+		VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfos {};
+		pipelineDepthStencilStateCreateInfos.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		if (m_infos.depthAttachmentFormat == se::renderer::Format::eNone) {
+			pipelineDepthStencilStateCreateInfos.depthTestEnable = VK_FALSE;
+			pipelineDepthStencilStateCreateInfos.depthWriteEnable = VK_FALSE;
+			pipelineDepthStencilStateCreateInfos.depthBoundsTestEnable = VK_FALSE;
+		}
+
+		else {
+			pipelineDepthStencilStateCreateInfos.depthTestEnable = VK_TRUE;
+			pipelineDepthStencilStateCreateInfos.depthWriteEnable = VK_TRUE;
+			pipelineDepthStencilStateCreateInfos.depthBoundsTestEnable = VK_TRUE;
+		}
+
+		pipelineDepthStencilStateCreateInfos.depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL;
+		pipelineDepthStencilStateCreateInfos.stencilTestEnable = VK_FALSE;
+		pipelineDepthStencilStateCreateInfos.front = {};
+		pipelineDepthStencilStateCreateInfos.back = {};
+		pipelineDepthStencilStateCreateInfos.minDepthBounds = 0.f;
+		pipelineDepthStencilStateCreateInfos.maxDepthBounds = 1.f;
+
 		VkGraphicsPipelineCreateInfo pipelineCreateInfos {};
 		pipelineCreateInfos.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineCreateInfos.pNext = &pipelineRenderingCreateInfos;
@@ -153,7 +174,7 @@ namespace se::renderer::vulkan {
 		pipelineCreateInfos.pViewportState = &viewportStateCreateInfos;
 		pipelineCreateInfos.pRasterizationState = &rasterizationStateCreateInfos;
 		pipelineCreateInfos.pMultisampleState = &multisampleStateCreateInfos;
-		pipelineCreateInfos.pDepthStencilState = nullptr;
+		pipelineCreateInfos.pDepthStencilState = &pipelineDepthStencilStateCreateInfos;
 		pipelineCreateInfos.pColorBlendState = &colorBlendStateCreateInfos;
 		pipelineCreateInfos.pDynamicState = &dynamicStateCreateInfos;
 		pipelineCreateInfos.layout = m_pipelineLayout;

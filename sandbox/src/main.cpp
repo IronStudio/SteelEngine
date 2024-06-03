@@ -22,6 +22,7 @@
 
 #include <se/renderer/vulkan/buffer.hpp>
 #include <se/renderer/vulkan/context.hpp>
+#include <se/renderer/vulkan/depthBuffer.hpp>
 #include <se/renderer/vulkan/format.hpp>
 #include <se/renderer/vulkan/pipeline.hpp>
 #include <se/renderer/vulkan/shader.hpp>
@@ -86,9 +87,13 @@ class SandboxApp : public se::Application {
 
 			/** @brief Vertices */
 			std::vector<se::Float> vertices {
-				0.5f, 0.5f,    1.f, 0.f, 0.f, 0.f,
-				0.f, -0.5f,    0.f, 1.f, 0.f, 0.5f,
-				-0.5f, 0.5f,   0.f, 0.f, 1.f, 1.f
+				0.5f, 0.5f, 0.f,    1.f, 0.f, 0.f,
+				0.f, -0.5f, 0.f,    0.f, 1.f, 0.f,
+				-0.5f, 0.5f, 0.f,   0.f, 0.f, 1.f,
+
+				1.f, 1.f, 1.f,      1.f, 1.f, 0.f,
+				0.5f, 0.f, 1.f,     0.f, 1.f, 1.f,
+				0.f, 1.f, 1.f,      1.f, 0.f, 1.f
 			};
 
 
@@ -131,6 +136,13 @@ class SandboxApp : public se::Application {
 			bufferInfos.size = vertices.size() * sizeof(se::Float);
 			se::renderer::vulkan::Buffer vertexBuffer {bufferInfos};
 
+			/** @brief Depth buffer */
+			se::renderer::DepthBufferInfos depthBufferInfos {};
+			depthBufferInfos.context = &context;
+			depthBufferInfos.allocator = &gpuAllocator;
+			depthBufferInfos.format = se::renderer::Format::eD32;
+			depthBufferInfos.size = {context.getSwapchain()->getExtent().width, context.getSwapchain()->getExtent().height};
+			se::renderer::vulkan::DepthBuffer depthBuffer {depthBufferInfos};
 
 			/** @brief Transfer */
 			se::renderer::BufferTransferorInfos bufferTransferorInfos {};
@@ -150,8 +162,8 @@ class SandboxApp : public se::Application {
 			se::renderer::VertexBufferViewInfos vertexBufferViewInfos {};
 			vertexBufferViewInfos.context = &context;
 			vertexBufferViewInfos.attributes = {
-				{se::renderer::VertexType::eFloat32, 0, 2, 0},
-				{se::renderer::VertexType::eFloat32, 1, 4, 0}
+				{se::renderer::VertexType::eFloat32, 0, 3, 0},
+				{se::renderer::VertexType::eFloat32, 1, 3, 0}
 			};
 			se::renderer::vulkan::VertexBufferView vertexBufferView {vertexBufferViewInfos};
 
@@ -176,7 +188,7 @@ class SandboxApp : public se::Application {
 			pipelineInfos.vertexBufferView = &vertexBufferView;
 			pipelineInfos.shaders = {&vertexShader, &fragmentShader};
 			pipelineInfos.colorAttachmentFormats = {se::renderer::vulkan::formatVkToSe(context.getSwapchain()->getFormat().format)};
-			pipelineInfos.depthAttachmentFormat = se::renderer::Format::eNone;
+			pipelineInfos.depthAttachmentFormat = depthBuffer.getInfos().format;
 			pipelineInfos.stencilAttachmentFormat = se::renderer::Format::eNone;
 			pipelineInfos.blendMode = se::renderer::BlendMode::eSrcAlpha;
 			se::renderer::vulkan::Pipeline pipeline {pipelineInfos};
@@ -251,6 +263,26 @@ class SandboxApp : public se::Application {
 				);
 			}
 
+			{
+				VkImageMemoryBarrier imageMemoryBarrier {};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+				imageMemoryBarrier.image = depthBuffer.getImage();
+				imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+				imageMemoryBarrier.subresourceRange.levelCount = 1;
+				imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+				imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+				imageMemoryBarrier.subresourceRange.layerCount = 1;
+				vkCmdPipelineBarrier(
+					graphicsCommandBuffer,
+					VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+					VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+					0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier
+				);
+			}
+
 			(void)vkEndCommandBuffer(graphicsCommandBuffer);
 
 			VkSubmitInfo submitInfos {};
@@ -313,25 +345,37 @@ class SandboxApp : public se::Application {
 				(void)vkResetCommandBuffer(graphicsCommandBuffer, 0);
 
 
-				VkRenderingAttachmentInfo renderingAttachmentInfos {};
-				renderingAttachmentInfos.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-				renderingAttachmentInfos.clearValue.color = {{0.1f, 0.1f, 0.1f, 1.f}};
-				renderingAttachmentInfos.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				renderingAttachmentInfos.imageView = context.getSwapchain()->getImageViews()[imageIndex];
-				renderingAttachmentInfos.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				renderingAttachmentInfos.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-				renderingAttachmentInfos.resolveMode = VK_RESOLVE_MODE_NONE;
-				renderingAttachmentInfos.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				renderingAttachmentInfos.resolveImageView = VK_NULL_HANDLE;
+				VkRenderingAttachmentInfo colorAttachmentInfos {};
+				colorAttachmentInfos.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+				colorAttachmentInfos.clearValue.color = {{0.1f, 0.1f, 0.1f, 1.f}};
+				colorAttachmentInfos.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				colorAttachmentInfos.imageView = context.getSwapchain()->getImageViews()[imageIndex];
+				colorAttachmentInfos.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+				colorAttachmentInfos.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+				colorAttachmentInfos.resolveMode = VK_RESOLVE_MODE_NONE;
+				colorAttachmentInfos.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				colorAttachmentInfos.resolveImageView = VK_NULL_HANDLE;
+
+				VkRenderingAttachmentInfo depthAttachmentInfos {};
+				depthAttachmentInfos.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+				depthAttachmentInfos.clearValue.depthStencil = {0.f, 0};
+				depthAttachmentInfos.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+				depthAttachmentInfos.imageView = depthBuffer.getImageView();
+				depthAttachmentInfos.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+				depthAttachmentInfos.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				depthAttachmentInfos.resolveMode = VK_RESOLVE_MODE_NONE;
+				depthAttachmentInfos.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				depthAttachmentInfos.resolveImageView = VK_NULL_HANDLE;
 
 				VkRenderingInfo renderingInfos {};
 				renderingInfos.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
 				renderingInfos.colorAttachmentCount = 1;
-				renderingInfos.pColorAttachments = &renderingAttachmentInfos;
+				renderingInfos.pColorAttachments = &colorAttachmentInfos;
 				renderingInfos.renderArea.offset = {0, 0};
 				renderingInfos.renderArea.extent = context.getSwapchain()->getExtent();
 				renderingInfos.layerCount = 1;
 				renderingInfos.viewMask = 0;
+				renderingInfos.pDepthAttachment = &depthAttachmentInfos;
 
 				VkCommandBufferBeginInfo beginInfos {};
 				beginInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

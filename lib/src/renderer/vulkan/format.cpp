@@ -17,7 +17,9 @@ namespace se::renderer::vulkan {
 			{se::renderer::Format::eRGBA32f, VK_FORMAT_R32G32B32A32_SFLOAT},
 			{se::renderer::Format::eRGBA8,   VK_FORMAT_R8G8B8A8_SRGB},
 			{se::renderer::Format::eBGR8,    VK_FORMAT_B8G8R8_SRGB},
-			{se::renderer::Format::eBGRA8,   VK_FORMAT_B8G8R8A8_SRGB}
+			{se::renderer::Format::eBGRA8,   VK_FORMAT_B8G8R8A8_SRGB},
+			{se::renderer::Format::eD16,     VK_FORMAT_D16_UNORM},
+			{se::renderer::Format::eD32,     VK_FORMAT_D32_SFLOAT}
 		};
 
 		auto it {formatMap.find(format)};
@@ -36,7 +38,9 @@ namespace se::renderer::vulkan {
 			{VK_FORMAT_R32G32B32A32_SFLOAT, se::renderer::Format::eRGBA32f},
 			{VK_FORMAT_R8G8B8A8_SRGB,       se::renderer::Format::eRGBA8},
 			{VK_FORMAT_B8G8R8_SRGB,         se::renderer::Format::eBGR8},
-			{VK_FORMAT_B8G8R8A8_SRGB,       se::renderer::Format::eBGRA8}
+			{VK_FORMAT_B8G8R8A8_SRGB,       se::renderer::Format::eBGRA8},
+			{VK_FORMAT_D16_UNORM,           se::renderer::Format::eD16},
+			{VK_FORMAT_D32_SFLOAT,          se::renderer::Format::eD32}
 		};
 
 		auto it {formatMap.find(format)};

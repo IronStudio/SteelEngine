@@ -14,11 +14,11 @@ namespace se::renderer {
 	SE_CREATE_BIT_FIELD(BufferUsage, BufferUsageMask,
 		eTransferSrc = 0b0000'0001,
 		eTransferDst = 0b0000'0010,
-		eUniform      = 0b0000'0100,
-		eStorage      = 0b0000'1000,
-		eIndex        = 0b0001'0000,
-		eVertex       = 0b0010'0000,
-		eIndirect     = 0b0100'0000
+		eUniform     = 0b0000'0100,
+		eStorage     = 0b0000'1000,
+		eIndex       = 0b0001'0000,
+		eVertex      = 0b0010'0000,
+		eIndirect    = 0b0100'0000
 	);
 
 	struct BufferInfos {

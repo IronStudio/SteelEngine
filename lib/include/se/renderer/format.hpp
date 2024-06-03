@@ -12,7 +12,9 @@ namespace se::renderer {
 		eR8,
 		eRG8,
 		eBGR8,
-		eBGRA8
+		eBGRA8,
+		eD16,
+		eD32
 	};
 
 } // namespace se::renderer
