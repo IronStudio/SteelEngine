@@ -271,13 +271,10 @@ class SandboxApp : public se::Application {
 
 			bufferTransferor.sync();
 
-			bool running {true};
-			se::Count frame {0};
 			while (true) {
 				if (se::input::InputManager::wasKeyPressed(se::input::Key::eEscape) && se::input::InputManager::getFocusedWindowUUID() != 0) {
 					se::window::WindowManager::destroyWindow(se::input::InputManager::getFocusedWindowUUID());
 				}
-				SE_APP_INFO("Frame {}", frame++);
 				se::input::InputManager::update();
 				if (!se::Engine::isRunning())
 					break;
