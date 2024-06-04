@@ -7,23 +7,72 @@
 
 
 namespace se::renderer::vulkan {
-	Shader::Shader(const se::renderer::ShaderInfos &infos) :
-		se::renderer::Shader(infos),
-		m_shaderModule {VK_NULL_HANDLE},
-		m_shaderStageCreateInfos {}
-	{
+	VkShaderStageFlags shaderTypeMaskSeToVk(se::renderer::ShaderTypeMask type) {
+		VkShaderStageFlags output {};
+
+		for (se::Count i {0}; i < SE_SHADER_TYPE_COUNT; ++i) {
+			auto flag {static_cast<se::renderer::ShaderType> (1 << i)};
+			if (type & flag)
+				output |= shaderTypeSeToVk(flag);
+		}
+
+		return output;
+	}
+
+
+	se::renderer::ShaderTypeMask shaderTypeMaskVkToSe(VkShaderStageFlags type) {
+		static std::vector<VkShaderStageFlagBits> flagsList {
+			VK_SHADER_STAGE_FRAGMENT_BIT,
+			VK_SHADER_STAGE_GEOMETRY_BIT,
+			VK_SHADER_STAGE_VERTEX_BIT
+		};
+
+		se::renderer::ShaderTypeMask output {};
+		for (auto flag : flagsList) {
+			if (type & flag)
+				output |= shaderTypeVkToSe(flag);
+		}
+
+		return output;
+	}
+
+
+	VkShaderStageFlagBits shaderTypeSeToVk(se::renderer::ShaderType type) {
 		static std::map<se::renderer::ShaderType, VkShaderStageFlagBits> shaderTypesMap {
 			{se::renderer::ShaderType::eFragment, VK_SHADER_STAGE_FRAGMENT_BIT},
 			{se::renderer::ShaderType::eGeometry, VK_SHADER_STAGE_GEOMETRY_BIT},
 			{se::renderer::ShaderType::eVertex,   VK_SHADER_STAGE_VERTEX_BIT}
 		};
 
+		return shaderTypesMap[type];
+	}
+
+
+	se::renderer::ShaderType shaderTypeVkToSe(VkShaderStageFlagBits type) {
+		static std::map<VkShaderStageFlagBits, se::renderer::ShaderType> shaderTypesMap {
+			{VK_SHADER_STAGE_FRAGMENT_BIT, se::renderer::ShaderType::eFragment},
+			{VK_SHADER_STAGE_GEOMETRY_BIT, se::renderer::ShaderType::eGeometry},
+			{VK_SHADER_STAGE_VERTEX_BIT,   se::renderer::ShaderType::eVertex}
+		};
+
+		return shaderTypesMap[type];
+	}
+
+
+
+	Shader::Shader(const se::renderer::ShaderInfos &infos) :
+		se::renderer::Shader(infos),
+		m_shaderModule {VK_NULL_HANDLE},
+		m_shaderStageCreateInfos {}
+	{
+		
+
 		m_shaderModule = s_loadShaderModule(m_infos.context, m_infos.file);
 
 		m_shaderStageCreateInfos.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		m_shaderStageCreateInfos.module = m_shaderModule;
 		m_shaderStageCreateInfos.pSpecializationInfo = nullptr;
-		m_shaderStageCreateInfos.stage = shaderTypesMap[m_infos.type];
+		m_shaderStageCreateInfos.stage = shaderTypeSeToVk(m_infos.type);
 		m_shaderStageCreateInfos.pName = m_infos.entryPoint.c_str();
 	}
 

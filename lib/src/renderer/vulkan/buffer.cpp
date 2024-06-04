@@ -86,6 +86,24 @@ namespace se::renderer::vulkan {
 	}
 
 
+	void Buffer::write(const se::renderer::BufferWriteUniformInfos &writeInfos) {
+		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
+
+		SE_ASSERT(m_infos.allocator->getInfos().usageNature == se::renderer::VramUsageNature::eCpuToGpu, "Can't write to buffer that is not cpu->gpu");
+
+		VkDeviceMemory memory {reinterpret_cast<se::renderer::vulkan::VramAllocatorHandle*> (m_allocatorHandle.get())->getMemory()};
+		se::ByteCount offset {reinterpret_cast<se::renderer::vulkan::VramAllocatorHandle*> (m_allocatorHandle.get())->getOffset()};
+		offset += writeInfos.offset;
+
+		void *data {};
+		if (vkMapMemory(device, memory, offset, m_infos.size, 0, &data) != VK_SUCCESS)
+			throw se::exceptions::RuntimeError("Can't map buffer memory");
+
+		memcpy(data, writeInfos.attributes[0].value.data(), writeInfos.attributes[0].value.size() * sizeof(se::Byte));
+		vkUnmapMemory(device, memory);
+	}
+
+
 
 
 	BufferTransferor::BufferTransferor(const se::renderer::BufferTransferorInfos &infos) :

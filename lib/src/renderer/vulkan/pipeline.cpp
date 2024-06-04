@@ -5,6 +5,7 @@
 #include "se/renderer/vulkan/context.hpp"
 #include "se/renderer/vulkan/format.hpp"
 #include "se/renderer/vulkan/shader.hpp"
+#include "se/renderer/vulkan/uniformBufferView.hpp"
 #include "se/renderer/vulkan/vertexBufferView.hpp"
 
 
@@ -118,6 +119,18 @@ namespace se::renderer::vulkan {
 		pipelineLayoutCreateInfos.pSetLayouts = nullptr;
 		pipelineLayoutCreateInfos.pushConstantRangeCount = 0;
 		pipelineLayoutCreateInfos.pPushConstantRanges = nullptr;
+
+		std::vector<VkDescriptorSetLayout> descriptorSetLayouts {};
+		if (!m_infos.uniformBufferView.empty()) {
+			pipelineLayoutCreateInfos.setLayoutCount = m_infos.uniformBufferView.size();
+			descriptorSetLayouts.reserve(m_infos.uniformBufferView.size());
+			for (const auto &ubo : m_infos.uniformBufferView) {
+				auto uniform {reinterpret_cast<se::renderer::vulkan::UniformBufferView*> (ubo)};
+				descriptorSetLayouts.push_back(uniform->getLayout());
+			}
+
+			pipelineLayoutCreateInfos.pSetLayouts = descriptorSetLayouts.data();
+		}
 
 		if (vkCreatePipelineLayout(device, &pipelineLayoutCreateInfos, nullptr, &m_pipelineLayout) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create pipeline layout");

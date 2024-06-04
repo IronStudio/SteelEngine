@@ -55,9 +55,19 @@ message("Dependencies libraries : " ${DEPS_LIBRARIES})
 
 
 if (WIN32)
-	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_WINDOWS)
+	add_compile_definitions(
+		${PROJECT_ACRONYM_UPPERCASE}_WINDOWS
+		SE_MALGE_VECTORIZE
+		SE_MALGE_ARCHITECTURE_X86
+		SE_MALGE_AVX
+	)
 elseif (UNIX)
-	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_LINUX)
+	add_compile_definitions(
+		${PROJECT_ACRONYM_UPPERCASE}_LINUX
+		SE_MALGE_VECTORIZE
+		SE_MALGE_ARCHITECTURE_X86
+		SE_MALGE_AVX
+	)
 elseif (APPLE)
 	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_APPLE)
 else()

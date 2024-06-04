@@ -15,6 +15,7 @@ namespace se::renderer::vulkan {
 			~Buffer() override;
 
 			void write(const se::renderer::BufferWriteInfos &writeInfos) override;
+			void write(const se::renderer::BufferWriteUniformInfos &writeInfos) override;
 
 			inline VkBuffer getBuffer() const noexcept {return m_buffer;}
 			inline const se::renderer::VramAllocatorHandle *getAllocatorHandle() const noexcept {return m_allocatorHandle.get();}

@@ -4,15 +4,18 @@
 
 #include "se/core.hpp"
 #include "se/renderer/context.hpp"
+#include "se/utils/bitField.hpp"
 
 
 
 namespace se::renderer {
-	enum class ShaderType {
-		eVertex,
-		eFragment,
-		eGeometry
-	};
+	SE_CREATE_BIT_FIELD(ShaderType, ShaderTypeMask,
+		eVertex   = 0b0000'0001,
+		eFragment = 0b0000'0010,
+		eGeometry = 0b0000'0100
+	);
+
+	constexpr size_t SE_SHADER_TYPE_COUNT {3};
 
 	struct ShaderInfos {
 		se::renderer::Context *context;

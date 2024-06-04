@@ -11,6 +11,11 @@
 
 
 namespace se::renderer::vulkan {
+	VkShaderStageFlags shaderTypeMaskSeToVk(se::renderer::ShaderTypeMask type);
+	se::renderer::ShaderTypeMask shaderTypeMaskVkToSe(VkShaderStageFlags type);
+	VkShaderStageFlagBits shaderTypeSeToVk(se::renderer::ShaderType type);
+	se::renderer::ShaderType shaderTypeVkToSe(VkShaderStageFlagBits type);
+
 	class SE_CORE Shader final : public se::renderer::Shader {
 		public:
 			Shader(const se::renderer::ShaderInfos &infos);

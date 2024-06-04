@@ -4,6 +4,7 @@
 #include "se/renderer/context.hpp"
 #include "se/renderer/format.hpp"
 #include "se/renderer/shader.hpp"
+#include "se/renderer/uniformBufferView.hpp"
 #include "se/renderer/vertexBufferView.hpp"
 
 
@@ -17,6 +18,7 @@ namespace se::renderer {
 	struct PipelineInfos {
 		se::renderer::Context *context;
 		se::renderer::VertexBufferView *vertexBufferView;
+		std::vector<se::renderer::UniformBufferView*> uniformBufferView;
 		std::vector<se::renderer::Shader*> shaders;
 		std::vector<se::renderer::Format> colorAttachmentFormats;
 		se::renderer::Format depthAttachmentFormat;

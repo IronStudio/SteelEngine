@@ -26,6 +26,7 @@
 #include <se/renderer/vulkan/format.hpp>
 #include <se/renderer/vulkan/pipeline.hpp>
 #include <se/renderer/vulkan/shader.hpp>
+#include <se/renderer/vulkan/uniformBufferView.hpp>
 #include <se/renderer/vulkan/vertexBufferView.hpp>
 #include <se/renderer/vulkan/vramAllocator.hpp>
 
@@ -99,6 +100,18 @@ class SandboxApp : public se::Application {
 			};
 
 
+			/** @brief UB view */
+			se::renderer::UniformBufferViewInfos uniformBufferViewInfos {};
+			uniformBufferViewInfos.context = &context;
+			uniformBufferViewInfos.shaderTypes = se::renderer::ShaderType::eVertex;
+			uniformBufferViewInfos.binding = 0;
+			uniformBufferViewInfos.attributes = {
+				{"colorBias", se::renderer::UniformType::eFloat32}
+			};
+			uniformBufferViewInfos.offset = 0;
+			se::renderer::vulkan::UniformBufferView uniformBufferView {uniformBufferViewInfos};
+
+
 			/** @brief Staging memory */
 			se::renderer::VramAllocatorInfos allocatorInfos {};
 			allocatorInfos.chunkSize = 64_MiB;
@@ -123,6 +136,12 @@ class SandboxApp : public se::Application {
 			bufferInfos.size = perInstanceDatas.size() * sizeof(se::Float);
 			se::renderer::vulkan::Buffer perInstanceStagingBuffer {bufferInfos};
 
+			bufferInfos.context = &context;
+			bufferInfos.allocator = &stagingAllocator;
+			bufferInfos.usage = se::renderer::BufferUsage::eTransferSrc;
+			bufferInfos.size = 1_kiB;
+			se::renderer::vulkan::Buffer uniformStagingBuffer {bufferInfos};
+
 			se::renderer::BufferWriteInfos bufferWriteInfos {};
 			bufferWriteInfos.offset = 0;
 			bufferWriteInfos.value.assign((se::Byte*)vertices.data(), (se::Byte*)(vertices.data() + vertices.size()));
@@ -131,6 +150,17 @@ class SandboxApp : public se::Application {
 			bufferWriteInfos.offset = 0;
 			bufferWriteInfos.value.assign((se::Byte*)perInstanceDatas.data(), (se::Byte*)(perInstanceDatas.data() + perInstanceDatas.size()));
 			perInstanceStagingBuffer.write(bufferWriteInfos);
+
+			se::Float32 colorBias {1.f};
+			se::renderer::BufferWriteUniformInfos uniformBufferWriteInfos {};
+			uniformBufferWriteInfos.offset = 0;
+			uniformBufferWriteInfos.uniformBufferView = &uniformBufferView;
+			uniformBufferWriteInfos.attributes = {
+				{"colorBias", {}}
+			};
+			uniformBufferWriteInfos.attributes[0].value.assign((se::Byte*)&colorBias, (se::Byte*)(&colorBias + 1));
+			uniformStagingBuffer.write(uniformBufferWriteInfos);
+
 
 			stagingAllocator.logAllocationTable();
 
@@ -155,6 +185,14 @@ class SandboxApp : public se::Application {
 			bufferInfos.size = perInstanceDatas.size() * sizeof(se::Float);
 			se::renderer::vulkan::Buffer perInstanceBuffer {bufferInfos};
 
+			/** @brief Uniform buffer */
+			bufferInfos.context = &context;
+			bufferInfos.allocator = &gpuAllocator;
+			bufferInfos.usage = se::renderer::BufferUsage::eUniform | se::renderer::BufferUsage::eTransferDst;
+			bufferInfos.size = 1_kiB;
+			se::renderer::vulkan::Buffer uniformBuffer {bufferInfos};
+			
+
 			/** @brief Transfer */
 			se::renderer::BufferTransferorInfos bufferTransferorInfos {};
 			bufferTransferorInfos.context = &context;
@@ -174,6 +212,14 @@ class SandboxApp : public se::Application {
 			bufferTransferInfos.srcOffset = 0;
 			bufferTransferInfos.dstOffset = 0;
 			bufferTransferInfos.size = perInstanceDatas.size() * sizeof(se::Float);
+			bufferTransferor.transfer(bufferTransferInfos);
+
+			bufferTransferor.sync();
+			bufferTransferInfos.source = &uniformStagingBuffer;
+			bufferTransferInfos.destination = &uniformBuffer;
+			bufferTransferInfos.srcOffset = 0;
+			bufferTransferInfos.dstOffset = 0;
+			bufferTransferInfos.size = 1_kiB;
 			bufferTransferor.transfer(bufferTransferInfos);
 
 
@@ -221,6 +267,7 @@ class SandboxApp : public se::Application {
 			pipelineInfos.depthAttachmentFormat = depthBuffer.getInfos().format;
 			pipelineInfos.stencilAttachmentFormat = se::renderer::Format::eNone;
 			pipelineInfos.blendMode = se::renderer::BlendMode::eSrcAlpha;
+			pipelineInfos.uniformBufferView = {&uniformBufferView};
 			se::renderer::vulkan::Pipeline pipeline {pipelineInfos};
 
 
@@ -246,6 +293,46 @@ class SandboxApp : public se::Application {
 			(void)vkAllocateCommandBuffers(context.getDevice()->getDevice(), &commandBufferAllocateInfos, &graphicsCommandBuffer);
 
 			commandPoolCreateInfos.queueFamilyIndex = context.getDevice()->getQueueFamilyIndices().find(se::renderer::vulkan::QueueType::ePresent)->second;
+
+
+			VkDescriptorPoolSize descriptorPoolSize {};
+			descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorPoolSize.descriptorCount = 1;
+
+			VkDescriptorPoolCreateInfo descriptorPoolCreateInfos {};
+			descriptorPoolCreateInfos.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			descriptorPoolCreateInfos.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+			descriptorPoolCreateInfos.maxSets = 1;
+			descriptorPoolCreateInfos.poolSizeCount = 1;
+			descriptorPoolCreateInfos.pPoolSizes = &descriptorPoolSize;
+			VkDescriptorPool descriptorPool {};
+			(void)vkCreateDescriptorPool(context.getDevice()->getDevice(), &descriptorPoolCreateInfos, nullptr, &descriptorPool);
+
+			VkDescriptorSetLayout descriptorSetLayout {uniformBufferView.getLayout()};
+			VkDescriptorSetAllocateInfo descriptorSetAllocateInfos {};
+			descriptorSetAllocateInfos.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			descriptorSetAllocateInfos.descriptorPool = descriptorPool;
+			descriptorSetAllocateInfos.descriptorSetCount = 1;
+			descriptorSetAllocateInfos.pSetLayouts = &descriptorSetLayout;
+			VkDescriptorSet descriptorSet {};
+			(void)vkAllocateDescriptorSets(context.getDevice()->getDevice(), &descriptorSetAllocateInfos, &descriptorSet);
+
+			VkDescriptorBufferInfo descriptorBufferInfos {};
+			descriptorBufferInfos.buffer = uniformBuffer.getBuffer();
+			descriptorBufferInfos.offset = 0;
+			descriptorBufferInfos.range = uniformBufferWriteInfos.attributes[0].value.size();
+
+			VkWriteDescriptorSet writeDescriptorSet {};
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = descriptorSet;
+			writeDescriptorSet.dstBinding = uniformBufferView.getInfos().binding;
+			writeDescriptorSet.dstArrayElement = 0;
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.pBufferInfo = &descriptorBufferInfos;
+			writeDescriptorSet.pImageInfo = nullptr;
+			writeDescriptorSet.pTexelBufferView = nullptr;
+			vkUpdateDescriptorSets(context.getDevice()->getDevice(), 1, &writeDescriptorSet, 0, nullptr);
 
 
 
@@ -453,6 +540,10 @@ class SandboxApp : public se::Application {
 				VkDeviceSize offsets[2] {vertexBufferView.getInfos().offset, vertexBufferView.getInfos().offset};
 				vkCmdBindVertexBuffers(graphicsCommandBuffer, 0, 2, buffers, offsets);
 
+				vkCmdBindDescriptorSets(
+					graphicsCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr
+				);
+
 				vkCmdDraw(graphicsCommandBuffer, vertices.size() / 5, perInstanceDatas.size() / 3, 0, 0);
 
 				vkCmdEndRendering(graphicsCommandBuffer);
@@ -510,6 +601,8 @@ class SandboxApp : public se::Application {
 			vkDestroySemaphore(context.getDevice()->getDevice(), imageDrawnSemaphore, nullptr);
 			vkDestroySemaphore(context.getDevice()->getDevice(), imageReadySemaphore, nullptr);
 
+			vkFreeDescriptorSets(context.getDevice()->getDevice(), descriptorPool, 1, &descriptorSet);
+			vkDestroyDescriptorPool(context.getDevice()->getDevice(), descriptorPool, nullptr);
 			vkFreeCommandBuffers(context.getDevice()->getDevice(), graphicsCommandPool, 1, &graphicsCommandBuffer);
 			vkDestroyCommandPool(context.getDevice()->getDevice(), graphicsCommandPool, nullptr);
 		}

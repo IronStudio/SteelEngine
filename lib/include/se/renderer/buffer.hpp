@@ -4,6 +4,7 @@
 
 #include "se/core.hpp"
 #include "se/renderer/context.hpp"
+#include "se/renderer/uniformBufferView.hpp"
 #include "se/renderer/vramAllocator.hpp"
 #include "se/types.hpp"
 #include "se/utils/bitField.hpp"
@@ -33,12 +34,24 @@ namespace se::renderer {
 		se::ByteCount offset;
 	};
 
+	struct BufferWriteUniformAttribute {
+		std::string name;
+		std::vector<se::Byte> value;
+	};
+
+	struct BufferWriteUniformInfos {
+		se::renderer::UniformBufferView *uniformBufferView;
+		std::vector<BufferWriteUniformAttribute> attributes;
+		se::ByteCount offset;
+	};
+
 	class SE_CORE Buffer {
 		public:
 			inline Buffer(const se::renderer::BufferInfos &infos) : m_infos {infos} {}
 			virtual ~Buffer() = default;
 
 			virtual void write(const se::renderer::BufferWriteInfos &writeInfos) = 0;
+			virtual void write(const se::renderer::BufferWriteUniformInfos &writeInfos) = 0;
 
 			inline const se::renderer::BufferInfos &getInfos() const noexcept {return m_infos;}
 
