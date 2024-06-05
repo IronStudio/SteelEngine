@@ -17,6 +17,7 @@
 #include <se/threads/job.hpp>
 #include <se/threads/jobScheduler.hpp>
 #include <se/ecs/scene.hpp>
+#include <se/utils/converter.hpp>
 #include <se/utils/version.hpp>
 #include <se/window/windowManager.hpp>
 
@@ -106,7 +107,8 @@ class SandboxApp : public se::Application {
 			uniformBufferViewInfos.shaderTypes = se::renderer::ShaderType::eVertex;
 			uniformBufferViewInfos.binding = 0;
 			uniformBufferViewInfos.attributes = {
-				{"colorBias", se::renderer::UniformType::eFloat32}
+				{"colorBias", se::renderer::UniformType::eFloat32},
+				{"camera", se::renderer::UniformType::eMat4}
 			};
 			uniformBufferViewInfos.offset = 0;
 			se::renderer::vulkan::UniformBufferView uniformBufferView {uniformBufferViewInfos};
@@ -139,7 +141,7 @@ class SandboxApp : public se::Application {
 			bufferInfos.context = &context;
 			bufferInfos.allocator = &stagingAllocator;
 			bufferInfos.usage = se::renderer::BufferUsage::eTransferSrc;
-			bufferInfos.size = 1_kiB;
+			bufferInfos.size = uniformBufferView.getTotalSize();
 			se::renderer::vulkan::Buffer uniformStagingBuffer {bufferInfos};
 
 			se::renderer::BufferWriteInfos bufferWriteInfos {};
@@ -152,13 +154,19 @@ class SandboxApp : public se::Application {
 			perInstanceStagingBuffer.write(bufferWriteInfos);
 
 			se::Float32 colorBias {1.f};
+			se::Mat4f camera {
+				1.f, 0.f, 0.f, 0.f,
+				0.f, 1.f, 0.f, 0.f,
+				0.f, 0.f, 1.f, 0.f,
+				0.f, 0.f, 0.f, 1.f
+			};
 			se::renderer::BufferWriteUniformInfos uniformBufferWriteInfos {};
 			uniformBufferWriteInfos.offset = 0;
 			uniformBufferWriteInfos.uniformBufferView = &uniformBufferView;
 			uniformBufferWriteInfos.attributes = {
-				{"colorBias", {}}
+				{"colorBias",  se::utils::vectorize(colorBias)},
+				{"camera",     se::utils::vectorize(camera)}
 			};
-			uniformBufferWriteInfos.attributes[0].value.assign((se::Byte*)&colorBias, (se::Byte*)(&colorBias + 1));
 			uniformStagingBuffer.write(uniformBufferWriteInfos);
 
 
@@ -189,7 +197,7 @@ class SandboxApp : public se::Application {
 			bufferInfos.context = &context;
 			bufferInfos.allocator = &gpuAllocator;
 			bufferInfos.usage = se::renderer::BufferUsage::eUniform | se::renderer::BufferUsage::eTransferDst;
-			bufferInfos.size = 1_kiB;
+			bufferInfos.size = uniformBufferView.getTotalSize();
 			se::renderer::vulkan::Buffer uniformBuffer {bufferInfos};
 			
 
@@ -219,7 +227,7 @@ class SandboxApp : public se::Application {
 			bufferTransferInfos.destination = &uniformBuffer;
 			bufferTransferInfos.srcOffset = 0;
 			bufferTransferInfos.dstOffset = 0;
-			bufferTransferInfos.size = 1_kiB;
+			bufferTransferInfos.size = uniformBufferView.getTotalSize();
 			bufferTransferor.transfer(bufferTransferInfos);
 
 
@@ -319,8 +327,8 @@ class SandboxApp : public se::Application {
 
 			VkDescriptorBufferInfo descriptorBufferInfos {};
 			descriptorBufferInfos.buffer = uniformBuffer.getBuffer();
-			descriptorBufferInfos.offset = 0;
-			descriptorBufferInfos.range = uniformBufferWriteInfos.attributes[0].value.size();
+			descriptorBufferInfos.offset = uniformBufferView.getInfos().offset;
+			descriptorBufferInfos.range = uniformBufferView.getTotalSize();
 
 			VkWriteDescriptorSet writeDescriptorSet {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

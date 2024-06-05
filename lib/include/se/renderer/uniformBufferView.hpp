@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <vector>
 
 #include "se/core.hpp"
@@ -36,15 +37,27 @@ namespace se::renderer {
 		se::Uint64 binding;
 	};
 
+	struct UniformAttributeInfos {
+		se::ByteCount offset;
+		se::ByteCount size;
+	};
+
 	class SE_CORE UniformBufferView {
 		public:
 			inline UniformBufferView(const se::renderer::UniformBufferViewInfos &infos) : m_infos {infos} {}
 			virtual ~UniformBufferView() = default;
 
 			inline const se::renderer::UniformBufferViewInfos &getInfos() const noexcept {return m_infos;}
+			inline const std::map<std::string, se::renderer::UniformAttributeInfos> &getAttributesInfos() const noexcept {return m_attributeInfos;}
+			inline const se::renderer::UniformAttributeInfos &getAttribute(const std::string &attr) const noexcept {
+				return m_attributeInfos.find(attr)->second;
+			}
+			inline se::ByteCount getTotalSize() const noexcept {return m_totalSize;}
 
 		protected:
 			se::renderer::UniformBufferViewInfos m_infos;
+			std::map<std::string, se::renderer::UniformAttributeInfos> m_attributeInfos;
+			se::ByteCount m_totalSize;
 	};
 
 } // namespace se::renderer

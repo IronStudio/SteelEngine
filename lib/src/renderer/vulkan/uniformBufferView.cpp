@@ -7,11 +7,31 @@
 
 
 namespace se::renderer::vulkan {
+	struct TypeInfos {
+		se::ByteCount alignment;
+		se::ByteCount size;
+	};
+
+
 	UniformBufferView::UniformBufferView(const se::renderer::UniformBufferViewInfos &infos) :
 		se::renderer::UniformBufferView(infos),
 		m_layoutBinding {},
 		m_layout {VK_NULL_HANDLE}
 	{
+		static const std::map<se::renderer::UniformType, TypeInfos> typeInfosMap {
+			{se::renderer::UniformType::eFloat32, {4,  4}},
+			{se::renderer::UniformType::eInt32,   {4,  4}},
+			{se::renderer::UniformType::eMat2,    {16, 4*8}},
+			{se::renderer::UniformType::eMat3,    {16, 4*12}},
+			{se::renderer::UniformType::eMat4,    {16, 4*16}},
+			{se::renderer::UniformType::eVec2,    {8,  8}},
+			{se::renderer::UniformType::eVec2i,   {8,  8}},
+			{se::renderer::UniformType::eVec3,    {16, 16}},
+			{se::renderer::UniformType::eVec3i,   {16, 16}},
+			{se::renderer::UniformType::eVec4,    {16, 16}},
+			{se::renderer::UniformType::eVec4i,   {16, 16}}
+		};
+
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
 
 		m_layoutBinding.binding = m_infos.binding;
@@ -27,6 +47,23 @@ namespace se::renderer::vulkan {
 
 		if (vkCreateDescriptorSetLayout(device, &layoutCreateInfos, nullptr, &m_layout) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create ubo view layout");
+
+		se::ByteCount currentOffset {0};
+		for (const auto &attribute : m_infos.attributes) {
+			se::renderer::UniformAttributeInfos attrInfos {};
+			const auto &typeInfos {typeInfosMap.find(attribute.type)->second};
+
+			if (currentOffset % typeInfos.alignment)
+				currentOffset += typeInfos.alignment - (currentOffset % typeInfos.alignment);
+
+			attrInfos.offset = currentOffset;
+			attrInfos.size = typeInfos.size;
+			m_attributeInfos[attribute.name] = attrInfos;
+
+			currentOffset += typeInfos.size;
+		}
+
+		m_totalSize = currentOffset;
 	}
 
 
