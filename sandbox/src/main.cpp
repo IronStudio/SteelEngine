@@ -17,6 +17,7 @@
 #include <se/threads/job.hpp>
 #include <se/threads/jobScheduler.hpp>
 #include <se/ecs/scene.hpp>
+#include <se/units.hpp>
 #include <se/utils/converter.hpp>
 #include <se/utils/version.hpp>
 #include <se/window/windowManager.hpp>
@@ -89,15 +90,55 @@ class SandboxApp : public se::Application {
 
 			/** @brief Vertices */
 			std::vector<se::Float> vertices {
-				0.5f, 0.5f,    1.f, 0.f, 0.f,
-				0.f, -0.5f,    0.f, 1.f, 0.f,
-				-0.5f, 0.5f,   0.f, 0.f, 1.f
+				-0.5f, 0.5f, 0.5f,      0.f, 1.f, 1.f, 1.f,
+				0.5f, 0.5f, 0.5f,       1.f, 1.f, 1.f, 1.f,
+				0.5f, -0.5f, 0.5f,      1.f, 0.f, 1.f, 1.f,
+				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
+				-0.5f, 0.5f, 0.5f,      0.f, 1.f, 1.f, 1.f,
+				0.5f, -0.5f, 0.5f,      1.f, 0.f, 1.f, 1.f,
+
+				0.5f, -0.5f, 0.5f,      1.f, 0.f, 1.f, 1.f,
+				0.5f, 0.5f, 0.5f,       1.f, 1.f, 1.f, 1.f,
+				0.5f, 0.5f, -0.5f,      1.f, 1.f, 0.f, 1.f,
+				0.5f, 0.5f, -0.5f,      1.f, 1.f, 0.f, 1.f,
+				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,
+				0.5f, -0.5f, 0.5f,      1.f, 0.f, 1.f, 1.f,
+
+				-0.5f, 0.5f, -0.5f,     0.f, 1.f, 0.f, 1.f,
+				-0.5f, 0.5f, 0.5f,      0.f, 1.f, 1.f, 1.f,
+				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
+				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
+				-0.5f, -0.5f, -0.5f,    0.f, 0.f, 0.f, 1.f,
+				-0.5f, 0.5f, -0.5f,     0.f, 1.f, 0.f, 1.f,
+
+				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,
+				0.5f, 0.5f, -0.5f,      1.f, 1.f, 0.f, 1.f,
+				-0.5f, 0.5f, -0.5f,     0.f, 1.f, 0.f, 1.f,
+				-0.5f, 0.5f, -0.5f,     0.f, 1.f, 0.f, 1.f,
+				-0.5f, -0.5f, -0.5f,    0.f, 0.f, 0.f, 1.f,
+				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,
+
+				0.5f, 0.5f, -0.5f,      1.f, 1.f, 0.f, 1.f,
+				0.5f, 0.5f, 0.5f,       1.f, 1.f, 1.f, 1.f,
+				-0.5f, 0.5f, 0.5f,      0.f, 1.f, 1.f, 1.f,
+				-0.5f, 0.5f, 0.5f,      0.f, 1.f, 1.f, 1.f,
+				-0.5f, 0.5f, -0.5f,     0.f, 1.f, 0.f, 1.f,
+				0.5f, 0.5f, -0.5f,      1.f, 1.f, 0.f, 1.f,
+
+				0.5f, -0.5f, 0.5f,      1.f, 0.f, 1.f, 1.f,
+				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,
+				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
+				-0.5f, -0.5f, -0.5f,    0.f, 0.f, 0.f, 1.f,
+				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
+				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,
 			};
+
+			SE_APP_INFO("Vertices count {}", vertices.size() / 7);
 
 			/** @brief PerInstanceDatas */
 			std::vector<se::Float> perInstanceDatas {
-				0.f,  0.f, 1.f,
-				0.5f, 1.f, 0.5f
+				0.f,  0.f, 1.f
+				//0.5f, 1.f, 0.5f
 			};
 
 
@@ -153,13 +194,46 @@ class SandboxApp : public se::Application {
 			bufferWriteInfos.value.assign((se::Byte*)perInstanceDatas.data(), (se::Byte*)(perInstanceDatas.data() + perInstanceDatas.size()));
 			perInstanceStagingBuffer.write(bufferWriteInfos);
 
+			se::Float32 fov {(se::Float32)120.0_deg};
+			se::Float32 ratio {(se::Float32)context.getSwapchain()->getExtent().width / (se::Float32)context.getSwapchain()->getExtent().height};
+			se::Float32 near {0.001f};
+			se::Float32 far {100.f};
+			se::Float32 right {near * tanf(fov)};
+			right = right >= 0 ? right : -right;
+			se::Float32 bottom {right / ratio};
+
+			SE_APP_INFO("fov {}, near {}, far {}, right {}, bottom {}", fov, near, far, right, bottom);
+
+			se::Vec2f cameraOrientation {se::pi<se::Float32> / 4.f, se::pi<se::Float32> / 4.f};
+			se::Vec3f cameraPosition {-2.f, 2.f, -2.f};
+
 			se::Float32 colorBias {1.f};
-			se::Mat4f camera {
-				1.f, 0.f, 0.f, 0.f,
-				0.f, 1.f, 0.f, 0.f,
-				0.f, 0.f, 1.f, 0.f,
+			se::Mat4f position {
+				1.f, 0.f, 0.f, -cameraPosition.x,
+				0.f, 1.f, 0.f, -cameraPosition.y,
+				0.f, 0.f, 1.f, -cameraPosition.z,
 				0.f, 0.f, 0.f, 1.f
 			};
+			se::Mat4f rotation1 {
+				cosf(cameraOrientation.x), 0.f, -sinf(cameraOrientation.x), 0.f,
+				0.f, 1.f, 0.f, 0.f,
+				sinf(cameraOrientation.x), 0.f, cosf(cameraOrientation.x), 0.f,
+				0.f, 0.f, 0.f, 1.f
+			};
+			se::Mat4f rotation2 {
+				1.f, 0.f, 0.f, 0.f,
+				0.f, cosf(cameraOrientation.y), sinf(cameraOrientation.y), 0.f,
+				0.f, -sinf(cameraOrientation.y), cosf(cameraOrientation.y), 0.f,
+				0.f, 0.f, 0.f, 1.f
+			};
+			se::Mat4f camera {
+				near/right, 0.f,         0.f,            0.f,
+				0.f,        near/bottom, 0.f,            0.f,
+				0.f,        0.f,         far/(far-near), -far*near/(far-near),
+				0.f,        0.f,         1.f,            0.f
+			};
+			camera = camera * rotation2 * rotation1 * position;
+			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << camera << se::endLog;
 			se::renderer::BufferWriteUniformInfos uniformBufferWriteInfos {};
 			uniformBufferWriteInfos.offset = 0;
 			uniformBufferWriteInfos.uniformBufferView = &uniformBufferView;
@@ -243,11 +317,11 @@ class SandboxApp : public se::Application {
 			se::renderer::VertexBufferViewInfos vertexBufferViewInfos {};
 			vertexBufferViewInfos.context = &context;
 			vertexBufferViewInfos.attributes = {
-				{se::renderer::VertexType::eFloat32, 0, 2, 0},
-				{se::renderer::VertexType::eFloat32, 1, 3, 0},
-				{se::renderer::VertexType::eFloat32, 2, 1, 1, se::renderer::VertexRate::eInstance},
-				{se::renderer::VertexType::eFloat32, 3, 1, 1, se::renderer::VertexRate::eInstance},
-				{se::renderer::VertexType::eFloat32, 4, 1, 1, se::renderer::VertexRate::eInstance}
+				{se::renderer::VertexType::eFloat32, 0, 3, 0},
+				{se::renderer::VertexType::eFloat32, 1, 4, 0},
+				//{se::renderer::VertexType::eFloat32, 2, 1, 1, se::renderer::VertexRate::eInstance},
+				//{se::renderer::VertexType::eFloat32, 3, 1, 1, se::renderer::VertexRate::eInstance},
+				//{se::renderer::VertexType::eFloat32, 4, 1, 1, se::renderer::VertexRate::eInstance}
 			};
 			se::renderer::vulkan::VertexBufferView vertexBufferView {vertexBufferViewInfos};
 
@@ -428,6 +502,9 @@ class SandboxApp : public se::Application {
 
 
 			bufferTransferor.sync();
+			se::Float32 sensibility {0.025f};
+
+			SDL_SetRelativeMouseMode(SDL_TRUE);
 
 			while (true) {
 				if (se::input::InputManager::wasKeyPressed(se::input::Key::eEscape) && se::input::InputManager::getFocusedWindowUUID() != 0) {
@@ -438,18 +515,79 @@ class SandboxApp : public se::Application {
 					break;
 
 				if (se::input::InputManager::getFocusedWindowUUID() == window.getUUID()) {
+					if (se::input::InputManager::hasMouseMoved()) {
+						cameraOrientation.x += se::input::InputManager::getMouseMotion().x * sensibility;
+						cameraOrientation.y += se::input::InputManager::getMouseMotion().y * sensibility;
+						if (cameraOrientation.y >= se::pi<se::Float32> / 2.f)
+							cameraOrientation.y = se::pi<se::Float32> / 2.f - 0.000001f;
+						if (cameraOrientation.y <= -se::pi<se::Float32> / 2.f)
+							cameraOrientation.y = -se::pi<se::Float32> / 2.f + 0.000001f;
+					}
+
+					if (se::input::InputManager::isKeyDown(se::input::Key::eQ))
+						sensibility += 0.001f;
+					if (se::input::InputManager::isKeyDown(se::input::Key::eE))
+						sensibility -= 0.001f;
+
+					se::Vec3f direction {
+						cosf(cameraOrientation.y) * sinf(cameraOrientation.x),
+						-sinf(cameraOrientation.y),
+						cosf(cameraOrientation.y) * cosf(cameraOrientation.x),
+					};
+					se::Vec3f normal {se::cross(direction, se::Vec3f(0.f, 1.f, 0.f))};
+					normal *= 1.f / se::length(normal);
+
+					if (se::input::InputManager::isKeyDown(se::input::Key::eW))
+						cameraPosition += direction * 0.04f;
+					if (se::input::InputManager::isKeyDown(se::input::Key::eS))
+						cameraPosition -= direction * 0.04f;
+					if (se::input::InputManager::isKeyDown(se::input::Key::eD))
+						cameraPosition -= normal * 0.04f;
 					if (se::input::InputManager::isKeyDown(se::input::Key::eA))
-						std::cout << "A" << std::endl;
-					if (se::input::InputManager::wasKeyPressed(se::input::Key::eD))
-						std::cout << "D" << std::endl;
-					if (se::input::InputManager::wasKeyReleased(se::input::Key::eF))
-						std::cout << "F" << std::endl;
+						cameraPosition += normal * 0.04f;
 				}
 
-				if (se::input::InputManager::hasMouseMoved()) {
-					//SE_APP_LOGGER.log({se::LogSeverity::eInfo}, "Mouse moved to ({}, {})", se::input::InputManager::getMousePosition().x,
-					//	se::input::InputManager::getMousePosition().y);
-				}
+				position = {
+					1.f, 0.f, 0.f, -cameraPosition.x,
+					0.f, 1.f, 0.f, -cameraPosition.y,
+					0.f, 0.f, 1.f, -cameraPosition.z,
+					0.f, 0.f, 0.f, 1.f
+				};
+				rotation1 = {
+					cosf(cameraOrientation.x), 0.f, -sinf(cameraOrientation.x), 0.f,
+					0.f, 1.f, 0.f, 0.f,
+					sinf(cameraOrientation.x), 0.f, cosf(cameraOrientation.x), 0.f,
+					0.f, 0.f, 0.f, 1.f
+				};
+				rotation2 = {
+					1.f, 0.f, 0.f, 0.f,
+					0.f, cosf(cameraOrientation.y), sinf(cameraOrientation.y), 0.f,
+					0.f, -sinf(cameraOrientation.y), cosf(cameraOrientation.y), 0.f,
+					0.f, 0.f, 0.f, 1.f
+				};
+				camera = {
+					near/right, 0.f,         0.f,            0.f,
+					0.f,        near/bottom, 0.f,            0.f,
+					0.f,        0.f,         far/(far-near), -far*near/(far-near),
+					0.f,        0.f,         1.f,            0.f
+				};
+				camera = camera * rotation2 * rotation1 * position;
+				se::renderer::BufferWriteUniformInfos uniformBufferWriteInfos {};
+				uniformBufferWriteInfos.offset = 0;
+				uniformBufferWriteInfos.uniformBufferView = &uniformBufferView;
+				uniformBufferWriteInfos.attributes = {
+					{"colorBias",  se::utils::vectorize(colorBias)},
+					{"camera",     se::utils::vectorize(camera)}
+				};
+				uniformStagingBuffer.write(uniformBufferWriteInfos);
+
+				bufferTransferInfos.source = &uniformStagingBuffer;
+				bufferTransferInfos.destination = &uniformBuffer;
+				bufferTransferInfos.srcOffset = 0;
+				bufferTransferInfos.dstOffset = 0;
+				bufferTransferInfos.size = uniformBufferView.getTotalSize();
+				bufferTransferor.transfer(bufferTransferInfos);
+				bufferTransferor.sync();
 
 				/*if (se::input::InputManager::wasWindowResized(window2.getUUID()))
 					SE_APP_LOGGER.log({se::LogSeverity::eInfo}, "Window2 resized to {}x{}", window2.getInfos().size.x, window2.getInfos().size.y);*/
@@ -532,9 +670,9 @@ class SandboxApp : public se::Application {
 
 				VkViewport viewport {};
 				viewport.x = 0.f;
-				viewport.y = 0.f;
+				viewport.y = context.getSwapchain()->getExtent().height;
 				viewport.width = context.getSwapchain()->getExtent().width;
-				viewport.height = context.getSwapchain()->getExtent().height;
+				viewport.height = -(se::Float32)context.getSwapchain()->getExtent().height;
 				viewport.minDepth = 0.f;
 				viewport.maxDepth = 1.f;
 				vkCmdSetViewport(graphicsCommandBuffer, 0, 1, &viewport);
@@ -552,7 +690,7 @@ class SandboxApp : public se::Application {
 					graphicsCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr
 				);
 
-				vkCmdDraw(graphicsCommandBuffer, vertices.size() / 5, perInstanceDatas.size() / 3, 0, 0);
+				vkCmdDraw(graphicsCommandBuffer, vertices.size() / 7, /*perInstanceDatas.size() / 3*/1, 0, 0);
 
 				vkCmdEndRendering(graphicsCommandBuffer);
 

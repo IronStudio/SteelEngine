@@ -1,10 +1,7 @@
 #version 460 core
 
-layout (location = 0) in vec2 in_Position;
-layout (location = 1) in vec3 in_Color;
-layout (location = 2) in float in_Offset;
-layout (location = 3) in float in_Depth;
-layout (location = 4) in float in_Opacity;
+layout (location = 0) in vec3 in_Position;
+layout (location = 1) in vec4 in_Color;
 
 layout (location = 0) out vec4 out_Color;
 
@@ -15,6 +12,6 @@ layout (std140, binding = 0) uniform UBO {
 
 
 void main() {
-	gl_Position = uni_Camera * vec4(in_Position + vec2(in_Offset), in_Depth, 1.0);
-	out_Color = vec4(uni_ColorBias * in_Color, in_Opacity);
+	gl_Position = uni_Camera * vec4(in_Position, 1.0);
+	out_Color = uni_ColorBias * in_Color;
 }

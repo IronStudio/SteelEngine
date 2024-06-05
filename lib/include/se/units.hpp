@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "se/math.hpp"
 #include "se/types.hpp"
 
 
@@ -38,4 +39,18 @@ namespace se {
 	using Kibi  = se::Ratio<1024, 1>;
 	using Mebi  = se::Ratio<1024*1024, 1>;
 	using Gibi  = se::Ratio<1024*1024*1024, 1>;
+
+	template <typename T>
+	T pi;
+
+	template <> constexpr se::Float32 pi<se::Float32> {3.14159265358979323846264338327950288419716939937510582097494459230781640628620899f};
+	template <> constexpr se::Float64 pi<se::Float64> {3.14159265358979323846264338327950288419716939937510582097494459230781640628620899};
+	template <> constexpr long double pi<long double> {3.14159265358979323846264338327950288419716939937510582097494459230781640628620899L};
+
+
+	namespace literals {
+		inline long double operator ""_deg(long double val) {return val * se::pi<long double> / 180.0L;}
+		inline long double operator ""_deg(unsigned long long val) {return val * se::pi<long double> / 180.0L;}
+	} // namespace literals
+
 } // namespace se
