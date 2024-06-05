@@ -90,7 +90,7 @@ class SandboxApp : public se::Application {
 
 			/** @brief Vertices */
 			std::vector<se::Float> vertices {
-				-0.5f, 0.5f, 0.5f,      0.f, 1.f, 1.f, 1.f,
+				/*-0.5f, 0.5f, 0.5f,      0.f, 1.f, 1.f, 1.f,
 				0.5f, 0.5f, 0.5f,       1.f, 1.f, 1.f, 1.f,
 				0.5f, -0.5f, 0.5f,      1.f, 0.f, 1.f, 1.f,
 				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
@@ -130,7 +130,8 @@ class SandboxApp : public se::Application {
 				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
 				-0.5f, -0.5f, -0.5f,    0.f, 0.f, 0.f, 1.f,
 				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
-				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,
+				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,*/
+				0.f, 0.f, 0.f,    1.f, 0.f, 0.f, 1.f
 			};
 
 			SE_APP_INFO("Vertices count {}", vertices.size() / 7);
@@ -145,7 +146,7 @@ class SandboxApp : public se::Application {
 			/** @brief UB view */
 			se::renderer::UniformBufferViewInfos uniformBufferViewInfos {};
 			uniformBufferViewInfos.context = &context;
-			uniformBufferViewInfos.shaderTypes = se::renderer::ShaderType::eVertex;
+			uniformBufferViewInfos.shaderTypes = se::renderer::ShaderType::eVertex | se::renderer::ShaderType::eGeometry;
 			uniformBufferViewInfos.binding = 0;
 			uniformBufferViewInfos.attributes = {
 				{"colorBias", se::renderer::UniformType::eFloat32},
@@ -335,6 +336,10 @@ class SandboxApp : public se::Application {
 			shaderInfos.file = "shaders/test.vert";
 			se::renderer::vulkan::Shader vertexShader {shaderInfos};
 
+			shaderInfos.type = se::renderer::ShaderType::eGeometry;
+			shaderInfos.file = "shaders/test.geom";
+			se::renderer::vulkan::Shader geometryShader {shaderInfos};
+
 			shaderInfos.type = se::renderer::ShaderType::eFragment;
 			shaderInfos.file = "shaders/test.frag";
 			se::renderer::vulkan::Shader fragmentShader {shaderInfos};
@@ -344,7 +349,7 @@ class SandboxApp : public se::Application {
 			se::renderer::PipelineInfos pipelineInfos {};
 			pipelineInfos.context = &context;
 			pipelineInfos.vertexBufferView = &vertexBufferView;
-			pipelineInfos.shaders = {&vertexShader, &fragmentShader};
+			pipelineInfos.shaders = {&vertexShader, &geometryShader, &fragmentShader};
 			pipelineInfos.colorAttachmentFormats = {se::renderer::vulkan::formatVkToSe(context.getSwapchain()->getFormat().format)};
 			pipelineInfos.depthAttachmentFormat = depthBuffer.getInfos().format;
 			pipelineInfos.stencilAttachmentFormat = se::renderer::Format::eNone;

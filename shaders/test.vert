@@ -14,4 +14,5 @@ layout (std140, binding = 0) uniform UBO {
 void main() {
 	gl_Position = uni_Camera * vec4(in_Position, 1.0);
 	out_Color = uni_ColorBias * in_Color;
+	gl_PointSize = 1;
 }

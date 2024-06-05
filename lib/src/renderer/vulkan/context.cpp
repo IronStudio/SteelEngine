@@ -116,7 +116,7 @@ namespace se::renderer::vulkan {
 			| se::renderer::vulkan::QueueType::eTransfer;
 		deviceInfos.surface = m_surface->getSurface();
 		deviceInfos.requiredFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-		deviceInfos.requiredFeatures.features = {};
+		deviceInfos.requiredFeatures.features.geometryShader = VK_TRUE;
 		deviceInfos.requiredFeatures.pNext = &dynamicRenderingFeatures;
 		m_device = new se::renderer::vulkan::Device(deviceInfos);
 

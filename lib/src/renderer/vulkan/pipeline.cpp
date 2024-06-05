@@ -49,7 +49,7 @@ namespace se::renderer::vulkan {
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfos {};
 		inputAssemblyStateCreateInfos.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		inputAssemblyStateCreateInfos.primitiveRestartEnable = VK_FALSE;
-		inputAssemblyStateCreateInfos.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		inputAssemblyStateCreateInfos.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;//VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
 		VkPipelineViewportStateCreateInfo viewportStateCreateInfos {};
 		viewportStateCreateInfos.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
