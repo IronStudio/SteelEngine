@@ -194,11 +194,11 @@ class SandboxApp : public se::Application {
 			bufferWriteInfos.value.assign((se::Byte*)perInstanceDatas.data(), (se::Byte*)(perInstanceDatas.data() + perInstanceDatas.size()));
 			perInstanceStagingBuffer.write(bufferWriteInfos);
 
-			se::Float32 fov {(se::Float32)120.0_deg};
+			se::Float32 fov {(se::Float32)90.0_deg};
 			se::Float32 ratio {(se::Float32)context.getSwapchain()->getExtent().width / (se::Float32)context.getSwapchain()->getExtent().height};
 			se::Float32 near {0.001f};
 			se::Float32 far {100.f};
-			se::Float32 right {near * tanf(fov)};
+			se::Float32 right {near * tanf(fov/2.f)};
 			right = right >= 0 ? right : -right;
 			se::Float32 bottom {right / ratio};
 
