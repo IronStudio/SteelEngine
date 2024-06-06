@@ -231,7 +231,7 @@ class SandboxApp : public se::Application {
 			se::Mat4f camera {
 				near/right, 0.f,         0.f,            0.f,
 				0.f,        near/bottom, 0.f,            0.f,
-				0.f,        0.f,         far/(far-near), -far*near/(far-near),
+				0.f,        0.f,         1/(far-near), -near/(far-near),
 				0.f,        0.f,         1.f,            0.f
 			};
 			camera = camera * rotation2 * rotation1 * position;
