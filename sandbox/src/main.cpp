@@ -131,7 +131,8 @@ class SandboxApp : public se::Application {
 				-0.5f, -0.5f, -0.5f,    0.f, 0.f, 0.f, 1.f,
 				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
 				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,*/
-				0.f, 0.f, 0.f,    1.f, 0.f, 0.f, 1.f
+				0.f, 0.f, 0.f,    1.f, 0.f, 0.f, 1.f,
+				1.f, 0.f, 0.f,    0.f, 1.f, 0.f, 1.f
 			};
 
 			SE_APP_INFO("Vertices count {}", vertices.size() / 7);
@@ -197,8 +198,8 @@ class SandboxApp : public se::Application {
 
 			se::Float32 fov {(se::Float32)90.0_deg};
 			se::Float32 ratio {(se::Float32)context.getSwapchain()->getExtent().width / (se::Float32)context.getSwapchain()->getExtent().height};
-			se::Float32 near {0.001f};
-			se::Float32 far {100.f};
+			se::Float32 near {0.9f};
+			se::Float32 far {5.f};
 			se::Float32 right {near * tanf(fov/2.f)};
 			right = right >= 0 ? right : -right;
 			se::Float32 bottom {right / ratio};
@@ -626,7 +627,7 @@ class SandboxApp : public se::Application {
 
 				VkRenderingAttachmentInfo depthAttachmentInfos {};
 				depthAttachmentInfos.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-				depthAttachmentInfos.clearValue.depthStencil = {0.f, 0};
+				depthAttachmentInfos.clearValue.depthStencil = {1.f, 0};
 				depthAttachmentInfos.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
 				depthAttachmentInfos.imageView = depthBuffer.getImageView();
 				depthAttachmentInfos.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;

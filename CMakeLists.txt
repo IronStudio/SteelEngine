@@ -57,9 +57,9 @@ message("Dependencies libraries : " ${DEPS_LIBRARIES})
 if (WIN32)
 	add_compile_definitions(
 		${PROJECT_ACRONYM_UPPERCASE}_WINDOWS
-		SE_MALGE_VECTORIZE
-		SE_MALGE_ARCHITECTURE_X86
-		SE_MALGE_AVX
+		#SE_MALGE_VECTORIZE
+		#SE_MALGE_ARCHITECTURE_X86
+		#SE_MALGE_AVX
 	)
 elseif (UNIX)
 	add_compile_definitions(

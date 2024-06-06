@@ -170,7 +170,7 @@ namespace se::renderer::vulkan {
 			pipelineDepthStencilStateCreateInfos.depthBoundsTestEnable = VK_TRUE;
 		}
 
-		pipelineDepthStencilStateCreateInfos.depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL;
+		pipelineDepthStencilStateCreateInfos.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 		pipelineDepthStencilStateCreateInfos.stencilTestEnable = VK_FALSE;
 		pipelineDepthStencilStateCreateInfos.front = {};
 		pipelineDepthStencilStateCreateInfos.back = {};
