@@ -15,6 +15,12 @@ namespace se::renderer {
 		eSrcAlpha
 	};
 
+	enum class PipelineType {
+		eRasterization,
+		eRaytracing,
+		eCompute
+	};
+
 	struct PipelineInfos {
 		se::renderer::Context *context;
 		se::renderer::VertexBufferView *vertexBufferView;
@@ -24,6 +30,7 @@ namespace se::renderer {
 		se::renderer::Format depthAttachmentFormat;
 		se::renderer::Format stencilAttachmentFormat;
 		se::renderer::BlendMode blendMode {se::renderer::BlendMode::eSrcAlpha};
+		se::renderer::PipelineType type {se::renderer::PipelineType::eRasterization};
 	};
 
 	class SE_CORE Pipeline {

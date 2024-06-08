@@ -88,49 +88,16 @@ class SandboxApp : public se::Application {
 			se::renderer::vulkan::Context context {contextInfos};
 
 
+			VkPhysicalDeviceRayTracingPipelinePropertiesKHR rayTracingProperties {};
+			rayTracingProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
+			VkPhysicalDeviceProperties2 physicalDeviceProperties2 {};
+			physicalDeviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+			physicalDeviceProperties2.pNext = &rayTracingProperties;
+			vkGetPhysicalDeviceProperties2(context.getDevice()->getPhysicalDevice(), &physicalDeviceProperties2);
+
+
 			/** @brief Vertices */
 			std::vector<se::Float> vertices {
-				/*-0.5f, 0.5f, 0.5f,      0.f, 1.f, 1.f, 1.f,
-				0.5f, 0.5f, 0.5f,       1.f, 1.f, 1.f, 1.f,
-				0.5f, -0.5f, 0.5f,      1.f, 0.f, 1.f, 1.f,
-				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
-				-0.5f, 0.5f, 0.5f,      0.f, 1.f, 1.f, 1.f,
-				0.5f, -0.5f, 0.5f,      1.f, 0.f, 1.f, 1.f,
-
-				0.5f, -0.5f, 0.5f,      1.f, 0.f, 1.f, 1.f,
-				0.5f, 0.5f, 0.5f,       1.f, 1.f, 1.f, 1.f,
-				0.5f, 0.5f, -0.5f,      1.f, 1.f, 0.f, 1.f,
-				0.5f, 0.5f, -0.5f,      1.f, 1.f, 0.f, 1.f,
-				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,
-				0.5f, -0.5f, 0.5f,      1.f, 0.f, 1.f, 1.f,
-
-				-0.5f, 0.5f, -0.5f,     0.f, 1.f, 0.f, 1.f,
-				-0.5f, 0.5f, 0.5f,      0.f, 1.f, 1.f, 1.f,
-				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
-				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
-				-0.5f, -0.5f, -0.5f,    0.f, 0.f, 0.f, 1.f,
-				-0.5f, 0.5f, -0.5f,     0.f, 1.f, 0.f, 1.f,
-
-				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,
-				0.5f, 0.5f, -0.5f,      1.f, 1.f, 0.f, 1.f,
-				-0.5f, 0.5f, -0.5f,     0.f, 1.f, 0.f, 1.f,
-				-0.5f, 0.5f, -0.5f,     0.f, 1.f, 0.f, 1.f,
-				-0.5f, -0.5f, -0.5f,    0.f, 0.f, 0.f, 1.f,
-				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,
-
-				0.5f, 0.5f, -0.5f,      1.f, 1.f, 0.f, 1.f,
-				0.5f, 0.5f, 0.5f,       1.f, 1.f, 1.f, 1.f,
-				-0.5f, 0.5f, 0.5f,      0.f, 1.f, 1.f, 1.f,
-				-0.5f, 0.5f, 0.5f,      0.f, 1.f, 1.f, 1.f,
-				-0.5f, 0.5f, -0.5f,     0.f, 1.f, 0.f, 1.f,
-				0.5f, 0.5f, -0.5f,      1.f, 1.f, 0.f, 1.f,
-
-				0.5f, -0.5f, 0.5f,      1.f, 0.f, 1.f, 1.f,
-				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,
-				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
-				-0.5f, -0.5f, -0.5f,    0.f, 0.f, 0.f, 1.f,
-				-0.5f, -0.5f, 0.5f,     0.f, 0.f, 1.f, 1.f,
-				0.5f, -0.5f, -0.5f,     1.f, 0.f, 0.f, 1.f,*/
 				0.f, 0.f, 0.f,    1.f, 0.f, 0.f, 1.f,
 				1.f, 0.f, 0.f,    0.f, 1.f, 0.f, 1.f
 			};
@@ -357,6 +324,43 @@ class SandboxApp : public se::Application {
 			pipelineInfos.blendMode = se::renderer::BlendMode::eSrcAlpha;
 			pipelineInfos.uniformBufferView = {&uniformBufferView};
 			se::renderer::vulkan::Pipeline pipeline {pipelineInfos};
+
+
+
+			/** @brief Uniform Buffer Storage */
+			bufferInfos.allocator = &stagingAllocator;
+			bufferInfos.size = vertices.size() * (6/5);
+			bufferInfos.usage = se::renderer::BufferUsage::eStorage;
+			se::renderer::vulkan::Buffer computeInputBuffer {bufferInfos};
+
+			std::vector<se::Float32> computeInputVertices {};
+			computeInputVertices.reserve(vertices.size() * (6/5));
+			for (se::Count i {0}; i < vertices.size(); ++i) {
+				computeInputVertices.push_back(vertices[i]);
+				if (i % 5 == 2)
+					computeInputVertices.push_back(0.f);
+			}
+
+			bufferWriteInfos.offset = 0;
+			bufferWriteInfos.value.assign((se::Byte*)computeInputVertices.data(),
+				(se::Byte*)(computeInputVertices.data() + computeInputVertices.size()));
+
+			bufferInfos.allocator = &stagingAllocator;
+			bufferInfos.size = vertices.size() * (6/5) * 14;
+			bufferInfos.usage = se::renderer::BufferUsage::eStorage;
+			se::renderer::vulkan::Buffer computeOutputBuffer {bufferInfos};
+
+			/** @brief Compute shader */
+			shaderInfos.type = se::renderer::ShaderType::eCompute;
+			shaderInfos.file = "shaders/test.comp";
+			shaderInfos.entryPoint = "main";
+			se::renderer::vulkan::Shader computeShader {shaderInfos};
+
+			pipelineInfos = {};
+			pipelineInfos.context = &context;
+			pipelineInfos.type = se::renderer::PipelineType::eCompute;
+			pipelineInfos.shaders = {&computeShader};
+			se::renderer::vulkan::Pipeline computePipeline {pipelineInfos};
 
 
 			/********************************************/

@@ -1,0 +1,48 @@
+#version 460 core
+
+#define VERTEX_COUNT 14
+
+struct Vertex {
+	vec3 position;
+	vec4 color;
+};
+
+
+layout (std140, binding = 0) readonly buffer in_VerticesBuffer {
+	Vertex in_Vertices[];
+};
+
+layout (std140, binding = 1) buffer out_VerticesBuffer {
+	Vertex out_Vertices[];
+};
+
+
+void main() {
+	vec3 vertices[VERTEX_COUNT] = {
+		vec3(0.5, 0.5, -0.5),
+		vec3(-0.5, 0.5, -0.5),
+		vec3(0.5, -0.5, -0.5),
+		vec3(-0.5, -0.5, -0.5),
+		vec3(-0.5, -0.5, 0.5),
+		vec3(-0.5, 0.5, -0.5),
+		vec3(-0.5, 0.5, 0.5),
+		vec3(0.5, 0.5, -0.5),
+		vec3(0.5, 0.5, 0.5),
+		vec3(0.5, -0.5, -0.5),
+		vec3(0.5, -0.5, 0.5),
+		vec3(-0.5, -0.5, 0.5),
+		vec3(0.5, 0.5, 0.5),
+		vec3(-0.5, 0.5, 0.5),
+	};
+
+	uint index = gl_GlobalInvocationID.x;
+
+	vec4 in_Color = in_Vertices[index].color;
+	vec3 in_Position = in_Vertices[index].position;
+	uint outputIndex = VERTEX_COUNT * index;
+
+	for (int i = 0; i < VERTEX_COUNT; ++i) {
+		out_Vertices[outputIndex + i].color = in_Color;
+		out_Vertices[outputIndex + i].position = in_Position + vertices[i];
+	}
+}

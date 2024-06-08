@@ -24,7 +24,8 @@ namespace se::renderer::vulkan {
 		static std::vector<VkShaderStageFlagBits> flagsList {
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			VK_SHADER_STAGE_GEOMETRY_BIT,
-			VK_SHADER_STAGE_VERTEX_BIT
+			VK_SHADER_STAGE_VERTEX_BIT,
+			VK_SHADER_STAGE_COMPUTE_BIT
 		};
 
 		se::renderer::ShaderTypeMask output {};
@@ -41,7 +42,8 @@ namespace se::renderer::vulkan {
 		static std::map<se::renderer::ShaderType, VkShaderStageFlagBits> shaderTypesMap {
 			{se::renderer::ShaderType::eFragment, VK_SHADER_STAGE_FRAGMENT_BIT},
 			{se::renderer::ShaderType::eGeometry, VK_SHADER_STAGE_GEOMETRY_BIT},
-			{se::renderer::ShaderType::eVertex,   VK_SHADER_STAGE_VERTEX_BIT}
+			{se::renderer::ShaderType::eVertex,   VK_SHADER_STAGE_VERTEX_BIT},
+			{se::renderer::ShaderType::eCompute,  VK_SHADER_STAGE_COMPUTE_BIT},
 		};
 
 		return shaderTypesMap[type];
@@ -52,7 +54,8 @@ namespace se::renderer::vulkan {
 		static std::map<VkShaderStageFlagBits, se::renderer::ShaderType> shaderTypesMap {
 			{VK_SHADER_STAGE_FRAGMENT_BIT, se::renderer::ShaderType::eFragment},
 			{VK_SHADER_STAGE_GEOMETRY_BIT, se::renderer::ShaderType::eGeometry},
-			{VK_SHADER_STAGE_VERTEX_BIT,   se::renderer::ShaderType::eVertex}
+			{VK_SHADER_STAGE_VERTEX_BIT,   se::renderer::ShaderType::eVertex},
+			{VK_SHADER_STAGE_COMPUTE_BIT,  se::renderer::ShaderType::eCompute}
 		};
 
 		return shaderTypesMap[type];
