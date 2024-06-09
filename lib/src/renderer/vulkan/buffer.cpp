@@ -86,12 +86,12 @@ namespace se::renderer::vulkan {
 	}
 
 
-	void Buffer::write(const se::renderer::BufferWriteUniformInfos &writeInfos) {
+	void Buffer::write(const se::renderer::BufferWriteAttributeInfos &writeInfos) {
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
 
 		SE_ASSERT(m_infos.allocator->getInfos().usageNature == se::renderer::VramUsageNature::eCpuToGpu, "Can't write to buffer that is not cpu->gpu");
 		SE_ASSERT(
-			writeInfos.uniformBufferView->getTotalSize() * sizeof(se::Byte) + writeInfos.offset <= m_infos.size,
+			writeInfos.attributeBufferView->getTotalSize() * sizeof(se::Byte) + writeInfos.offset <= m_infos.size,
 			"Can't write data that goes outside of the buffer"
 		);
 
@@ -105,7 +105,7 @@ namespace se::renderer::vulkan {
 
 		for (const auto &attribute : writeInfos.attributes) {
 			memcpy(
-				(se::Byte*)data + writeInfos.uniformBufferView->getAttribute(attribute.name).offset,
+				(se::Byte*)data + writeInfos.attributeBufferView->getAttribute(attribute.name).offset,
 				attribute.value.data(),
 				attribute.value.size() * sizeof(se::Byte)
 			);

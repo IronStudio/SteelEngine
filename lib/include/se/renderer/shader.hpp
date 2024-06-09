@@ -16,7 +16,7 @@ namespace se::renderer {
 		eCompute  = 0b0000'1000
 	);
 
-	constexpr size_t SE_SHADER_TYPE_COUNT {3};
+	constexpr size_t SE_SHADER_TYPE_COUNT {4};
 
 	struct ShaderInfos {
 		se::renderer::Context *context;

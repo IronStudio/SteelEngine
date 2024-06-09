@@ -28,7 +28,7 @@
 #include <se/renderer/vulkan/format.hpp>
 #include <se/renderer/vulkan/pipeline.hpp>
 #include <se/renderer/vulkan/shader.hpp>
-#include <se/renderer/vulkan/uniformBufferView.hpp>
+#include <se/renderer/vulkan/attributeBufferView.hpp>
 #include <se/renderer/vulkan/vertexBufferView.hpp>
 #include <se/renderer/vulkan/vramAllocator.hpp>
 
@@ -112,16 +112,17 @@ class SandboxApp : public se::Application {
 
 
 			/** @brief UB view */
-			se::renderer::UniformBufferViewInfos uniformBufferViewInfos {};
-			uniformBufferViewInfos.context = &context;
-			uniformBufferViewInfos.shaderTypes = se::renderer::ShaderType::eVertex | se::renderer::ShaderType::eGeometry;
-			uniformBufferViewInfos.binding = 0;
-			uniformBufferViewInfos.attributes = {
-				{"colorBias", se::renderer::UniformType::eFloat32},
-				{"camera", se::renderer::UniformType::eMat4}
+			se::renderer::AttributeBufferViewInfos attributeBufferViewInfos {};
+			attributeBufferViewInfos.context = &context;
+			attributeBufferViewInfos.usage = se::renderer::AttributeBufferViewUsage::eUniform;
+			attributeBufferViewInfos.shaderTypes = se::renderer::ShaderType::eVertex | se::renderer::ShaderType::eGeometry;
+			attributeBufferViewInfos.binding = 0;
+			attributeBufferViewInfos.attributes = {
+				{"colorBias", se::renderer::AttributeType::eFloat32},
+				{"camera", se::renderer::AttributeType::eMat4}
 			};
-			uniformBufferViewInfos.offset = 0;
-			se::renderer::vulkan::UniformBufferView uniformBufferView {uniformBufferViewInfos};
+			attributeBufferViewInfos.offset = 0;
+			se::renderer::vulkan::AttributeBufferView uniformBufferView {attributeBufferViewInfos};
 
 
 			/** @brief Staging memory */
@@ -203,14 +204,14 @@ class SandboxApp : public se::Application {
 			};
 			camera = camera * rotation2 * rotation1 * position;
 			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << camera << se::endLog;
-			se::renderer::BufferWriteUniformInfos uniformBufferWriteInfos {};
-			uniformBufferWriteInfos.offset = 0;
-			uniformBufferWriteInfos.uniformBufferView = &uniformBufferView;
-			uniformBufferWriteInfos.attributes = {
+			se::renderer::BufferWriteAttributeInfos attributeBufferWriteInfos {};
+			attributeBufferWriteInfos.offset = 0;
+			attributeBufferWriteInfos.attributeBufferView = &uniformBufferView;
+			attributeBufferWriteInfos.attributes = {
 				{"colorBias",  se::utils::vectorize(colorBias)},
 				{"camera",     se::utils::vectorize(camera)}
 			};
-			uniformStagingBuffer.write(uniformBufferWriteInfos);
+			uniformStagingBuffer.write(attributeBufferWriteInfos);
 
 
 			stagingAllocator.logAllocationTable();
@@ -322,7 +323,7 @@ class SandboxApp : public se::Application {
 			pipelineInfos.depthAttachmentFormat = depthBuffer.getInfos().format;
 			pipelineInfos.stencilAttachmentFormat = se::renderer::Format::eNone;
 			pipelineInfos.blendMode = se::renderer::BlendMode::eSrcAlpha;
-			pipelineInfos.uniformBufferView = {&uniformBufferView};
+			pipelineInfos.attributeBufferView = {&uniformBufferView};
 			se::renderer::vulkan::Pipeline pipeline {pipelineInfos};
 
 
@@ -350,6 +351,19 @@ class SandboxApp : public se::Application {
 			bufferInfos.usage = se::renderer::BufferUsage::eStorage;
 			se::renderer::vulkan::Buffer computeOutputBuffer {bufferInfos};
 
+			attributeBufferViewInfos.usage = se::renderer::AttributeBufferViewUsage::eStorage;
+			attributeBufferViewInfos.attributes = {
+				{"position", se::renderer::AttributeType::eVec3},
+				{"color", se::renderer::AttributeType::eVec4}
+			};
+			attributeBufferViewInfos.binding = 0;
+			attributeBufferViewInfos.offset = 0;
+			attributeBufferViewInfos.shaderTypes = se::renderer::ShaderType::eCompute;
+			se::renderer::vulkan::AttributeBufferView storageBufferViewInput {attributeBufferViewInfos};
+
+			attributeBufferViewInfos.binding = 1;
+			se::renderer::vulkan::AttributeBufferView storageBufferViewOutput {attributeBufferViewInfos};
+
 			/** @brief Compute shader */
 			shaderInfos.type = se::renderer::ShaderType::eCompute;
 			shaderInfos.file = "shaders/test.comp";
@@ -360,6 +374,7 @@ class SandboxApp : public se::Application {
 			pipelineInfos.context = &context;
 			pipelineInfos.type = se::renderer::PipelineType::eCompute;
 			pipelineInfos.shaders = {&computeShader};
+			pipelineInfos.attributeBufferView = {&storageBufferViewInput, &storageBufferViewOutput};
 			se::renderer::vulkan::Pipeline computePipeline {pipelineInfos};
 
 
@@ -582,14 +597,14 @@ class SandboxApp : public se::Application {
 					0.f,        0.f,         1.f,            0.f
 				};
 				camera = camera * rotation2 * rotation1 * position;
-				se::renderer::BufferWriteUniformInfos uniformBufferWriteInfos {};
-				uniformBufferWriteInfos.offset = 0;
-				uniformBufferWriteInfos.uniformBufferView = &uniformBufferView;
-				uniformBufferWriteInfos.attributes = {
+				se::renderer::BufferWriteAttributeInfos attributeBufferWriteInfos {};
+				attributeBufferWriteInfos.offset = 0;
+				attributeBufferWriteInfos.attributeBufferView = &uniformBufferView;
+				attributeBufferWriteInfos.attributes = {
 					{"colorBias",  se::utils::vectorize(colorBias)},
 					{"camera",     se::utils::vectorize(camera)}
 				};
-				uniformStagingBuffer.write(uniformBufferWriteInfos);
+				uniformStagingBuffer.write(attributeBufferWriteInfos);
 
 				bufferTransferInfos.source = &uniformStagingBuffer;
 				bufferTransferInfos.destination = &uniformBuffer;

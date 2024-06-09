@@ -3,10 +3,11 @@
 #include <vulkan/vulkan.h>
 
 #include "se/assertion.hpp"
+#include "se/logger.hpp"
 #include "se/renderer/vulkan/context.hpp"
 #include "se/renderer/vulkan/format.hpp"
 #include "se/renderer/vulkan/shader.hpp"
-#include "se/renderer/vulkan/uniformBufferView.hpp"
+#include "se/renderer/vulkan/attributeBufferView.hpp"
 #include "se/renderer/vulkan/vertexBufferView.hpp"
 
 
@@ -125,11 +126,11 @@ namespace se::renderer::vulkan {
 			pipelineLayoutCreateInfos.pPushConstantRanges = nullptr;
 
 			std::vector<VkDescriptorSetLayout> descriptorSetLayouts {};
-			if (!m_infos.uniformBufferView.empty()) {
-				pipelineLayoutCreateInfos.setLayoutCount = m_infos.uniformBufferView.size();
-				descriptorSetLayouts.reserve(m_infos.uniformBufferView.size());
-				for (const auto &ubo : m_infos.uniformBufferView) {
-					auto uniform {reinterpret_cast<se::renderer::vulkan::UniformBufferView*> (ubo)};
+			if (!m_infos.attributeBufferView.empty()) {
+				pipelineLayoutCreateInfos.setLayoutCount = m_infos.attributeBufferView.size();
+				descriptorSetLayouts.reserve(m_infos.attributeBufferView.size());
+				for (const auto &abv : m_infos.attributeBufferView) {
+					auto uniform {reinterpret_cast<se::renderer::vulkan::AttributeBufferView*> (abv)};
 					descriptorSetLayouts.push_back(uniform->getLayout());
 				}
 
@@ -217,15 +218,17 @@ namespace se::renderer::vulkan {
 			pipelineLayoutCreateInfos.pPushConstantRanges = nullptr;
 
 			std::vector<VkDescriptorSetLayout> descriptorSetLayouts {};
-			if (!m_infos.uniformBufferView.empty()) {
-				pipelineLayoutCreateInfos.setLayoutCount = m_infos.uniformBufferView.size();
-				descriptorSetLayouts.reserve(m_infos.uniformBufferView.size());
-				for (const auto &ubo : m_infos.uniformBufferView) {
-					auto uniform {reinterpret_cast<se::renderer::vulkan::UniformBufferView*> (ubo)};
+			if (!m_infos.attributeBufferView.empty()) {
+				pipelineLayoutCreateInfos.setLayoutCount = m_infos.attributeBufferView.size();
+				descriptorSetLayouts.reserve(m_infos.attributeBufferView.size());
+				for (const auto &abv : m_infos.attributeBufferView) {
+					auto uniform {reinterpret_cast<se::renderer::vulkan::AttributeBufferView*> (abv)};
 					descriptorSetLayouts.push_back(uniform->getLayout());
+					SE_INFO("Uniform access : {}, usage {}", (size_t)uniform->getLayoutBinding().stageFlags, (size_t)uniform->getLayoutBinding().descriptorType);
 				}
 
 				pipelineLayoutCreateInfos.pSetLayouts = descriptorSetLayouts.data();
+				SE_INFO("PIPELINE LAYOUT COUNT : {}, {}, {}", pipelineLayoutCreateInfos.setLayoutCount, descriptorSetLayouts.size(), m_infos.attributeBufferView.size());
 			}
 
 			if (vkCreatePipelineLayout(device, &pipelineLayoutCreateInfos, nullptr, &m_pipelineLayout) != VK_SUCCESS)
