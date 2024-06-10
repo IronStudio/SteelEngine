@@ -250,7 +250,6 @@ class SandboxApp : public se::Application {
 			bufferTransferInfos.size = vertices.size() * sizeof(se::Float);
 			bufferTransferor.transfer(bufferTransferInfos);
 
-			bufferTransferor.sync();
 			bufferTransferInfos.source = &perInstanceStagingBuffer;
 			bufferTransferInfos.destination = &perInstanceBuffer;
 			bufferTransferInfos.srcOffset = 0;
@@ -258,7 +257,6 @@ class SandboxApp : public se::Application {
 			bufferTransferInfos.size = perInstanceDatas.size() * sizeof(se::Float);
 			bufferTransferor.transfer(bufferTransferInfos);
 
-			bufferTransferor.sync();
 			bufferTransferInfos.source = &uniformStagingBuffer;
 			bufferTransferInfos.destination = &uniformBuffer;
 			bufferTransferInfos.srcOffset = 0;

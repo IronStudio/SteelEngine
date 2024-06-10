@@ -36,16 +36,21 @@ namespace se::renderer::vulkan {
 
 
 		private:
+			struct CommandBuffer {
+				VkCommandBuffer buffer;
+				VkFence fence;
+			};
+
 			static void s_loadCommandPool(const se::renderer::BufferTransferorInfos &infos);
 			static void s_unloadCommandPool(const se::renderer::BufferTransferorInfos &infos);
+			static CommandBuffer s_createNewCommandBuffer(VkDevice device);
 
 			static se::Count s_instanceCount;
 			static VkCommandPool s_commandPool;
 
-			VkCommandBuffer m_commandBuffer;
-			std::vector<VkFence> m_inUseFences;
-			std::vector<VkFence> m_freeFences;
-			std::mutex m_fenceMutex;
+			std::vector<CommandBuffer> m_inUseCommandBuffers;
+			std::vector<CommandBuffer> m_freeCommandBuffers;
+			std::mutex m_commandBufferMutex;
 	};
 
 } // namespace se::renderer::vulkan

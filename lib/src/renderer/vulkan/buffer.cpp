@@ -119,51 +119,77 @@ namespace se::renderer::vulkan {
 
 	BufferTransferor::BufferTransferor(const se::renderer::BufferTransferorInfos &infos) :
 		se::renderer::BufferTransferor(infos),
-		m_commandBuffer {VK_NULL_HANDLE},
-		m_inUseFences {},
-		m_freeFences {},
-		m_fenceMutex {}
+		m_inUseCommandBuffers {},
+		m_freeCommandBuffers {},
+		m_commandBufferMutex {}
 	{
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
 
 		s_loadCommandPool(m_infos);
-
-		VkCommandBufferAllocateInfo commandBufferAllocateInfos {};
-		commandBufferAllocateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		commandBufferAllocateInfos.commandBufferCount = 1;
-		commandBufferAllocateInfos.commandPool = s_commandPool;
-		commandBufferAllocateInfos.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		if (vkAllocateCommandBuffers(device, &commandBufferAllocateInfos, &m_commandBuffer) != VK_SUCCESS)
-			throw se::exceptions::RuntimeError("Can't allocate memory for transfer command buffer");
 	}
 
 
 	BufferTransferor::~BufferTransferor() {
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
-		m_fenceMutex.lock();
-		for (const auto &fence : m_freeFences)
-			vkDestroyFence(device, fence, nullptr);
-		if (!m_inUseFences.empty())
-			(void)vkWaitForFences(device, m_inUseFences.size(), m_inUseFences.data(), VK_TRUE, UINT64_MAX);
-		for (const auto &fence : m_inUseFences)
-			vkDestroyFence(device, fence, nullptr);
-		m_fenceMutex.unlock();
+		std::vector<VkCommandBuffer> commandBuffers {};
+		std::vector<VkFence> fences {};
 
-		if (m_commandBuffer != VK_NULL_HANDLE)
-			vkFreeCommandBuffers(device, s_commandPool, 1, &m_commandBuffer);
+		m_commandBufferMutex.lock();
+		commandBuffers.reserve(m_freeCommandBuffers.size() + m_inUseCommandBuffers.size());
+		fences.reserve(m_inUseCommandBuffers.size());
+
+		for (const auto &commandBuffer : m_freeCommandBuffers) {
+			vkDestroyFence(device, commandBuffer.fence, nullptr);
+			commandBuffers.push_back(commandBuffer.buffer);
+		}
+
+		for (const auto &commandBuffer : m_inUseCommandBuffers) {
+			fences.push_back(commandBuffer.fence);
+			commandBuffers.push_back(commandBuffer.buffer);
+		}
+			
+		if (!fences.empty())
+			vkWaitForFences(device, fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
+
+		for (const auto &fence : fences)
+			vkDestroyFence(device, fence, nullptr);
+
+		vkFreeCommandBuffers(device, s_commandPool, commandBuffers.size(), commandBuffers.data());
+
+		m_commandBufferMutex.unlock();
 		s_unloadCommandPool(m_infos);
 	}
 
 
 	void BufferTransferor::transfer(const se::renderer::BufferTransferInfos &infos) {
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
+		VkCommandBuffer commandBuffer {VK_NULL_HANDLE};
+		VkFence fence {VK_NULL_HANDLE};
+
+		{
+			std::lock_guard _ {m_commandBufferMutex};
+			if (!m_freeCommandBuffers.empty()) {
+				auto it {m_freeCommandBuffers.rbegin()};
+				commandBuffer = it->buffer;
+				fence = it->fence;
+				m_inUseCommandBuffers.push_back(*it);
+				m_freeCommandBuffers.pop_back();
+			}
+
+			else {
+				auto buffer {s_createNewCommandBuffer(device)};
+				commandBuffer = buffer.buffer;
+				fence = buffer.fence;
+				m_inUseCommandBuffers.push_back(buffer);
+			}
+		}
 
 		VkCommandBufferBeginInfo commandBufferBeginInfos {};
 		commandBufferBeginInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		commandBufferBeginInfos.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		commandBufferBeginInfos.pInheritanceInfo = nullptr;
 
-		if (vkBeginCommandBuffer(m_commandBuffer, &commandBufferBeginInfos) != VK_SUCCESS)
+		if (vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfos) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't begin transfer command buffer");
 
 		VkBufferCopy bufferCopy {};
@@ -174,15 +200,15 @@ namespace se::renderer::vulkan {
 		VkBuffer srcBuffer {reinterpret_cast<se::renderer::vulkan::Buffer*> (infos.source)->getBuffer()};
 		VkBuffer dstBuffer {reinterpret_cast<se::renderer::vulkan::Buffer*> (infos.destination)->getBuffer()};
 
-		vkCmdCopyBuffer(m_commandBuffer, srcBuffer, dstBuffer, 1, &bufferCopy);
+		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &bufferCopy);
 
-		if (vkEndCommandBuffer(m_commandBuffer) != VK_SUCCESS)
+		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't end command buffer");
 
 		VkSubmitInfo submitInfos {};
 		submitInfos.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfos.commandBufferCount = 1;
-		submitInfos.pCommandBuffers = &m_commandBuffer;
+		submitInfos.pCommandBuffers = &commandBuffer;
 		submitInfos.waitSemaphoreCount = 0;
 		submitInfos.signalSemaphoreCount = 0;
 
@@ -190,25 +216,6 @@ namespace se::renderer::vulkan {
 			->getDevice()->getQueueFamilyIndices().find(se::renderer::vulkan::QueueType::eTransfer)->second};
 		VkQueue queue {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getQueues()
 			.find(se::renderer::vulkan::QueueType::eTransfer)->second.find(queueFamilyIndex)->second[0]};
-
-		VkFence fence {VK_NULL_HANDLE};
-		std::lock_guard _ {m_fenceMutex};
-		if (m_freeFences.empty()) {
-			m_inUseFences.push_back(VK_NULL_HANDLE);
-			VkFenceCreateInfo fenceCreateInfos {};
-			fenceCreateInfos.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-			fenceCreateInfos.flags = 0;
-			if (vkCreateFence(device, &fenceCreateInfos, nullptr, &fence) != VK_SUCCESS)
-				throw se::exceptions::RuntimeError("Can't create new fences to synchronise transfer");
-
-			*m_inUseFences.rbegin() = fence;
-		}
-
-		else {
-			m_inUseFences.push_back(*m_freeFences.begin());
-			m_freeFences.erase(m_freeFences.begin());
-			fence = *m_inUseFences.rbegin();
-		}
 
 		if (vkQueueSubmit(queue, 1, &submitInfos, fence) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't submit transfer to queue");
@@ -218,13 +225,20 @@ namespace se::renderer::vulkan {
 	void BufferTransferor::sync() {
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
 
-		std::lock_guard _ {m_fenceMutex};
-		if (vkWaitForFences(device, m_inUseFences.size(), m_inUseFences.data(), VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+		std::lock_guard _ {m_commandBufferMutex};
+		std::vector<VkFence> fences {};
+		fences.reserve(m_inUseCommandBuffers.size());
+		for (const auto &commandBuffer : m_inUseCommandBuffers)
+			fences.push_back(commandBuffer.fence);
+
+		if (vkWaitForFences(device, fences.size(), fences.data(), VK_TRUE, UINT64_MAX) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't wait for transfer fences");
-		m_freeFences.insert(m_freeFences.end(), m_inUseFences.begin(), m_inUseFences.end());
-		if (vkResetFences(device, m_inUseFences.size(), m_inUseFences.data()) != VK_SUCCESS)
+
+		if (vkResetFences(device, fences.size(), fences.data()) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't reset transfer fences");
-		m_inUseFences.clear();
+
+		m_freeCommandBuffers.insert(m_freeCommandBuffers.end(), m_inUseCommandBuffers.begin(), m_inUseCommandBuffers.end());
+		m_inUseCommandBuffers.clear();
 	}
 
 
@@ -253,6 +267,27 @@ namespace se::renderer::vulkan {
 
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (infos.context)->getDevice()->getDevice()};
 		vkDestroyCommandPool(device, s_commandPool, nullptr);
+	}
+
+
+	BufferTransferor::CommandBuffer BufferTransferor::s_createNewCommandBuffer(VkDevice device) {
+		CommandBuffer commandBuffer {};
+
+		VkCommandBufferAllocateInfo commandBufferAllocateInfos {};
+		commandBufferAllocateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		commandBufferAllocateInfos.commandBufferCount = 1;
+		commandBufferAllocateInfos.commandPool = s_commandPool;
+		commandBufferAllocateInfos.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		if (vkAllocateCommandBuffers(device, &commandBufferAllocateInfos, &commandBuffer.buffer) != VK_SUCCESS)
+			throw se::exceptions::RuntimeError("Can't allocate memory for transfer command buffer");
+
+		VkFenceCreateInfo fenceCreateInfos {};
+		fenceCreateInfos.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceCreateInfos.flags = 0;
+		if (vkCreateFence(device, &fenceCreateInfos, nullptr, &commandBuffer.fence) != VK_SUCCESS)
+			throw se::exceptions::RuntimeError("Can't create new fence to synchronise transfer");
+
+		return commandBuffer;
 	}
 
 
