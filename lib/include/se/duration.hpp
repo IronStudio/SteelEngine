@@ -59,6 +59,12 @@ namespace se {
 			template <typename T2, typename Ratio2>
 			inline se::Duration<T, Ratio> operator-(const se::Duration<T2, Ratio2> &duration);
 
+			template <typename Ratio2>
+			inline bool operator==(const se::Duration<T, Ratio2> &duration) const;
+
+			template <typename Ratio2>
+			inline auto operator<=>(const se::Duration<T, Ratio2> &duration) const;
+
 			/**
 			 * @brief Get the value of the duration, in the duration's unit
 			 */
@@ -71,6 +77,12 @@ namespace se {
 
 	template <typename T, typename Ratio>
 	std::ostream &operator<<(std::ostream &stream, const se::Duration<T, Ratio> &duration);
+
+
+	using Second      = se::Duration<se::Float>;
+	using Millisecond = se::Duration<se::Float, se::Milli>;
+	using Microsecond = se::Duration<se::Float, se::Micro>;
+	using Nanosecond  = se::Duration<se::Float, se::Nano>;
 
 
 	namespace literals {

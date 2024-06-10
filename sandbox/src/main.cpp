@@ -22,13 +22,14 @@
 #include <se/utils/version.hpp>
 #include <se/window/windowManager.hpp>
 
+#include <se/renderer/vulkan/attributeBufferView.hpp>
 #include <se/renderer/vulkan/buffer.hpp>
 #include <se/renderer/vulkan/context.hpp>
 #include <se/renderer/vulkan/depthBuffer.hpp>
 #include <se/renderer/vulkan/format.hpp>
 #include <se/renderer/vulkan/pipeline.hpp>
 #include <se/renderer/vulkan/shader.hpp>
-#include <se/renderer/vulkan/attributeBufferView.hpp>
+#include <se/renderer/vulkan/synchronisation.hpp>
 #include <se/renderer/vulkan/vertexBufferView.hpp>
 #include <se/renderer/vulkan/vramAllocator.hpp>
 
@@ -435,20 +436,15 @@ class SandboxApp : public se::Application {
 
 			se::Uint32 imageIndex {};
 
-			VkSemaphore imageReadySemaphore {VK_NULL_HANDLE};
-			VkSemaphore imageDrawnSemaphore {VK_NULL_HANDLE};
-			VkFence previousFrameReadyFence {VK_NULL_HANDLE};
+			se::renderer::vulkan::SemaphoreInfos semaphoreInfos {};
+			semaphoreInfos.context = &context;
+			se::renderer::vulkan::Semaphore imageReadySemaphore {semaphoreInfos};
+			se::renderer::vulkan::Semaphore imageDrawnSemaphore {semaphoreInfos};
 
-			VkSemaphoreCreateInfo semaphoreCreateInfos {};
-			semaphoreCreateInfos.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-			semaphoreCreateInfos.flags = 0;
-			(void)vkCreateSemaphore(context.getDevice()->getDevice(), &semaphoreCreateInfos, nullptr, &imageReadySemaphore);
-			(void)vkCreateSemaphore(context.getDevice()->getDevice(), &semaphoreCreateInfos, nullptr, &imageDrawnSemaphore);
-
-			VkFenceCreateInfo fenceCreateInfos {};
-			fenceCreateInfos.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-			//fenceCreateInfos.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-			(void)vkCreateFence(context.getDevice()->getDevice(), &fenceCreateInfos, nullptr, &previousFrameReadyFence);
+			se::renderer::vulkan::FenceInfos fenceInfos {};
+			fenceInfos.context = &context;
+			fenceInfos.signaled = false;
+			se::renderer::vulkan::Fence previousFrameReadyFence {fenceInfos};
 
 
 			VkCommandBufferBeginInfo beginInfos {};
@@ -509,7 +505,9 @@ class SandboxApp : public se::Application {
 			submitInfos.pWaitDstStageMask = &dstStageMask;
 			submitInfos.signalSemaphoreCount = 0;
 			submitInfos.pSignalSemaphores = nullptr;
-			(void)vkQueueSubmit(context.getDevice()->getQueue(se::renderer::vulkan::QueueType::eGraphics), 1, &submitInfos, previousFrameReadyFence);
+			(void)vkQueueSubmit(context.getDevice()->getQueue(se::renderer::vulkan::QueueType::eGraphics),
+				1, &submitInfos, previousFrameReadyFence.getFence()
+			);
 
 			/********************************************/
 			/******** playing a bit with vulkan *********/
@@ -608,14 +606,14 @@ class SandboxApp : public se::Application {
 					SE_APP_LOGGER.log({se::LogSeverity::eInfo}, "Window2 resized to {}x{}", window2.getInfos().size.x, window2.getInfos().size.y);*/
 
 
-				(void)vkWaitForFences(context.getDevice()->getDevice(), 1, &previousFrameReadyFence, VK_TRUE, UINT64_MAX);
-				(void)vkResetFences(context.getDevice()->getDevice(), 1, &previousFrameReadyFence);
+				previousFrameReadyFence.sync(SE_NEVER_TIMEOUT);
+				previousFrameReadyFence.reset();
 
 				(void)vkAcquireNextImageKHR(
 					context.getDevice()->getDevice(),
 					context.getSwapchain()->getSwapChain(),
 					UINT64_MAX,
-					imageReadySemaphore,
+					imageReadySemaphore.getSemaphore(),
 					VK_NULL_HANDLE,
 					&imageIndex
 				);
@@ -737,11 +735,13 @@ class SandboxApp : public se::Application {
 				submitInfos.commandBufferCount = 1;
 				submitInfos.pCommandBuffers = &graphicsCommandBuffer;
 				submitInfos.waitSemaphoreCount = 1;
-				submitInfos.pWaitSemaphores = &imageReadySemaphore;
+				submitInfos.pWaitSemaphores = &imageReadySemaphore.getSemaphore();
 				submitInfos.pWaitDstStageMask = &dstStageMask;
 				submitInfos.signalSemaphoreCount = 1;
-				submitInfos.pSignalSemaphores = &imageDrawnSemaphore;
-				(void)vkQueueSubmit(context.getDevice()->getQueue(se::renderer::vulkan::QueueType::eGraphics), 1, &submitInfos, previousFrameReadyFence);
+				submitInfos.pSignalSemaphores = &imageDrawnSemaphore.getSemaphore();
+				(void)vkQueueSubmit(context.getDevice()->getQueue(se::renderer::vulkan::QueueType::eGraphics),
+					1, &submitInfos, previousFrameReadyFence.getFence()
+				);
 
 				VkSwapchainKHR swapchain {context.getSwapchain()->getSwapChain()};
 				VkPresentInfoKHR presentInfos {};
@@ -751,16 +751,12 @@ class SandboxApp : public se::Application {
 				presentInfos.pImageIndices = &imageIndex;
 				presentInfos.pResults = nullptr;
 				presentInfos.waitSemaphoreCount = 1;
-				presentInfos.pWaitSemaphores = &imageDrawnSemaphore;
+				presentInfos.pWaitSemaphores = &imageDrawnSemaphore.getSemaphore();
 				(void)vkQueuePresentKHR(context.getDevice()->getQueue(se::renderer::vulkan::QueueType::ePresent), &presentInfos);
 			}
 
 			vkDeviceWaitIdle(context.getDevice()->getDevice());
 
-
-			vkDestroyFence(context.getDevice()->getDevice(), previousFrameReadyFence, nullptr);
-			vkDestroySemaphore(context.getDevice()->getDevice(), imageDrawnSemaphore, nullptr);
-			vkDestroySemaphore(context.getDevice()->getDevice(), imageReadySemaphore, nullptr);
 
 			vkFreeDescriptorSets(context.getDevice()->getDevice(), descriptorPool, 1, &descriptorSet);
 			vkDestroyDescriptorPool(context.getDevice()->getDevice(), descriptorPool, nullptr);

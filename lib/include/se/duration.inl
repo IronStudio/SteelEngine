@@ -100,6 +100,26 @@ namespace se {
 
 
 	template <typename T, typename Ratio>
+	SE_REQUIRES(se::concepts::Number<T> && se::concepts::Ratio<Ratio>)
+	template <typename Ratio2>
+	bool Duration<T, Ratio>::operator==(const se::Duration<T, Ratio2> &duration) const {
+		se::Duration<T, Ratio> converted {duration};
+		return m_val == converted.m_val;
+	}
+
+
+
+	template <typename T, typename Ratio>
+	SE_REQUIRES(se::concepts::Number<T> && se::concepts::Ratio<Ratio>)
+	template <typename Ratio2>
+	auto Duration<T, Ratio>::operator<=>(const se::Duration<T, Ratio2> &duration) const {
+		se::Duration<T, Ratio> converted {duration};
+		return m_val <=> converted.m_val;
+	}
+
+
+
+	template <typename T, typename Ratio>
 	std::ostream &operator<<(std::ostream &stream, const se::Duration<T, Ratio> &duration) {
 		stream << static_cast<T> (duration) << " " << Ratio::prefix << "s";
 		return stream;
