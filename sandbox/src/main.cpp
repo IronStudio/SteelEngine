@@ -415,7 +415,7 @@ class SandboxApp : public se::Application {
 			VkDescriptorPool descriptorPool {};
 			(void)vkCreateDescriptorPool(context.getDevice()->getDevice(), &descriptorPoolCreateInfos, nullptr, &descriptorPool);
 
-			VkDescriptorSetLayout descriptorSetLayout {uniformBufferView.getLayout()};
+			VkDescriptorSetLayout descriptorSetLayout {pipeline.getDescriptorSetLayout()};
 			VkDescriptorSetAllocateInfo descriptorSetAllocateInfos {};
 			descriptorSetAllocateInfos.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 			descriptorSetAllocateInfos.descriptorPool = descriptorPool;

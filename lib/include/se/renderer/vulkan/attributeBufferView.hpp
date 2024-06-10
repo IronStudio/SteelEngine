@@ -16,11 +16,9 @@ namespace se::renderer::vulkan {
 			~AttributeBufferView() override;
 
 			inline const VkDescriptorSetLayoutBinding &getLayoutBinding() const noexcept {return m_layoutBinding;}
-			inline VkDescriptorSetLayout getLayout() const noexcept {return m_layout;}
 
 		private:
 			VkDescriptorSetLayoutBinding m_layoutBinding;
-			VkDescriptorSetLayout m_layout;
 	};
 
 } // namespace se::renderer::vulkan

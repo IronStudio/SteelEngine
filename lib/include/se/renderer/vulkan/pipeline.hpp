@@ -15,10 +15,12 @@ namespace se::renderer::vulkan {
 
 			inline VkPipeline getPipeline() const noexcept {return m_pipeline;}
 			inline VkPipelineLayout getPipelineLayout() const noexcept {return m_pipelineLayout;}
+			inline VkDescriptorSetLayout getDescriptorSetLayout() const noexcept {return m_descriptorSetLayout;}
 
 		private:
 			VkPipeline m_pipeline;
 			VkPipelineLayout m_pipelineLayout;
+			VkDescriptorSetLayout m_descriptorSetLayout;
 	};
 
 } // namespace se::renderer::vulkan

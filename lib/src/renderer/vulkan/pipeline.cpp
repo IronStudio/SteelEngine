@@ -16,7 +16,8 @@ namespace se::renderer::vulkan {
 	Pipeline::Pipeline(const se::renderer::PipelineInfos &infos) :
 		se::renderer::Pipeline(infos),
 		m_pipeline {VK_NULL_HANDLE},
-		m_pipelineLayout {VK_NULL_HANDLE}
+		m_pipelineLayout {VK_NULL_HANDLE},
+		m_descriptorSetLayout {VK_NULL_HANDLE}
 	{
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
 
@@ -125,16 +126,24 @@ namespace se::renderer::vulkan {
 			pipelineLayoutCreateInfos.pushConstantRangeCount = 0;
 			pipelineLayoutCreateInfos.pPushConstantRanges = nullptr;
 
-			std::vector<VkDescriptorSetLayout> descriptorSetLayouts {};
 			if (!m_infos.attributeBufferView.empty()) {
-				pipelineLayoutCreateInfos.setLayoutCount = m_infos.attributeBufferView.size();
-				descriptorSetLayouts.reserve(m_infos.attributeBufferView.size());
+				std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings {};
+				descriptorSetLayoutBindings.reserve(m_infos.attributeBufferView.size());
 				for (const auto &abv : m_infos.attributeBufferView) {
-					auto uniform {reinterpret_cast<se::renderer::vulkan::AttributeBufferView*> (abv)};
-					descriptorSetLayouts.push_back(uniform->getLayout());
+					auto attributeBufferView {reinterpret_cast<se::renderer::vulkan::AttributeBufferView*> (abv)};
+					descriptorSetLayoutBindings.push_back(attributeBufferView->getLayoutBinding());
 				}
 
-				pipelineLayoutCreateInfos.pSetLayouts = descriptorSetLayouts.data();
+				VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfos {};
+				descriptorSetLayoutCreateInfos.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+				descriptorSetLayoutCreateInfos.bindingCount = descriptorSetLayoutBindings.size();
+				descriptorSetLayoutCreateInfos.pBindings = descriptorSetLayoutBindings.data();
+
+				if (vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfos, nullptr, &m_descriptorSetLayout) != VK_SUCCESS)
+					throw se::exceptions::RuntimeError("Can't create descriptor set layout");
+
+				pipelineLayoutCreateInfos.pSetLayouts = &m_descriptorSetLayout;
+				pipelineLayoutCreateInfos.setLayoutCount = 1;
 			}
 
 			if (vkCreatePipelineLayout(device, &pipelineLayoutCreateInfos, nullptr, &m_pipelineLayout) != VK_SUCCESS)
@@ -217,18 +226,24 @@ namespace se::renderer::vulkan {
 			pipelineLayoutCreateInfos.pushConstantRangeCount = 0;
 			pipelineLayoutCreateInfos.pPushConstantRanges = nullptr;
 
-			std::vector<VkDescriptorSetLayout> descriptorSetLayouts {};
 			if (!m_infos.attributeBufferView.empty()) {
-				pipelineLayoutCreateInfos.setLayoutCount = m_infos.attributeBufferView.size();
-				descriptorSetLayouts.reserve(m_infos.attributeBufferView.size());
+				std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings {};
+				descriptorSetLayoutBindings.reserve(m_infos.attributeBufferView.size());
 				for (const auto &abv : m_infos.attributeBufferView) {
-					auto uniform {reinterpret_cast<se::renderer::vulkan::AttributeBufferView*> (abv)};
-					descriptorSetLayouts.push_back(uniform->getLayout());
-					SE_INFO("Uniform access : {}, usage {}", (size_t)uniform->getLayoutBinding().stageFlags, (size_t)uniform->getLayoutBinding().descriptorType);
+					auto attributeBufferView {reinterpret_cast<se::renderer::vulkan::AttributeBufferView*> (abv)};
+					descriptorSetLayoutBindings.push_back(attributeBufferView->getLayoutBinding());
 				}
 
-				pipelineLayoutCreateInfos.pSetLayouts = descriptorSetLayouts.data();
-				SE_INFO("PIPELINE LAYOUT COUNT : {}, {}, {}", pipelineLayoutCreateInfos.setLayoutCount, descriptorSetLayouts.size(), m_infos.attributeBufferView.size());
+				VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfos {};
+				descriptorSetLayoutCreateInfos.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+				descriptorSetLayoutCreateInfos.bindingCount = descriptorSetLayoutBindings.size();
+				descriptorSetLayoutCreateInfos.pBindings = descriptorSetLayoutBindings.data();
+
+				if (vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfos, nullptr, &m_descriptorSetLayout) != VK_SUCCESS)
+					throw se::exceptions::RuntimeError("Can't create descriptor set layout");
+
+				pipelineLayoutCreateInfos.pSetLayouts = &m_descriptorSetLayout;
+				pipelineLayoutCreateInfos.setLayoutCount = 1;
 			}
 
 			if (vkCreatePipelineLayout(device, &pipelineLayoutCreateInfos, nullptr, &m_pipelineLayout) != VK_SUCCESS)
@@ -272,6 +287,9 @@ namespace se::renderer::vulkan {
 
 	Pipeline::~Pipeline() {
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
+
+		if (m_descriptorSetLayout != VK_NULL_HANDLE)
+			vkDestroyDescriptorSetLayout(device, m_descriptorSetLayout, nullptr);
 
 		if (m_pipeline != VK_NULL_HANDLE)
 			vkDestroyPipeline(device, m_pipeline, nullptr);

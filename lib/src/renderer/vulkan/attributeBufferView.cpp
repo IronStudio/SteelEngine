@@ -40,8 +40,7 @@ namespace se::renderer::vulkan {
 
 	AttributeBufferView::AttributeBufferView(const se::renderer::AttributeBufferViewInfos &infos) :
 		se::renderer::AttributeBufferView(infos),
-		m_layoutBinding {},
-		m_layout {VK_NULL_HANDLE}
+		m_layoutBinding {}
 	{
 		static const std::map<se::renderer::AttributeType, TypeInfos> typeInfosMap {
 			{se::renderer::AttributeType::eFloat32, {4,  4}},
@@ -67,14 +66,6 @@ namespace se::renderer::vulkan {
 
 		SE_INFO("Attribute access (se) : {}, (vk) : {}", m_infos.shaderTypes.content, (size_t)m_layoutBinding.stageFlags);
 
-		VkDescriptorSetLayoutCreateInfo layoutCreateInfos {};
-		layoutCreateInfos.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutCreateInfos.bindingCount = 1;
-		layoutCreateInfos.pBindings = &m_layoutBinding;
-
-		if (vkCreateDescriptorSetLayout(device, &layoutCreateInfos, nullptr, &m_layout) != VK_SUCCESS)
-			throw se::exceptions::RuntimeError("Can't create ubo view layout");
-
 		se::ByteCount currentOffset {0};
 		for (const auto &attribute : m_infos.attributes) {
 			se::renderer::AttributeInfos attrInfos {};
@@ -96,9 +87,6 @@ namespace se::renderer::vulkan {
 
 	AttributeBufferView::~AttributeBufferView() {
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
-
-		if (m_layout != VK_NULL_HANDLE)
-			vkDestroyDescriptorSetLayout(device, m_layout, nullptr);
 	}
 
 
