@@ -88,14 +88,6 @@ class SandboxApp : public se::Application {
 			se::renderer::vulkan::Context context {contextInfos};
 
 
-			VkPhysicalDeviceRayTracingPipelinePropertiesKHR rayTracingProperties {};
-			rayTracingProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
-			VkPhysicalDeviceProperties2 physicalDeviceProperties2 {};
-			physicalDeviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-			physicalDeviceProperties2.pNext = &rayTracingProperties;
-			vkGetPhysicalDeviceProperties2(context.getDevice()->getPhysicalDevice(), &physicalDeviceProperties2);
-
-
 			/** @brief Vertices */
 			std::vector<se::Float> vertices {
 				0.f, 0.f, 0.f,    1.f, 0.f, 0.f, 1.f,

@@ -18,6 +18,28 @@ namespace se::renderer::vulkan {
 			inline VkDescriptorSetLayout getDescriptorSetLayout() const noexcept {return m_descriptorSetLayout;}
 
 		private:
+			static VkDescriptorSetLayout s_createDescriptorSetLayout(
+				VkDevice device,
+				const std::vector<se::renderer::AttributeBufferView *> &attributeBufferViews
+			);
+
+			static VkPipelineLayout s_createPipelineLayout(
+				VkDevice device,
+				VkDescriptorSetLayout descriptorSetLayout
+			);
+
+			static VkPipeline s_createGraphicsPipeline(
+				const se::renderer::PipelineInfos &infos,
+				VkPipelineLayout pipelineLayout,
+				VkDescriptorSetLayout descriptorSetLayout
+			);
+
+			static VkPipeline s_createComputePipeline(
+				const se::renderer::PipelineInfos &infos,
+				VkPipelineLayout pipelineLayout,
+				VkDescriptorSetLayout descriptorSetLayout
+			);
+
 			VkPipeline m_pipeline;
 			VkPipelineLayout m_pipelineLayout;
 			VkDescriptorSetLayout m_descriptorSetLayout;

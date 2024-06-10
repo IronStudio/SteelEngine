@@ -56,9 +56,9 @@ namespace se::renderer::vulkan {
 			VkApplicationInfo applicationInfos {};
 			applicationInfos.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 			applicationInfos.apiVersion = VK_API_VERSION_1_3;
-			applicationInfos.pApplicationName = infos.applicationName.c_str();
+			applicationInfos.pApplicationName = m_infos.applicationName.c_str();
 			applicationInfos.applicationVersion = VK_MAKE_API_VERSION(
-				0, infos.applicationVersion.major, infos.applicationVersion.minor, infos.applicationVersion.patch);
+				0, m_infos.applicationVersion.major, m_infos.applicationVersion.minor, m_infos.applicationVersion.patch);
 			applicationInfos.pEngineName = "SteelEngine";
 			applicationInfos.engineVersion = VK_MAKE_API_VERSION(0, SE_VERSION_MAJOR, SE_VERSION_MINOR, SE_VERSION_PATCH);
 
