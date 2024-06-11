@@ -4,6 +4,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include "se/core.hpp"
 #include "se/duration.hpp"
 #include "se/renderer/context.hpp"
 
@@ -14,7 +15,7 @@ namespace se::renderer::vulkan {
 		se::renderer::Context *context;
 	};
 
-	class Semaphore final {
+	class SE_CORE Semaphore final {
 		public:
 			Semaphore();
 			Semaphore(const se::renderer::vulkan::SemaphoreInfos &infos);
@@ -47,7 +48,7 @@ namespace se::renderer::vulkan {
 
 	#define SE_NEVER_TIMEOUT se::Nanosecond(INFINITY)
 
-	class Fence final {
+	class SE_CORE Fence final {
 		public:
 			Fence();
 			Fence(const se::renderer::vulkan::FenceInfos &infos);

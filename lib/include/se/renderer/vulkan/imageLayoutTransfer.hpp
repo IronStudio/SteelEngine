@@ -2,6 +2,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include "se/core.hpp"
+
 
 
 namespace se::renderer::vulkan {
@@ -18,7 +20,7 @@ namespace se::renderer::vulkan {
 	};
 
 
-	void transferImageLayout(const se::renderer::vulkan::ImageLayoutTransferInfos &infos);
+	SE_CORE void transferImageLayout(const se::renderer::vulkan::ImageLayoutTransferInfos &infos);
 
 
 } // namespace se::renderer::vulkan

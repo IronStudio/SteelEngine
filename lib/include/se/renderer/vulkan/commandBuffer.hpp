@@ -4,6 +4,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include "se/core.hpp"
 #include "se/renderer/context.hpp"
 #include "se/renderer/vulkan/device.hpp"
 
@@ -15,7 +16,7 @@ namespace se::renderer::vulkan {
 		se::renderer::vulkan::QueueType queue;
 	};
 
-	class CommandBuffer final {
+	class SE_CORE CommandBuffer final {
 		public:
 			CommandBuffer();
 			CommandBuffer(const se::renderer::vulkan::CommandBufferInfos &infos);
