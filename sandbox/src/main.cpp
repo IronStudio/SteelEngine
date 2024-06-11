@@ -27,6 +27,7 @@
 #include <se/renderer/vulkan/context.hpp>
 #include <se/renderer/vulkan/depthBuffer.hpp>
 #include <se/renderer/vulkan/format.hpp>
+#include <se/renderer/vulkan/imageLayoutTransfer.hpp>
 #include <se/renderer/vulkan/pipeline.hpp>
 #include <se/renderer/vulkan/shader.hpp>
 #include <se/renderer/vulkan/synchronisation.hpp>
@@ -454,43 +455,31 @@ class SandboxApp : public se::Application {
 			(void)vkBeginCommandBuffer(graphicsCommandBuffer, &beginInfos);
 
 			for (se::Count i {0}; i < context.getSwapchain()->getImages().size(); ++i) {
-				VkImageMemoryBarrier imageMemoryBarrier {};
-				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				//imageMemoryBarrier.dstAccessMask = ;
-				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-				imageMemoryBarrier.image = context.getSwapchain()->getImages()[i];
-				imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				imageMemoryBarrier.subresourceRange.levelCount = 1;
-				imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
-				imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-				imageMemoryBarrier.subresourceRange.layerCount = 1;
-				vkCmdPipelineBarrier(
-					graphicsCommandBuffer,
-					VK_PIPELINE_STAGE_HOST_BIT,
-					VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-					0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier
-				);
+				se::renderer::vulkan::ImageLayoutTransferInfos transferInfos {};
+				transferInfos.aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+				transferInfos.commandBuffer = graphicsCommandBuffer;
+				transferInfos.srcStage = VK_PIPELINE_STAGE_HOST_BIT;
+				transferInfos.dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+				transferInfos.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				transferInfos.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+				transferInfos.image = context.getSwapchain()->getImages()[i];
+				transferInfos.dstAccessMask = 0;
+				transferInfos.srcAccessMask = 0;
+				se::renderer::vulkan::transferImageLayout(transferInfos);
 			}
 
 			{
-				VkImageMemoryBarrier imageMemoryBarrier {};
-				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-				imageMemoryBarrier.image = depthBuffer.getImage();
-				imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-				imageMemoryBarrier.subresourceRange.levelCount = 1;
-				imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
-				imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-				imageMemoryBarrier.subresourceRange.layerCount = 1;
-				vkCmdPipelineBarrier(
-					graphicsCommandBuffer,
-					VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-					VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-					0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier
-				);
+				se::renderer::vulkan::ImageLayoutTransferInfos transferInfos {};
+				transferInfos.aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
+				transferInfos.commandBuffer = graphicsCommandBuffer;
+				transferInfos.srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+				transferInfos.dstStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+				transferInfos.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				transferInfos.newLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+				transferInfos.image = depthBuffer.getImage();
+				transferInfos.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				transferInfos.srcAccessMask = 0;
+				se::renderer::vulkan::transferImageLayout(transferInfos);
 			}
 
 			(void)vkEndCommandBuffer(graphicsCommandBuffer);
@@ -659,23 +648,17 @@ class SandboxApp : public se::Application {
 				beginInfos.pInheritanceInfo = nullptr;
 				(void)vkBeginCommandBuffer(graphicsCommandBuffer, &beginInfos);
 
-				VkImageMemoryBarrier imageMemoryBarrier {};
-				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				imageMemoryBarrier.image = context.getSwapchain()->getImages()[imageIndex];
-				imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				imageMemoryBarrier.subresourceRange.levelCount = 1;
-				imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
-				imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-				imageMemoryBarrier.subresourceRange.layerCount = 1;
-				vkCmdPipelineBarrier(
-					graphicsCommandBuffer,
-					VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-					VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-					0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier
-				);
+				se::renderer::vulkan::ImageLayoutTransferInfos transferInfos {};
+				transferInfos.aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+				transferInfos.commandBuffer = graphicsCommandBuffer;
+				transferInfos.srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+				transferInfos.dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				transferInfos.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+				transferInfos.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				transferInfos.image = context.getSwapchain()->getImages()[imageIndex];
+				transferInfos.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				transferInfos.srcAccessMask = 0;
+				se::renderer::vulkan::transferImageLayout(transferInfos);
 
 				vkCmdBeginRendering(graphicsCommandBuffer, &renderingInfos);
 
@@ -707,24 +690,16 @@ class SandboxApp : public se::Application {
 
 				vkCmdEndRendering(graphicsCommandBuffer);
 
-				imageMemoryBarrier = {};
-				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				imageMemoryBarrier.dstAccessMask = 0;
-				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-				imageMemoryBarrier.image = context.getSwapchain()->getImages()[imageIndex];
-				imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				imageMemoryBarrier.subresourceRange.levelCount = 1;
-				imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
-				imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
-				imageMemoryBarrier.subresourceRange.layerCount = 1;
-				vkCmdPipelineBarrier(
-					graphicsCommandBuffer,
-					VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-					VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-					0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier
-				);
+				transferInfos.aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+				transferInfos.commandBuffer = graphicsCommandBuffer;
+				transferInfos.srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				transferInfos.dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+				transferInfos.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				transferInfos.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+				transferInfos.image = context.getSwapchain()->getImages()[imageIndex];
+				transferInfos.dstAccessMask = 0;
+				transferInfos.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				se::renderer::vulkan::transferImageLayout(transferInfos);
 
 				(void)vkEndCommandBuffer(graphicsCommandBuffer);
 
