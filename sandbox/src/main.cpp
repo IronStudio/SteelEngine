@@ -24,6 +24,7 @@
 
 #include <se/renderer/vulkan/attributeBufferView.hpp>
 #include <se/renderer/vulkan/buffer.hpp>
+#include <se/renderer/vulkan/commandBuffer.hpp>
 #include <se/renderer/vulkan/context.hpp>
 #include <se/renderer/vulkan/imageBuffer.hpp>
 #include <se/renderer/vulkan/format.hpp>
@@ -376,23 +377,10 @@ class SandboxApp : public se::Application {
 			/********************************************/
 
 
-			VkCommandPoolCreateInfo commandPoolCreateInfos {};
-			commandPoolCreateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-			commandPoolCreateInfos.queueFamilyIndex = context.getDevice()->getQueueFamilyIndices().find(se::renderer::vulkan::QueueType::eGraphics)->second;
-			commandPoolCreateInfos.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-
-			VkCommandPool graphicsCommandPool {VK_NULL_HANDLE};
-			(void)vkCreateCommandPool(context.getDevice()->getDevice(), &commandPoolCreateInfos, nullptr, &graphicsCommandPool);
-
-			VkCommandBufferAllocateInfo commandBufferAllocateInfos {};
-			commandBufferAllocateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-			commandBufferAllocateInfos.commandBufferCount = 1;
-			commandBufferAllocateInfos.commandPool = graphicsCommandPool;
-			commandBufferAllocateInfos.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			VkCommandBuffer graphicsCommandBuffer {};
-			(void)vkAllocateCommandBuffers(context.getDevice()->getDevice(), &commandBufferAllocateInfos, &graphicsCommandBuffer);
-
-			commandPoolCreateInfos.queueFamilyIndex = context.getDevice()->getQueueFamilyIndices().find(se::renderer::vulkan::QueueType::ePresent)->second;
+			se::renderer::vulkan::CommandBufferInfos commandBufferInfos {};
+			commandBufferInfos.context = &context;
+			commandBufferInfos.queue = se::renderer::vulkan::QueueType::eGraphics;
+			se::renderer::vulkan::CommandBuffer graphicsCommandBuffer {commandBufferInfos};
 
 
 			VkDescriptorPoolSize descriptorPoolSize {};
@@ -453,12 +441,12 @@ class SandboxApp : public se::Application {
 			beginInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfos.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 			beginInfos.pInheritanceInfo = nullptr;
-			(void)vkBeginCommandBuffer(graphicsCommandBuffer, &beginInfos);
+			(void)vkBeginCommandBuffer(graphicsCommandBuffer.getCommandBuffer(), &beginInfos);
 
 			for (se::Count i {0}; i < context.getSwapchain()->getImages().size(); ++i) {
 				se::renderer::vulkan::ImageLayoutTransferInfos transferInfos {};
 				transferInfos.aspect = VK_IMAGE_ASPECT_COLOR_BIT;
-				transferInfos.commandBuffer = graphicsCommandBuffer;
+				transferInfos.commandBuffer = graphicsCommandBuffer.getCommandBuffer();
 				transferInfos.srcStage = VK_PIPELINE_STAGE_HOST_BIT;
 				transferInfos.dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 				transferInfos.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -472,7 +460,7 @@ class SandboxApp : public se::Application {
 			{
 				se::renderer::vulkan::ImageLayoutTransferInfos transferInfos {};
 				transferInfos.aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
-				transferInfos.commandBuffer = graphicsCommandBuffer;
+				transferInfos.commandBuffer = graphicsCommandBuffer.getCommandBuffer();
 				transferInfos.srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 				transferInfos.dstStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 				transferInfos.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -483,13 +471,13 @@ class SandboxApp : public se::Application {
 				se::renderer::vulkan::transferImageLayout(transferInfos);
 			}
 
-			(void)vkEndCommandBuffer(graphicsCommandBuffer);
+			(void)vkEndCommandBuffer(graphicsCommandBuffer.getCommandBuffer());
 
 			VkSubmitInfo submitInfos {};
 			VkPipelineStageFlags dstStageMask {VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT};
 			submitInfos.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			submitInfos.commandBufferCount = 1;
-			submitInfos.pCommandBuffers = &graphicsCommandBuffer;
+			submitInfos.pCommandBuffers = &graphicsCommandBuffer.getCommandBuffer();
 			submitInfos.waitSemaphoreCount = 0;
 			submitInfos.pWaitSemaphores = nullptr;
 			submitInfos.pWaitDstStageMask = &dstStageMask;
@@ -608,7 +596,7 @@ class SandboxApp : public se::Application {
 					&imageIndex
 				);
 
-				(void)vkResetCommandBuffer(graphicsCommandBuffer, 0);
+				(void)vkResetCommandBuffer(graphicsCommandBuffer.getCommandBuffer(), 0);
 
 
 				VkRenderingAttachmentInfo colorAttachmentInfos {};
@@ -647,11 +635,11 @@ class SandboxApp : public se::Application {
 				beginInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 				beginInfos.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 				beginInfos.pInheritanceInfo = nullptr;
-				(void)vkBeginCommandBuffer(graphicsCommandBuffer, &beginInfos);
+				(void)vkBeginCommandBuffer(graphicsCommandBuffer.getCommandBuffer(), &beginInfos);
 
 				se::renderer::vulkan::ImageLayoutTransferInfos transferInfos {};
 				transferInfos.aspect = VK_IMAGE_ASPECT_COLOR_BIT;
-				transferInfos.commandBuffer = graphicsCommandBuffer;
+				transferInfos.commandBuffer = graphicsCommandBuffer.getCommandBuffer();
 				transferInfos.srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 				transferInfos.dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 				transferInfos.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
@@ -661,9 +649,9 @@ class SandboxApp : public se::Application {
 				transferInfos.srcAccessMask = 0;
 				se::renderer::vulkan::transferImageLayout(transferInfos);
 
-				vkCmdBeginRendering(graphicsCommandBuffer, &renderingInfos);
+				vkCmdBeginRendering(graphicsCommandBuffer.getCommandBuffer(), &renderingInfos);
 
-				vkCmdBindPipeline(graphicsCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getPipeline());
+				vkCmdBindPipeline(graphicsCommandBuffer.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getPipeline());
 
 				VkViewport viewport {};
 				viewport.x = 0.f;
@@ -672,27 +660,28 @@ class SandboxApp : public se::Application {
 				viewport.height = -(se::Float32)context.getSwapchain()->getExtent().height;
 				viewport.minDepth = 0.f;
 				viewport.maxDepth = 1.f;
-				vkCmdSetViewport(graphicsCommandBuffer, 0, 1, &viewport);
+				vkCmdSetViewport(graphicsCommandBuffer.getCommandBuffer(), 0, 1, &viewport);
 
 				VkRect2D scissor {};
 				scissor.offset = {0, 0};
 				scissor.extent = context.getSwapchain()->getExtent();
-				vkCmdSetScissor(graphicsCommandBuffer, 0, 1, &scissor);
+				vkCmdSetScissor(graphicsCommandBuffer.getCommandBuffer(), 0, 1, &scissor);
 
 				VkBuffer buffers[2] {vertexBuffer.getBuffer(), perInstanceBuffer.getBuffer()};
 				VkDeviceSize offsets[2] {vertexBufferView.getInfos().offset, vertexBufferView.getInfos().offset};
-				vkCmdBindVertexBuffers(graphicsCommandBuffer, 0, 2, buffers, offsets);
+				vkCmdBindVertexBuffers(graphicsCommandBuffer.getCommandBuffer(), 0, 2, buffers, offsets);
 
 				vkCmdBindDescriptorSets(
-					graphicsCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr
+					graphicsCommandBuffer.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+					pipeline.getPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr
 				);
 
-				vkCmdDraw(graphicsCommandBuffer, vertices.size() / 7, /*perInstanceDatas.size() / 3*/1, 0, 0);
+				vkCmdDraw(graphicsCommandBuffer.getCommandBuffer(), vertices.size() / 7, /*perInstanceDatas.size() / 3*/1, 0, 0);
 
-				vkCmdEndRendering(graphicsCommandBuffer);
+				vkCmdEndRendering(graphicsCommandBuffer.getCommandBuffer());
 
 				transferInfos.aspect = VK_IMAGE_ASPECT_COLOR_BIT;
-				transferInfos.commandBuffer = graphicsCommandBuffer;
+				transferInfos.commandBuffer = graphicsCommandBuffer.getCommandBuffer();
 				transferInfos.srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 				transferInfos.dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 				transferInfos.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -702,14 +691,14 @@ class SandboxApp : public se::Application {
 				transferInfos.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 				se::renderer::vulkan::transferImageLayout(transferInfos);
 
-				(void)vkEndCommandBuffer(graphicsCommandBuffer);
+				(void)vkEndCommandBuffer(graphicsCommandBuffer.getCommandBuffer());
 
 
 				VkSubmitInfo submitInfos {};
 				VkPipelineStageFlags dstStageMask {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 				submitInfos.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 				submitInfos.commandBufferCount = 1;
-				submitInfos.pCommandBuffers = &graphicsCommandBuffer;
+				submitInfos.pCommandBuffers = &graphicsCommandBuffer.getCommandBuffer();
 				submitInfos.waitSemaphoreCount = 1;
 				submitInfos.pWaitSemaphores = &imageReadySemaphore.getSemaphore();
 				submitInfos.pWaitDstStageMask = &dstStageMask;
@@ -736,8 +725,6 @@ class SandboxApp : public se::Application {
 
 			vkFreeDescriptorSets(context.getDevice()->getDevice(), descriptorPool, 1, &descriptorSet);
 			vkDestroyDescriptorPool(context.getDevice()->getDevice(), descriptorPool, nullptr);
-			vkFreeCommandBuffers(context.getDevice()->getDevice(), graphicsCommandPool, 1, &graphicsCommandBuffer);
-			vkDestroyCommandPool(context.getDevice()->getDevice(), graphicsCommandPool, nullptr);
 		}
 };
 
