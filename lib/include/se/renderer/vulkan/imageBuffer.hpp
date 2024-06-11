@@ -2,15 +2,15 @@
 
 #include <vulkan/vulkan.h>
 
-#include "se/renderer/depthBuffer.hpp"
+#include "se/renderer/imageBuffer.hpp"
 
 
 
 namespace se::renderer::vulkan {
-	class SE_CORE DepthBuffer final : public se::renderer::DepthBuffer {
+	class SE_CORE ImageBuffer final : public se::renderer::ImageBuffer {
 		public:
-			DepthBuffer(const se::renderer::DepthBufferInfos &infos);
-			~DepthBuffer() override;
+			ImageBuffer(const se::renderer::ImageBufferInfos &infos);
+			~ImageBuffer() override;
 
 			inline VkImage getImage() const noexcept {return m_image;}
 			inline VkImageView getImageView() const noexcept {return m_imageView;}

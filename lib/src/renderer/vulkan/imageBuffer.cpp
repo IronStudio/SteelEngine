@@ -1,4 +1,4 @@
-#include "se/renderer/vulkan/depthBuffer.hpp"
+#include "se/renderer/vulkan/imageBuffer.hpp"
 
 #include "se/assertion.hpp"
 #include "se/exceptions.hpp"
@@ -9,13 +9,23 @@
 
 
 namespace se::renderer::vulkan {
-	DepthBuffer::DepthBuffer(const se::renderer::DepthBufferInfos &infos) :
-		se::renderer::DepthBuffer(infos),
+	ImageBuffer::ImageBuffer(const se::renderer::ImageBufferInfos &infos) :
+		se::renderer::ImageBuffer(infos),
 		m_image {VK_NULL_HANDLE},
 		m_imageView {VK_NULL_HANDLE},
 		m_memoryHandle {nullptr}
 	{
 		SE_ASSERT(m_infos.format == se::renderer::Format::eD16 || m_infos.format == se::renderer::Format::eD32, "Invalid format for depth buffer");
+
+		static const std::map<se::renderer::ImageBufferUsage, VkImageUsageFlags> usageMap {
+			{se::renderer::ImageBufferUsage::eColorAttachment, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT},
+			{se::renderer::ImageBufferUsage::eDepthAttachment, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT}
+		};
+
+		static const std::map<se::renderer::ImageBufferUsage, VkImageAspectFlagBits> usageAspectMaskMap {
+			{se::renderer::ImageBufferUsage::eColorAttachment, VK_IMAGE_ASPECT_COLOR_BIT},
+			{se::renderer::ImageBufferUsage::eDepthAttachment, VK_IMAGE_ASPECT_DEPTH_BIT}
+		};
 
 		VkFormat format {se::renderer::vulkan::formatSeToVk(m_infos.format)};
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
@@ -24,8 +34,8 @@ namespace se::renderer::vulkan {
 		imageCreateInfos.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageCreateInfos.extent = {(se::Uint)m_infos.size.x, (se::Uint)m_infos.size.y, 1};
 		imageCreateInfos.tiling = VK_IMAGE_TILING_OPTIMAL;
-		imageCreateInfos.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		imageCreateInfos.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		imageCreateInfos.usage = usageMap.find(m_infos.usage)->second;
 		imageCreateInfos.arrayLayers = 1;
 		imageCreateInfos.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageCreateInfos.imageType = VK_IMAGE_TYPE_2D;
@@ -58,7 +68,7 @@ namespace se::renderer::vulkan {
 		imageViewCreateInfos.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 		imageViewCreateInfos.format = format;
 		imageViewCreateInfos.image = m_image;
-		imageViewCreateInfos.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		imageViewCreateInfos.subresourceRange.aspectMask = usageAspectMaskMap.find(m_infos.usage)->second;
 		imageViewCreateInfos.subresourceRange.baseArrayLayer = 0;
 		imageViewCreateInfos.subresourceRange.baseMipLevel = 0;
 		imageViewCreateInfos.subresourceRange.layerCount = 1;
@@ -70,7 +80,7 @@ namespace se::renderer::vulkan {
 	}
 
 
-	DepthBuffer::~DepthBuffer() {
+	ImageBuffer::~ImageBuffer() {
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
 
 		if (m_imageView != VK_NULL_HANDLE)

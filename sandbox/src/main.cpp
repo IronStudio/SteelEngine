@@ -25,7 +25,7 @@
 #include <se/renderer/vulkan/attributeBufferView.hpp>
 #include <se/renderer/vulkan/buffer.hpp>
 #include <se/renderer/vulkan/context.hpp>
-#include <se/renderer/vulkan/depthBuffer.hpp>
+#include <se/renderer/vulkan/imageBuffer.hpp>
 #include <se/renderer/vulkan/format.hpp>
 #include <se/renderer/vulkan/imageLayoutTransfer.hpp>
 #include <se/renderer/vulkan/pipeline.hpp>
@@ -268,12 +268,13 @@ class SandboxApp : public se::Application {
 
 
 			/** @brief Depth buffer */
-			se::renderer::DepthBufferInfos depthBufferInfos {};
-			depthBufferInfos.context = &context;
-			depthBufferInfos.allocator = &gpuAllocator;
-			depthBufferInfos.format = se::renderer::Format::eD32;
-			depthBufferInfos.size = {context.getSwapchain()->getExtent().width, context.getSwapchain()->getExtent().height};
-			se::renderer::vulkan::DepthBuffer depthBuffer {depthBufferInfos};
+			se::renderer::ImageBufferInfos imageBufferInfos {};
+			imageBufferInfos.context = &context;
+			imageBufferInfos.allocator = &gpuAllocator;
+			imageBufferInfos.format = se::renderer::Format::eD32;
+			imageBufferInfos.size = {context.getSwapchain()->getExtent().width, context.getSwapchain()->getExtent().height};
+			imageBufferInfos.usage = se::renderer::ImageBufferUsage::eDepthAttachment;
+			se::renderer::vulkan::ImageBuffer depthBuffer {imageBufferInfos};
 
 			/** @brief VB view */
 			se::renderer::VertexBufferViewInfos vertexBufferViewInfos {};
