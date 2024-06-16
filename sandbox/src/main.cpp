@@ -21,6 +21,7 @@
 #include <se/utils/converter.hpp>
 #include <se/utils/version.hpp>
 #include <se/window/windowManager.hpp>
+#include <se/resourceManager.hpp>
 
 #include <se/renderer/vulkan/attributeBufferView.hpp>
 #include <se/renderer/vulkan/buffer.hpp>
@@ -44,8 +45,11 @@ using namespace se::literals;
 
 class SandboxApp : public se::Application {
 	public:
-		SandboxApp() {
-			this->load();
+		SandboxApp() :
+			se::Application()
+		{
+			m_infos.name = "SteelEngine_sandbox";
+			m_infos.version = "1.0.0"_v;
 		}
 
 		~SandboxApp() override {}
@@ -68,7 +72,7 @@ class SandboxApp : public se::Application {
 
 			/** @brief Window */
 			se::window::WindowInfos windowInfos {};
-			windowInfos.title = "SteelEngine_sandbox";
+			windowInfos.title = m_infos.name;
 			windowInfos.size = {16 * 70, 9 * 70};
 			windowInfos.position = {se::window::centerPosition, se::window::undefinedPosition};
 			windowInfos.graphicsApi = se::renderer::GraphicsApi::eVulkan;
@@ -83,12 +87,14 @@ class SandboxApp : public se::Application {
 
 
 			/** @brief Context */
-			se::renderer::ContextInfos contextInfos {};
-			contextInfos.applicationName = "SteelEngine_sandbox";
-			contextInfos.applicationVersion = "1.0.0"_v;
+			se::ResourceManager::RendererContextInfos contextInfos {};
+			contextInfos.api = se::renderer::GraphicsApi::eVulkan;
+			contextInfos.applicationName = m_infos.name;
+			contextInfos.applicationVersion = m_infos.version;
 			contextInfos.preferredGPU = se::renderer::GPUType::eDiscret;
 			contextInfos.linkedWindow = &window;
-			se::renderer::vulkan::Context context {contextInfos};
+			auto contextResource {se::ResourceManager::load(contextInfos)};
+			auto &context {*reinterpret_cast<se::renderer::vulkan::Context*> (contextResource.res)};
 
 
 			/** @brief Vertices */

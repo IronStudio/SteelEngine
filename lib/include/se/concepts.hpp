@@ -6,7 +6,7 @@
 
 #include "se/types.hpp"
 
-#define SE_REQUIRES(val) requires (val)
+#define SE_REQUIRES(...) requires (__VA_ARGS__)
 
 
 namespace se::concepts {

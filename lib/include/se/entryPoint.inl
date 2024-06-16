@@ -3,35 +3,11 @@
 #include <string>
 #include <vector>
 
-#include "se/threads/jobScheduler.hpp"
+#include "se/application.hpp"
 #include "se/exceptions.hpp"
 #include "se/logger.hpp"
 #include "se/types.hpp"
-#include "se/window/windowManager.hpp"
 
-
-
-namespace se {
-	class Application {
-		public:
-			Application() = default;
-
-			void load() {
-				SE_LOGGER.setTerminalColor(se::LogColor::brightWhite);
-				SE_APP_LOGGER.setTerminalColor(se::LogColor::white);
-				se::threads::JobScheduler::load();
-				se::window::WindowManager::load();
-			}
-
-			virtual ~Application() {
-				se::window::WindowManager::unload();
-				se::threads::JobScheduler::unload();
-			}
-
-			virtual void run() = 0;
-	};
-
-} // namespace se
 
 
 
