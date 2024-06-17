@@ -22,9 +22,14 @@
 namespace se {
 	template <typename T>
 	struct Resource {
-		se::UUID uuid {0};
-		T *res {nullptr};
+		se::UUID uuid;
+		T *res;
 
+		inline Resource();
+		inline Resource(const se::Resource<T> &) = delete;
+		inline const se::Resource<T> &operator=(const se::Resource<T> &) = delete;
+		inline Resource(se::Resource<T> &&res) noexcept;
+		inline const se::Resource<T> &operator=(se::Resource<T> &&res) noexcept;
 		inline ~Resource();
 	};
 
@@ -71,7 +76,7 @@ namespace se {
 			static se::Resource<se::renderer::VramAllocator>       load(const RendererVramAllocator &infos);
 
 			template <typename T>
-			static void unload(const se::Resource<T> &res);
+			static void unload(se::Resource<T> &res);
 
 		private:
 			template <typename T>

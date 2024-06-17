@@ -22,6 +22,7 @@
 #include <se/utils/version.hpp>
 #include <se/window/windowManager.hpp>
 #include <se/resourceManager.hpp>
+#include <se/renderer/renderer.hpp>
 
 #include <se/renderer/vulkan/attributeBufferView.hpp>
 #include <se/renderer/vulkan/buffer.hpp>
@@ -57,18 +58,6 @@ class SandboxApp : public se::Application {
 		void run() override {
 			SE_LOGGER.setSeverityMask(se::LogSeverity::eError | se::LogSeverity::eFatal | se::LogSeverity::eWarning | se::LogSeverity::eInfo);
 
-			SE_LOGGER << se::LogInfos(se::LogSeverity::eVerbose) << "Hello" << se::endLog;
-			SE_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Hello" << se::endLog;
-			SE_LOGGER << se::LogInfos(se::LogSeverity::eWarning) << "Hello" << se::endLog;
-			SE_LOGGER << se::LogInfos(se::LogSeverity::eError) << "Hello" << se::endLog;
-			SE_LOGGER << se::LogInfos(se::LogSeverity::eFatal) << "Hello" << se::endLog;
-
-			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eVerbose) << "Hello" << se::endLog;
-			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eInfo) << "Hello" << se::endLog;
-			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eWarning) << "Hello" << se::endLog;
-			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eError) << "Hello" << se::endLog;
-			SE_APP_LOGGER << se::LogInfos(se::LogSeverity::eFatal) << "Hello" << se::endLog;
-
 
 			/** @brief Window */
 			se::window::WindowInfos windowInfos {};
@@ -79,22 +68,14 @@ class SandboxApp : public se::Application {
 			windowInfos.flags = se::window::WindowFlags::eResizable | se::window::WindowFlags::eMasterWindow;
 			se::window::Window &window {se::window::WindowManager::createWindow(windowInfos)};
 
-		/*	windowInfos.title = "2nd";
-			windowInfos.flags = se::window::WindowFlags::eResizable;
-			windowInfos.minSize = {16 * 10, 9 * 10};
-			windowInfos.maxSize = {16 * 100, 9 * 100};
-			se::window::Window &window2 {se::window::WindowManager::createWindow(windowInfos)};*/
 
-
-			/** @brief Context */
-			se::ResourceManager::RendererContext contextInfos {};
-			contextInfos.api = se::renderer::GraphicsApi::eVulkan;
-			contextInfos.applicationName = m_infos.name;
-			contextInfos.applicationVersion = m_infos.version;
-			contextInfos.preferredGPU = se::renderer::GPUType::eDiscret;
-			contextInfos.linkedWindow = &window;
-			auto contextResource {se::ResourceManager::load(contextInfos)};
-			auto &context {*reinterpret_cast<se::renderer::vulkan::Context*> (contextResource.res)};
+			/** @brief Renderer */
+			se::renderer::RendererInfos rendererInfos {};
+			rendererInfos.api = se::renderer::GraphicsApi::eVulkan;
+			rendererInfos.application = this;
+			rendererInfos.window = &window;
+			se::renderer::Renderer renderer {rendererInfos};
+			auto &context {*reinterpret_cast<se::renderer::vulkan::Context*> (renderer.getContext())};
 
 
 			/** @brief Vertices */

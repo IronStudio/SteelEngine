@@ -2,8 +2,11 @@
 
 #include "se/application.hpp"
 #include "se/core.hpp"
-#include "se/renderer/graphicsApi.hpp"
+#include "se/resourceManager.hpp"
 #include "se/window/window.hpp"
+
+#include "se/renderer/context.hpp"
+#include "se/renderer/graphicsApi.hpp"
 
 
 
@@ -21,11 +24,13 @@ namespace se::renderer {
 
 			void render();
 
-			const se::renderer::RendererInfos &getInfos() const noexcept {return m_infos;}
+			inline const se::renderer::RendererInfos &getInfos() const noexcept {return m_infos;}
+			inline se::renderer::Context *getContext() const noexcept {return m_context.res;}
 
 
 		private:
 			se::renderer::RendererInfos m_infos;
+			se::Resource<se::renderer::Context> m_context;
 	};
 
 } // namespace se::renderer
