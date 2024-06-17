@@ -23,6 +23,7 @@ namespace se::renderer {
 			virtual ~Context() = default;
 
 			virtual void handleWindowSizeChanged() = 0;
+			virtual se::renderer::GraphicsApi getGraphicsApi() = 0;
 
 		protected:
 			se::renderer::ContextInfos m_infos;

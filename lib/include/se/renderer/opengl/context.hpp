@@ -15,6 +15,7 @@ namespace se::renderer::opengl {
 			~Context() override;
 
 			void handleWindowSizeChanged() override;
+			inline se::renderer::GraphicsApi getGraphicsApi() override {return se::renderer::GraphicsApi::eOpenGL;}
 
 		private:
 			static void APIENTRY s_debugMessageCallback(
