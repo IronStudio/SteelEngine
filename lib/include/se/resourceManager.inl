@@ -14,7 +14,7 @@ namespace se {
 
 
 	template <typename T>
-	static void unload(const se::Resource<T> &res) {
+	void ResourceManager::unload(const se::Resource<T> &res) {
 		delete res.res;
 	}
 

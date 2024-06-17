@@ -87,7 +87,7 @@ class SandboxApp : public se::Application {
 
 
 			/** @brief Context */
-			se::ResourceManager::RendererContextInfos contextInfos {};
+			se::ResourceManager::RendererContext contextInfos {};
 			contextInfos.api = se::renderer::GraphicsApi::eVulkan;
 			contextInfos.applicationName = m_infos.name;
 			contextInfos.applicationVersion = m_infos.version;
@@ -113,7 +113,7 @@ class SandboxApp : public se::Application {
 
 
 			/** @brief UB view */
-			se::renderer::AttributeBufferViewInfos attributeBufferViewInfos {};
+			se::ResourceManager::RendererAttributeBufferView attributeBufferViewInfos {};
 			attributeBufferViewInfos.context = &context;
 			attributeBufferViewInfos.usage = se::renderer::AttributeBufferViewUsage::eUniform;
 			attributeBufferViewInfos.shaderTypes = se::renderer::ShaderType::eVertex | se::renderer::ShaderType::eGeometry;
@@ -123,7 +123,8 @@ class SandboxApp : public se::Application {
 				{"camera", se::renderer::AttributeType::eMat4}
 			};
 			attributeBufferViewInfos.offset = 0;
-			se::renderer::vulkan::AttributeBufferView uniformBufferView {attributeBufferViewInfos};
+			auto uniformBufferViewResource {se::ResourceManager::load(attributeBufferViewInfos)};
+			auto &uniformBufferView {*reinterpret_cast<se::renderer::vulkan::AttributeBufferView*> (uniformBufferViewResource.res)};
 
 
 			/** @brief Staging memory */
