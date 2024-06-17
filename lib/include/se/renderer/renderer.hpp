@@ -31,6 +31,7 @@ namespace se::renderer {
 		private:
 			se::renderer::RendererInfos m_infos;
 			se::Resource<se::renderer::Context> m_context;
+			se::Resource<se::renderer::Shader> m_computeShader;
 	};
 
 } // namespace se::renderer
