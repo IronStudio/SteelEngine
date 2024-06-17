@@ -56,8 +56,7 @@ class SandboxApp : public se::Application {
 		~SandboxApp() override {}
 
 		void run() override {
-			SE_LOGGER.setSeverityMask(se::LogSeverity::eError | se::LogSeverity::eFatal | se::LogSeverity::eWarning | se::LogSeverity::eInfo);
-
+			SE_LOGGER.setSeverityMask(~se::LogSeverity::eVerbose);
 
 			/** @brief Window */
 			se::window::WindowInfos windowInfos {};

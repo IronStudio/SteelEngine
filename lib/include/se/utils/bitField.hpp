@@ -18,12 +18,13 @@ struct mask {\
 	inline mask(const mask &flag) : content {flag.content} {}\
 	inline const mask &operator=(const mask &flag) {content = flag.content; return *this;}\
 	inline explicit operator bool() const noexcept {return !!content;}\
-	inline bool operator==(const mask &flag) {return content == flag.content;}\
+	inline bool operator==(const mask &flag) const noexcept {return content == flag.content;}\
 \
 	inline const mask &operator|=(const mask &flag) {content |= flag.content; return *this;}\
 	inline const mask &operator|=(name flag) {content |= static_cast<se::Uint64> (flag); return *this;}\
 	inline const mask &operator&=(const mask &flag) {content &= flag.content; return *this;}\
 	inline const mask &operator&=(name flag) {content &= static_cast<se::Uint64> (flag); return *this;}\
+	inline const mask &operator~() {content = ~content; return *this;}\
 \
 	se::Uint64 content;\
 };\
@@ -72,6 +73,9 @@ inline mask operator&(name lhs, name rhs) {\
 inline std::ostream &operator<<(std::ostream &stream, const mask &val) {\
 	stream << std::bitset<64> (val.content);\
 	return stream;\
+}\
+inline mask operator~(name val) {\
+	return ~mask(val);\
 }
 
 
