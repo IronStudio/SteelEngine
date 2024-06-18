@@ -2,47 +2,26 @@
 
 #define VERTEX_COUNT 14
 
-struct Vertex {
-	vec3 position;
-	vec4 color;
+
+layout (std140, binding = 0) readonly buffer in_WorldMap {
+	uint in_branchs[];
 };
 
-
-layout (std140, binding = 0) readonly buffer in_VerticesBuffer {
-	Vertex in_Vertices[];
+layout (std140, binding = 1) readonly buffer in_Camera {
+	ivec2 in_screenSize;
+	float in_cameraNearDistance;
+	float in_fov;
+	vec3 in_cameraPosition;
+	vec3 in_cameraOrientation;
 };
 
-layout (std140, binding = 1) buffer out_VerticesBuffer {
-	Vertex out_Vertices[];
+layout (std140, binding = 2) buffer out_WorldMap {
+	uint out_hittedBlocks[];
 };
 
 
 void main() {
-	vec3 vertices[VERTEX_COUNT] = {
-		vec3(0.5, 0.5, -0.5),
-		vec3(-0.5, 0.5, -0.5),
-		vec3(0.5, -0.5, -0.5),
-		vec3(-0.5, -0.5, -0.5),
-		vec3(-0.5, -0.5, 0.5),
-		vec3(-0.5, 0.5, -0.5),
-		vec3(-0.5, 0.5, 0.5),
-		vec3(0.5, 0.5, -0.5),
-		vec3(0.5, 0.5, 0.5),
-		vec3(0.5, -0.5, -0.5),
-		vec3(0.5, -0.5, 0.5),
-		vec3(-0.5, -0.5, 0.5),
-		vec3(0.5, 0.5, 0.5),
-		vec3(-0.5, 0.5, 0.5),
-	};
-
-	uint index = gl_GlobalInvocationID.x;
-
-	vec4 in_Color = in_Vertices[index].color;
-	vec3 in_Position = in_Vertices[index].position;
-	uint outputIndex = VERTEX_COUNT * index;
-
-	for (int i = 0; i < VERTEX_COUNT; ++i) {
-		out_Vertices[outputIndex + i].color = in_Color;
-		out_Vertices[outputIndex + i].position = in_Position + vertices[i];
-	}
+	float width = 2*in_cameraNearDistance*tan(in_fov/2);
+	float cameraPixelSize = float(in_screenSize.x) / width;
+	ivec2 currentPixel = ivec2(gl_GlobalInvocationID.xy);
 }

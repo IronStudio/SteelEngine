@@ -308,57 +308,6 @@ class SandboxApp : public se::Application {
 			se::renderer::vulkan::Pipeline pipeline {pipelineInfos};
 
 
-
-			/** @brief Uniform Buffer Storage */
-			bufferInfos.allocator = &stagingAllocator;
-			bufferInfos.size = vertices.size() * (6/5);
-			bufferInfos.usage = se::renderer::BufferUsage::eStorage;
-			se::renderer::vulkan::Buffer computeInputBuffer {bufferInfos};
-
-			std::vector<se::Float32> computeInputVertices {};
-			computeInputVertices.reserve(vertices.size() * (6/5));
-			for (se::Count i {0}; i < vertices.size(); ++i) {
-				computeInputVertices.push_back(vertices[i]);
-				if (i % 5 == 2)
-					computeInputVertices.push_back(0.f);
-			}
-
-			bufferWriteInfos.offset = 0;
-			bufferWriteInfos.value.assign((se::Byte*)computeInputVertices.data(),
-				(se::Byte*)(computeInputVertices.data() + computeInputVertices.size()));
-
-			bufferInfos.allocator = &stagingAllocator;
-			bufferInfos.size = vertices.size() * (6/5) * 14;
-			bufferInfos.usage = se::renderer::BufferUsage::eStorage;
-			se::renderer::vulkan::Buffer computeOutputBuffer {bufferInfos};
-
-			attributeBufferViewInfos.usage = se::renderer::AttributeBufferViewUsage::eStorage;
-			attributeBufferViewInfos.attributes = {
-				{"position", se::renderer::AttributeType::eVec3},
-				{"color", se::renderer::AttributeType::eVec4}
-			};
-			attributeBufferViewInfos.binding = 0;
-			attributeBufferViewInfos.offset = 0;
-			attributeBufferViewInfos.shaderTypes = se::renderer::ShaderType::eCompute;
-			se::renderer::vulkan::AttributeBufferView storageBufferViewInput {attributeBufferViewInfos};
-
-			attributeBufferViewInfos.binding = 1;
-			se::renderer::vulkan::AttributeBufferView storageBufferViewOutput {attributeBufferViewInfos};
-
-			/** @brief Compute shader */
-			shaderInfos.type = se::renderer::ShaderType::eCompute;
-			shaderInfos.file = "shaders/test.comp";
-			shaderInfos.entryPoint = "main";
-			se::renderer::vulkan::Shader computeShader {shaderInfos};
-
-			pipelineInfos = {};
-			pipelineInfos.context = &context;
-			pipelineInfos.type = se::renderer::PipelineType::eCompute;
-			pipelineInfos.shaders = {&computeShader};
-			pipelineInfos.attributeBufferView = {&storageBufferViewInput, &storageBufferViewOutput};
-			se::renderer::vulkan::Pipeline computePipeline {pipelineInfos};
-
-
 			/********************************************/
 			/******** playing a bit with vulkan *********/
 			/********************************************/
