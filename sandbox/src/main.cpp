@@ -654,6 +654,8 @@ class SandboxApp : public se::Application {
 				presentInfos.waitSemaphoreCount = 1;
 				presentInfos.pWaitSemaphores = &imageDrawnSemaphore.getSemaphore();
 				(void)vkQueuePresentKHR(context.getDevice()->getQueue(se::renderer::vulkan::QueueType::ePresent), &presentInfos);
+
+				renderer.render();
 			}
 
 			vkDeviceWaitIdle(context.getDevice()->getDevice());

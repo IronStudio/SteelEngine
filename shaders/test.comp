@@ -1,6 +1,6 @@
 #version 460 core
 
-#define VERTEX_COUNT 14
+#define MAX_FLOAT intBitsToFloat(2139095039)
 
 
 layout (std140, binding = 0) readonly buffer in_WorldMap {
@@ -8,20 +8,32 @@ layout (std140, binding = 0) readonly buffer in_WorldMap {
 };
 
 layout (std140, binding = 1) readonly buffer in_Camera {
-	ivec2 in_screenSize;
-	float in_cameraNearDistance;
-	float in_fov;
 	vec3 in_cameraPosition;
-	vec3 in_cameraOrientation;
+	float in_fov;
+	vec2 in_cameraOrientation;
+	ivec2 in_screenSize;
 };
 
 layout (std140, binding = 2) buffer out_WorldMap {
-	uint out_hittedBlocks[];
+	vec3 out_hittedBlocks[];
 };
 
 
+layout (local_size_x = 256, local_size_y = 256, local_size_z = 1) in;
+
+
 void main() {
-	float width = 2*in_cameraNearDistance*tan(in_fov/2);
-	float cameraPixelSize = float(in_screenSize.x) / width;
-	ivec2 currentPixel = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 halfScreenSize = in_screenSize / 2;
+	uvec2 currentPixel = gl_GlobalInvocationID.xy;
+	float verticalFov = 2 * atan(halfScreenSize.y);
+
+	uint out_index = currentPixel.y * in_screenSize.x + currentPixel.x;
+
+	vec2 relativeCurrentPixel = (vec2(currentPixel.xy) - halfScreenSize) / halfScreenSize;
+	vec2 currentRelativeAngles = vec2(
+		atan(relativeCurrentPixel.x * tan(1)) * in_fov,
+		atan(relativeCurrentPixel.y * tan(1)) * verticalFov
+	);
+
+	out_hittedBlocks[out_index] = vec3(relativeCurrentPixel.xy, 0.0);
 }

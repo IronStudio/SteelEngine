@@ -13,14 +13,20 @@ namespace se::renderer::vulkan {
 			Pipeline(const se::renderer::PipelineInfos &infos);
 			~Pipeline() override;
 
-			inline VkPipeline getPipeline() const noexcept {return m_pipeline;}
-			inline VkPipelineLayout getPipelineLayout() const noexcept {return m_pipelineLayout;}
-			inline VkDescriptorSetLayout getDescriptorSetLayout() const noexcept {return m_descriptorSetLayout;}
+			void updateBuffer(VkCommandBuffer commandBuffer);
+
+			inline const VkPipeline &getPipeline() const noexcept {return m_pipeline;}
+			inline const VkPipelineLayout &getPipelineLayout() const noexcept {return m_pipelineLayout;}
+			inline const VkDescriptorSetLayout &getDescriptorSetLayout() const noexcept {return m_descriptorSetLayout;}
+			inline const VkDescriptorSet &getDescriptorSet() const noexcept {return m_descriptorSet;}
 
 		private:
 			static VkDescriptorSetLayout s_createDescriptorSetLayout(
 				VkDevice device,
-				const std::vector<se::renderer::AttributeBufferView *> &attributeBufferViews
+				const std::vector<se::renderer::AttributeBufferView *> &attributeBufferViews,
+				se::renderer::PipelineType pipelineType,
+				VkDescriptorPool &descriptorPool,
+				VkDescriptorSet &descriptorSet
 			);
 
 			static VkPipelineLayout s_createPipelineLayout(
@@ -43,6 +49,8 @@ namespace se::renderer::vulkan {
 			VkPipeline m_pipeline;
 			VkPipelineLayout m_pipelineLayout;
 			VkDescriptorSetLayout m_descriptorSetLayout;
+			VkDescriptorPool m_descriptorPool;
+			VkDescriptorSet m_descriptorSet;
 	};
 
 } // namespace se::renderer::vulkan
