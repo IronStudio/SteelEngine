@@ -96,12 +96,15 @@ namespace se::renderer {
 
 		bufferInfos.size = m_worldMapBufferView.res->getInfos().size;
 		m_worldMapBuffer = std::move(se::ResourceManager::load(bufferInfos));
+		m_worldMapBufferView.res->setBuffer(m_worldMapBuffer.res);
 
 		bufferInfos.size = m_cameraBufferView.res->getTotalSize();
 		m_cameraBuffer = std::move(se::ResourceManager::load(bufferInfos));
+		m_cameraBufferView.res->setBuffer(m_cameraBuffer.res);
 
 		bufferInfos.size = m_hittedBlockBufferView.res->getInfos().size;
 		m_hittedBlocksBuffer = std::move(se::ResourceManager::load(bufferInfos));
+		m_hittedBlockBufferView.res->setBuffer(m_hittedBlocksBuffer.res);
 
 		bufferInfos.allocator = m_stagingAllocator.res;
 		bufferInfos.usage = se::renderer::BufferUsage::eTransferSrc;
@@ -144,9 +147,9 @@ namespace se::renderer {
 		computePipelineInfos.shaders = {m_computeShader.res};
 		computePipelineInfos.attributeBufferView = {m_cameraBufferView.res};
 		computePipelineInfos.rangeBufferView = {m_worldMapBufferView.res, m_hittedBlockBufferView.res};
-		//m_computePipeline = std::move(se::ResourceManager::load(computePipelineInfos));
+		m_computePipeline = std::move(se::ResourceManager::load(computePipelineInfos));
 
-
+		reinterpret_cast<se::renderer::vulkan::Pipeline*> (m_computePipeline.res)->updateBuffer();
 		bufferTransferor.res->sync();
 	}
 

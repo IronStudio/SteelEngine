@@ -321,45 +321,6 @@ class SandboxApp : public se::Application {
 
 			uniformBufferView.setBuffer(&uniformBuffer);
 			pipeline.updateBuffer();
-			/*VkDescriptorPoolSize descriptorPoolSize {};
-			descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorPoolSize.descriptorCount = 1;
-
-			VkDescriptorPoolCreateInfo descriptorPoolCreateInfos {};
-			descriptorPoolCreateInfos.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			descriptorPoolCreateInfos.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-			descriptorPoolCreateInfos.maxSets = 1;
-			descriptorPoolCreateInfos.poolSizeCount = 1;
-			descriptorPoolCreateInfos.pPoolSizes = &descriptorPoolSize;
-			VkDescriptorPool descriptorPool {};
-			(void)vkCreateDescriptorPool(context.getDevice()->getDevice(), &descriptorPoolCreateInfos, nullptr, &descriptorPool);
-
-			VkDescriptorSetLayout descriptorSetLayout {pipeline.getDescriptorSetLayout()};
-			VkDescriptorSetAllocateInfo descriptorSetAllocateInfos {};
-			descriptorSetAllocateInfos.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-			descriptorSetAllocateInfos.descriptorPool = descriptorPool;
-			descriptorSetAllocateInfos.descriptorSetCount = 1;
-			descriptorSetAllocateInfos.pSetLayouts = &descriptorSetLayout;
-			VkDescriptorSet descriptorSet {};
-			(void)vkAllocateDescriptorSets(context.getDevice()->getDevice(), &descriptorSetAllocateInfos, &descriptorSet);
-
-			VkDescriptorBufferInfo descriptorBufferInfos {};
-			descriptorBufferInfos.buffer = uniformBuffer.getBuffer();
-			descriptorBufferInfos.offset = uniformBufferView.getInfos().offset;
-			descriptorBufferInfos.range = uniformBufferView.getTotalSize();
-
-			VkWriteDescriptorSet writeDescriptorSet {};
-			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = descriptorSet;
-			writeDescriptorSet.dstBinding = uniformBufferView.getInfos().binding;
-			writeDescriptorSet.dstArrayElement = 0;
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.pBufferInfo = &descriptorBufferInfos;
-			writeDescriptorSet.pImageInfo = nullptr;
-			writeDescriptorSet.pTexelBufferView = nullptr;
-			vkUpdateDescriptorSets(context.getDevice()->getDevice(), 1, &writeDescriptorSet, 0, nullptr);*/
-
 
 
 			se::Uint32 imageIndex {};
@@ -518,8 +479,6 @@ class SandboxApp : public se::Application {
 				bufferTransferor.transfer(bufferTransferInfos);
 				bufferTransferor.sync();
 
-				/*if (se::input::InputManager::wasWindowResized(window2.getUUID()))
-					SE_APP_LOGGER.log({se::LogSeverity::eInfo}, "Window2 resized to {}x{}", window2.getInfos().size.x, window2.getInfos().size.y);*/
 
 
 				previousFrameReadyFence.sync(SE_NEVER_TIMEOUT);
@@ -657,14 +616,10 @@ class SandboxApp : public se::Application {
 				presentInfos.pWaitSemaphores = &imageDrawnSemaphore.getSemaphore();
 				(void)vkQueuePresentKHR(context.getDevice()->getQueue(se::renderer::vulkan::QueueType::ePresent), &presentInfos);
 
-				//renderer.render();
+				renderer.render();
 			}
 
 			vkDeviceWaitIdle(context.getDevice()->getDevice());
-
-
-			/*vkFreeDescriptorSets(context.getDevice()->getDevice(), descriptorPool, 1, &descriptorSet);
-			vkDestroyDescriptorPool(context.getDevice()->getDevice(), descriptorPool, nullptr);*/
 		}
 };
 
