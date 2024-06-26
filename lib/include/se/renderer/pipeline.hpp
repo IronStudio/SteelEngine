@@ -5,6 +5,7 @@
 #include "se/renderer/format.hpp"
 #include "se/renderer/shader.hpp"
 #include "se/renderer/attributeBufferView.hpp"
+#include "se/renderer/rangeBufferView.hpp"
 #include "se/renderer/vertexBufferView.hpp"
 
 
@@ -25,6 +26,7 @@ namespace se::renderer {
 		se::renderer::Context *context;
 		se::renderer::VertexBufferView *vertexBufferView;
 		std::vector<se::renderer::AttributeBufferView*> attributeBufferView;
+		std::vector<se::renderer::RangeBufferView*> rangeBufferView;
 		std::vector<se::renderer::Shader*> shaders;
 		std::vector<se::renderer::Format> colorAttachmentFormats;
 		se::renderer::Format depthAttachmentFormat;

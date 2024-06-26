@@ -9,6 +9,7 @@
 #include "se/renderer/vulkan/context.hpp"
 #include "se/renderer/vulkan/imageBuffer.hpp"
 #include "se/renderer/vulkan/pipeline.hpp"
+#include "se/renderer/vulkan/rangeBufferView.hpp"
 #include "se/renderer/vulkan/shader.hpp"
 #include "se/renderer/vulkan/vertexBufferView.hpp"
 #include "se/renderer/vulkan/vramAllocator.hpp"
@@ -85,9 +86,15 @@ namespace se {
 		pipelineInfos.context = infos.context;
 		pipelineInfos.shaders = infos.shaders;
 		pipelineInfos.attributeBufferView = infos.attributeBufferView;
+		pipelineInfos.rangeBufferView = infos.rangeBufferView;
 		pipelineInfos.type = se::renderer::PipelineType::eCompute;
 		resource.res = s_rendererPipelineCreate[infos.context->getGraphicsApi()](pipelineInfos);
 		return resource;
+	}
+
+
+	se::Resource<se::renderer::RangeBufferView> ResourceManager::load(const RendererRangeBufferView &infos) {
+		LOAD(RangeBufferView, s_rendererRangeBufferViewCreate);
 	}
 
 
@@ -139,6 +146,12 @@ namespace se {
 
 	ResourceManager::CreateFuncMap<se::renderer::Pipeline*(const se::renderer::PipelineInfos&)> ResourceManager::s_rendererPipelineCreate {
 		STRAIGHT_REPLACEMENT(eVulkan, PipelineInfos, vulkan::Pipeline)
+	};
+
+	ResourceManager::CreateFuncMap<
+		se::renderer::RangeBufferView*(const se::renderer::RangeBufferViewInfos&)
+	> ResourceManager::s_rendererRangeBufferViewCreate {
+		STRAIGHT_REPLACEMENT(eVulkan, RangeBufferViewInfos, vulkan::RangeBufferView)
 	};
 
 	ResourceManager::CreateFuncMap<se::renderer::Shader*(const se::renderer::ShaderInfos&)> ResourceManager::s_rendererShaderCreate {

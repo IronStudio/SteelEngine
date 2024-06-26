@@ -61,13 +61,8 @@ namespace se::renderer {
 		se::ResourceManager::RendererAttributeBufferView attributeBufferViewInfos {};
 		attributeBufferViewInfos.context = m_context.res;
 		attributeBufferViewInfos.shaderTypes = se::renderer::ShaderType::eCompute;
-		attributeBufferViewInfos.usage = se::renderer::AttributeBufferViewUsage::eStorage;
+		attributeBufferViewInfos.usage = se::renderer::BufferViewUsage::eStorage;
 		attributeBufferViewInfos.offset = 0;
-
-		attributeBufferViewInfos.binding = 0;
-		attributeBufferViewInfos.attributes = {};
-		m_worldMapBufferView = std::move(se::ResourceManager::load(attributeBufferViewInfos));
-
 		attributeBufferViewInfos.binding = 1;
 		attributeBufferViewInfos.attributes = {
 			{"cameraPosition", se::renderer::AttributeType::eVec3},
@@ -77,9 +72,20 @@ namespace se::renderer {
 		};
 		m_cameraBufferView = std::move(se::ResourceManager::load(attributeBufferViewInfos));
 
-		attributeBufferViewInfos.binding = 2;
-		attributeBufferViewInfos.attributes = {};
-		m_hittedBlockBufferView = std::move(se::ResourceManager::load(attributeBufferViewInfos));
+		se::ResourceManager::RendererRangeBufferView rangeBufferViewInfos {};
+		rangeBufferViewInfos.context = m_context.res;
+		rangeBufferViewInfos.shaderTypes = se::renderer::ShaderType::eCompute;
+		rangeBufferViewInfos.usage = se::renderer::BufferViewUsage::eStorage;
+		rangeBufferViewInfos.offset = 0;
+
+		rangeBufferViewInfos.binding = 0;
+		rangeBufferViewInfos.size = m_cameraBufferView.res->getTotalSize();
+		m_worldMapBufferView = std::move(se::ResourceManager::load(rangeBufferViewInfos));
+
+
+		rangeBufferViewInfos.binding = 2;
+		rangeBufferViewInfos.size = sizeof(se::Float32) * 3 * m_infos.window->getInfos().size.x * m_infos.window->getInfos().size.y;
+		m_hittedBlockBufferView = std::move(se::ResourceManager::load(rangeBufferViewInfos));
 
 
 
@@ -88,13 +94,13 @@ namespace se::renderer {
 		bufferInfos.allocator = m_gpuOnlyAllocator.res;
 		bufferInfos.usage = se::renderer::BufferUsage::eStorage | se::renderer::BufferUsage::eTransferDst;
 
-		bufferInfos.size = m_cameraBufferView.res->getTotalSize();
+		bufferInfos.size = m_worldMapBufferView.res->getInfos().size;
 		m_worldMapBuffer = std::move(se::ResourceManager::load(bufferInfos));
 
 		bufferInfos.size = m_cameraBufferView.res->getTotalSize();
 		m_cameraBuffer = std::move(se::ResourceManager::load(bufferInfos));
 
-		bufferInfos.size = sizeof(se::Float32) * 3 * m_infos.window->getInfos().size.x * m_infos.window->getInfos().size.y;
+		bufferInfos.size = m_hittedBlockBufferView.res->getInfos().size;
 		m_hittedBlocksBuffer = std::move(se::ResourceManager::load(bufferInfos));
 
 		bufferInfos.allocator = m_stagingAllocator.res;

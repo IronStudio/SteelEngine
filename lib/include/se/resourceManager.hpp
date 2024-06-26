@@ -13,6 +13,7 @@
 #include "se/renderer/graphicsApi.hpp"
 #include "se/renderer/imageBuffer.hpp"
 #include "se/renderer/pipeline.hpp"
+#include "se/renderer/rangeBufferView.hpp"
 #include "se/renderer/shader.hpp"
 #include "se/renderer/vertexBufferView.hpp"
 #include "se/renderer/vramAllocator.hpp"
@@ -56,7 +57,9 @@ namespace se {
 				se::renderer::Context *context;
 				std::vector<se::renderer::Shader*> shaders;
 				std::vector<se::renderer::AttributeBufferView*> attributeBufferView;
+				std::vector<se::renderer::RangeBufferView*> rangeBufferView;
 			};
+			using RendererRangeBufferView = se::renderer::RangeBufferViewInfos;
 			using RendererShader = se::renderer::ShaderInfos;
 			using RendererVertexBufferView = se::renderer::VertexBufferViewInfos;
 			using RendererVramAllocator = se::renderer::VramAllocatorInfos;
@@ -71,6 +74,7 @@ namespace se {
 			static se::Resource<se::renderer::ImageBuffer>         load(const RendererImageBuffer &infos);
 			static se::Resource<se::renderer::Pipeline>            load(const RendererGraphicsPipeline &infos);
 			static se::Resource<se::renderer::Pipeline>            load(const RendererComputePipeline &infos);
+			static se::Resource<se::renderer::RangeBufferView>     load(const RendererRangeBufferView &infos);
 			static se::Resource<se::renderer::Shader>              load(const RendererShader &infos);
 			static se::Resource<se::renderer::VertexBufferView>    load(const RendererVertexBufferView &infos);
 			static se::Resource<se::renderer::VramAllocator>       load(const RendererVramAllocator &infos);
@@ -88,6 +92,7 @@ namespace se {
 			static CreateFuncMap<se::renderer::Context*(const se::renderer::ContextInfos&)>                         s_rendererContextCreate;
 			static CreateFuncMap<se::renderer::ImageBuffer*(const se::renderer::ImageBufferInfos&)>                 s_rendererImageBufferCreate;
 			static CreateFuncMap<se::renderer::Pipeline*(const se::renderer::PipelineInfos&)>                       s_rendererPipelineCreate;
+			static CreateFuncMap<se::renderer::RangeBufferView*(const se::renderer::RangeBufferViewInfos&)>         s_rendererRangeBufferViewCreate;
 			static CreateFuncMap<se::renderer::Shader*(const se::renderer::ShaderInfos&)>                           s_rendererShaderCreate;
 			static CreateFuncMap<se::renderer::VertexBufferView*(const se::renderer::VertexBufferViewInfos&)>       s_rendererVertexBufferViewCreate;
 			static CreateFuncMap<se::renderer::VramAllocator*(const se::renderer::VramAllocatorInfos&)>             s_rendererVramAllocatorCreate;

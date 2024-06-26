@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "se/core.hpp"
+#include "se/renderer/bufferViewUsage.hpp"
 #include "se/renderer/context.hpp"
 #include "se/renderer/shader.hpp"
 
@@ -29,18 +30,13 @@ namespace se::renderer {
 		se::renderer::AttributeType type;
 	};
 
-	enum class AttributeBufferViewUsage {
-		eUniform,
-		eStorage
-	};
-
 	struct AttributeBufferViewInfos {
 		se::renderer::Context *context;
 		std::vector<se::renderer::Attribute> attributes;
 		se::ByteCount offset;
 		se::renderer::ShaderTypeMask shaderTypes;
 		se::Uint64 binding;
-		se::renderer::AttributeBufferViewUsage usage;
+		se::renderer::BufferViewUsage usage;
 	};
 
 	struct AttributeInfos {

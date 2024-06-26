@@ -21,6 +21,7 @@ namespace se::renderer::vulkan {
 			static VkDescriptorSetLayout s_createDescriptorSetLayout(
 				VkDevice device,
 				const std::vector<se::renderer::AttributeBufferView *> &attributeBufferViews,
+				const std::vector<se::renderer::RangeBufferView *> &rangeBufferViews,
 				se::renderer::PipelineType pipelineType
 			);
 

@@ -95,7 +95,7 @@ class SandboxApp : public se::Application {
 			/** @brief UB view */
 			se::ResourceManager::RendererAttributeBufferView attributeBufferViewInfos {};
 			attributeBufferViewInfos.context = &context;
-			attributeBufferViewInfos.usage = se::renderer::AttributeBufferViewUsage::eUniform;
+			attributeBufferViewInfos.usage = se::renderer::BufferViewUsage::eUniform;
 			attributeBufferViewInfos.shaderTypes = se::renderer::ShaderType::eVertex | se::renderer::ShaderType::eGeometry;
 			attributeBufferViewInfos.binding = 0;
 			attributeBufferViewInfos.attributes = {

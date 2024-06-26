@@ -34,9 +34,9 @@ namespace se::renderer {
 			se::Resource<se::renderer::Shader> m_computeShader;
 			se::Resource<se::renderer::VramAllocator> m_gpuOnlyAllocator;
 			se::Resource<se::renderer::VramAllocator> m_stagingAllocator;
-			se::Resource<se::renderer::AttributeBufferView> m_worldMapBufferView;
+			se::Resource<se::renderer::RangeBufferView> m_worldMapBufferView;
 			se::Resource<se::renderer::AttributeBufferView> m_cameraBufferView;
-			se::Resource<se::renderer::AttributeBufferView> m_hittedBlockBufferView;
+			se::Resource<se::renderer::RangeBufferView> m_hittedBlockBufferView;
 			se::Resource<se::renderer::Buffer> m_worldMapBuffer;
 			se::Resource<se::renderer::Buffer> m_cameraBuffer;
 			se::Resource<se::renderer::Buffer> m_hittedBlocksBuffer;

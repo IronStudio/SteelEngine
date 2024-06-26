@@ -2,15 +2,15 @@
 
 #include <vulkan/vulkan.h>
 
-#include "se/renderer/attributeBufferView.hpp"
+#include "se/renderer/rangeBufferView.hpp"
 
 
 
 namespace se::renderer::vulkan {
-	class SE_CORE AttributeBufferView final : public se::renderer::AttributeBufferView {
+	class SE_CORE RangeBufferView final : public se::renderer::RangeBufferView {
 		public:
-			AttributeBufferView(const se::renderer::AttributeBufferViewInfos &infos);
-			~AttributeBufferView() override;
+			RangeBufferView(const se::renderer::RangeBufferViewInfos &infos);
+			~RangeBufferView() override;
 
 			inline const VkDescriptorSetLayoutBinding &getLayoutBinding() const noexcept {return m_layoutBinding;}
 

@@ -4,10 +4,11 @@
 
 #include "se/assertion.hpp"
 #include "se/logger.hpp"
+#include "se/renderer/vulkan/attributeBufferView.hpp"
 #include "se/renderer/vulkan/context.hpp"
 #include "se/renderer/vulkan/format.hpp"
+#include "se/renderer/vulkan/rangeBufferView.hpp"
 #include "se/renderer/vulkan/shader.hpp"
-#include "se/renderer/vulkan/attributeBufferView.hpp"
 #include "se/renderer/vulkan/vertexBufferView.hpp"
 
 
@@ -25,6 +26,7 @@ namespace se::renderer::vulkan {
 			m_descriptorSetLayout = s_createDescriptorSetLayout(
 				device,
 				m_infos.attributeBufferView,
+				m_infos.rangeBufferView,
 				m_infos.type
 			);
 
@@ -54,6 +56,7 @@ namespace se::renderer::vulkan {
 	VkDescriptorSetLayout Pipeline::s_createDescriptorSetLayout(
 		VkDevice device,
 		const std::vector<se::renderer::AttributeBufferView *> &attributeBufferViews,
+		const std::vector<se::renderer::RangeBufferView *> &rangeBufferViews,
 		se::renderer::PipelineType pipelineType
 	) {
 		static const std::map<se::renderer::PipelineType, VkDescriptorType> pipelineTypeToDescriptor {
@@ -62,10 +65,15 @@ namespace se::renderer::vulkan {
 		};
 
 		std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings {};
-		descriptorSetLayoutBindings.reserve(attributeBufferViews.size());
+		descriptorSetLayoutBindings.reserve(attributeBufferViews.size() + rangeBufferViews.size());
 		for (const auto &abv : attributeBufferViews) {
 			auto attributeBufferView {reinterpret_cast<se::renderer::vulkan::AttributeBufferView*> (abv)};
 			descriptorSetLayoutBindings.push_back(attributeBufferView->getLayoutBinding());
+		}
+
+		for (const auto &rbv : rangeBufferViews) {
+			auto rangeBufferView {reinterpret_cast<se::renderer::vulkan::RangeBufferView*> (rbv)};
+			descriptorSetLayoutBindings.push_back(rangeBufferView->getLayoutBinding());
 		}
 
 		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfos {};

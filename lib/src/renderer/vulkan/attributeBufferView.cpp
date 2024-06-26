@@ -5,32 +5,13 @@
 #include "se/assertion.hpp"
 #include "se/exceptions.hpp"
 #include "se/logger.hpp"
+#include "se/renderer/vulkan/bufferViewUsage.hpp"
 #include "se/renderer/vulkan/context.hpp"
 #include "se/renderer/vulkan/shader.hpp"
 
 
 
 namespace se::renderer::vulkan {
-	VkDescriptorType attributeBufferUsageSeToVk(se::renderer::AttributeBufferViewUsage usage) {
-		static const std::map<se::renderer::AttributeBufferViewUsage, VkDescriptorType> map {
-			{se::renderer::AttributeBufferViewUsage::eUniform, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER},
-			{se::renderer::AttributeBufferViewUsage::eStorage, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER},
-		};
-
-		auto it {map.find(usage)};
-		SE_ASSERT(it != map.end(), "Can't find wanted attribute");
-		return it->second;
-	}
-
-	se::renderer::AttributeBufferViewUsage attributeBufferUsageVkToSe(VkDescriptorType usage) {
-		static const std::map<VkDescriptorType, se::renderer::AttributeBufferViewUsage> map {
-			{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, se::renderer::AttributeBufferViewUsage::eUniform},
-			{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, se::renderer::AttributeBufferViewUsage::eStorage},
-		};
-
-		return map.find(usage)->second;
-	}
-
 
 	struct TypeInfos {
 		se::ByteCount alignment;
@@ -60,7 +41,7 @@ namespace se::renderer::vulkan {
 
 		m_layoutBinding.binding = m_infos.binding;
 		m_layoutBinding.descriptorCount = 1;
-		m_layoutBinding.descriptorType = attributeBufferUsageSeToVk(m_infos.usage);
+		m_layoutBinding.descriptorType = bufferUsageSeToVk(m_infos.usage);
 		m_layoutBinding.pImmutableSamplers = nullptr;
 		m_layoutBinding.stageFlags = se::renderer::vulkan::shaderTypeMaskSeToVk(m_infos.shaderTypes);
 
