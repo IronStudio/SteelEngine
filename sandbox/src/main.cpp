@@ -319,7 +319,9 @@ class SandboxApp : public se::Application {
 			se::renderer::vulkan::CommandBuffer graphicsCommandBuffer {commandBufferInfos};
 
 
-			VkDescriptorPoolSize descriptorPoolSize {};
+			uniformBufferView.setBuffer(&uniformBuffer);
+			pipeline.updateBuffer();
+			/*VkDescriptorPoolSize descriptorPoolSize {};
 			descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			descriptorPoolSize.descriptorCount = 1;
 
@@ -356,7 +358,7 @@ class SandboxApp : public se::Application {
 			writeDescriptorSet.pBufferInfo = &descriptorBufferInfos;
 			writeDescriptorSet.pImageInfo = nullptr;
 			writeDescriptorSet.pTexelBufferView = nullptr;
-			vkUpdateDescriptorSets(context.getDevice()->getDevice(), 1, &writeDescriptorSet, 0, nullptr);
+			vkUpdateDescriptorSets(context.getDevice()->getDevice(), 1, &writeDescriptorSet, 0, nullptr);*/
 
 
 
@@ -609,7 +611,7 @@ class SandboxApp : public se::Application {
 
 				vkCmdBindDescriptorSets(
 					graphicsCommandBuffer.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
-					pipeline.getPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr
+					pipeline.getPipelineLayout(), 0, 1, &pipeline.getDescriptorSet(), 0, nullptr
 				);
 
 				vkCmdDraw(graphicsCommandBuffer.getCommandBuffer(), vertices.size() / 7, /*perInstanceDatas.size() / 3*/1, 0, 0);
@@ -655,14 +657,14 @@ class SandboxApp : public se::Application {
 				presentInfos.pWaitSemaphores = &imageDrawnSemaphore.getSemaphore();
 				(void)vkQueuePresentKHR(context.getDevice()->getQueue(se::renderer::vulkan::QueueType::ePresent), &presentInfos);
 
-				renderer.render();
+				//renderer.render();
 			}
 
 			vkDeviceWaitIdle(context.getDevice()->getDevice());
 
 
-			vkFreeDescriptorSets(context.getDevice()->getDevice(), descriptorPool, 1, &descriptorSet);
-			vkDestroyDescriptorPool(context.getDevice()->getDevice(), descriptorPool, nullptr);
+			/*vkFreeDescriptorSets(context.getDevice()->getDevice(), descriptorPool, 1, &descriptorSet);
+			vkDestroyDescriptorPool(context.getDevice()->getDevice(), descriptorPool, nullptr);*/
 		}
 };
 

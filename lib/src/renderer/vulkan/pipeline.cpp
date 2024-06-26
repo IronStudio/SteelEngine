@@ -5,6 +5,7 @@
 #include "se/assertion.hpp"
 #include "se/logger.hpp"
 #include "se/renderer/vulkan/attributeBufferView.hpp"
+#include "se/renderer/vulkan/buffer.hpp"
 #include "se/renderer/vulkan/context.hpp"
 #include "se/renderer/vulkan/format.hpp"
 #include "se/renderer/vulkan/rangeBufferView.hpp"
@@ -18,7 +19,9 @@ namespace se::renderer::vulkan {
 		se::renderer::Pipeline(infos),
 		m_pipeline {VK_NULL_HANDLE},
 		m_pipelineLayout {VK_NULL_HANDLE},
-		m_descriptorSetLayout {VK_NULL_HANDLE}
+		m_descriptorSetLayout {VK_NULL_HANDLE},
+		m_descriptorPool {VK_NULL_HANDLE},
+		m_descriptorSet {VK_NULL_HANDLE}
 	{
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
 
@@ -27,6 +30,8 @@ namespace se::renderer::vulkan {
 				device,
 				m_infos.attributeBufferView,
 				m_infos.rangeBufferView,
+				m_descriptorPool,
+				m_descriptorSet,
 				m_infos.type
 			);
 
@@ -42,6 +47,12 @@ namespace se::renderer::vulkan {
 	Pipeline::~Pipeline() {
 		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
 
+		if (m_descriptorSet != VK_NULL_HANDLE)
+			vkFreeDescriptorSets(device, m_descriptorPool, 1, &m_descriptorSet);
+
+		if (m_descriptorPool != VK_NULL_HANDLE)
+			vkDestroyDescriptorPool(device, m_descriptorPool, nullptr);
+
 		if (m_descriptorSetLayout != VK_NULL_HANDLE)
 			vkDestroyDescriptorSetLayout(device, m_descriptorSetLayout, nullptr);
 
@@ -53,10 +64,58 @@ namespace se::renderer::vulkan {
 	}
 
 
+	void Pipeline::updateBuffer() {
+		static const std::map<se::renderer::PipelineType, VkDescriptorType> pipelineTypeToDescriptor {
+			{se::renderer::PipelineType::eRasterization, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER},
+			{se::renderer::PipelineType::eCompute,       VK_DESCRIPTOR_TYPE_STORAGE_BUFFER}
+		};
+
+		VkDevice device {reinterpret_cast<se::renderer::vulkan::Context*> (m_infos.context)->getDevice()->getDevice()};
+
+		std::vector<VkDescriptorBufferInfo> descriptorBufferInfos {};
+		descriptorBufferInfos.reserve(m_infos.attributeBufferView.size() + m_infos.rangeBufferView.size());
+		for (const auto &abv : m_infos.attributeBufferView) {
+			auto attributeBufferView {reinterpret_cast<se::renderer::vulkan::AttributeBufferView*> (abv)};
+			VkDescriptorBufferInfo infos {};
+
+			infos.buffer = reinterpret_cast<se::renderer::vulkan::Buffer*> (attributeBufferView->getInfos().buffer)->getBuffer();
+			infos.offset = attributeBufferView->getInfos().offset;
+			infos.range = attributeBufferView->getTotalSize();
+
+			descriptorBufferInfos.push_back(infos);
+		}
+
+		for (const auto &rbv : m_infos.rangeBufferView) {
+			auto rangeBufferView {reinterpret_cast<se::renderer::vulkan::RangeBufferView*> (rbv)};
+			VkDescriptorBufferInfo infos {};
+
+			infos.buffer = reinterpret_cast<se::renderer::vulkan::Buffer*> (rangeBufferView->getInfos().buffer)->getBuffer();
+			infos.offset = rangeBufferView->getInfos().offset;
+			infos.range = rangeBufferView->getInfos().size;
+
+			descriptorBufferInfos.push_back(infos);
+		}
+
+		VkWriteDescriptorSet writeDescriptorSet {};
+		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSet.dstSet = m_descriptorSet;
+		writeDescriptorSet.dstBinding = 0;
+		writeDescriptorSet.dstArrayElement = 0;
+		writeDescriptorSet.descriptorType = pipelineTypeToDescriptor.find(m_infos.type)->second;
+		writeDescriptorSet.descriptorCount = descriptorBufferInfos.size();
+		writeDescriptorSet.pBufferInfo = descriptorBufferInfos.data();
+		writeDescriptorSet.pImageInfo = nullptr;
+		writeDescriptorSet.pTexelBufferView = nullptr;
+		vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
+	}
+
+
 	VkDescriptorSetLayout Pipeline::s_createDescriptorSetLayout(
 		VkDevice device,
 		const std::vector<se::renderer::AttributeBufferView *> &attributeBufferViews,
 		const std::vector<se::renderer::RangeBufferView *> &rangeBufferViews,
+		VkDescriptorPool &descriptorPool,
+		VkDescriptorSet &descriptorSet,
 		se::renderer::PipelineType pipelineType
 	) {
 		static const std::map<se::renderer::PipelineType, VkDescriptorType> pipelineTypeToDescriptor {
@@ -84,6 +143,30 @@ namespace se::renderer::vulkan {
 		VkDescriptorSetLayout descriptorSetLayout {VK_NULL_HANDLE};
 		if (vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfos, nullptr, &descriptorSetLayout) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create descriptor set layout");
+
+
+
+		VkDescriptorPoolSize descriptorPoolSize {};
+		descriptorPoolSize.type = pipelineTypeToDescriptor.find(pipelineType)->second;
+		descriptorPoolSize.descriptorCount = descriptorSetLayoutBindings.size();
+
+		VkDescriptorPoolCreateInfo descriptorPoolCreateInfos {};
+		descriptorPoolCreateInfos.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		descriptorPoolCreateInfos.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+		descriptorPoolCreateInfos.maxSets = 1;
+		descriptorPoolCreateInfos.poolSizeCount = 1;
+		descriptorPoolCreateInfos.pPoolSizes = &descriptorPoolSize;
+		if (vkCreateDescriptorPool(device, &descriptorPoolCreateInfos, nullptr, &descriptorPool) != VK_SUCCESS)
+			throw se::exceptions::RuntimeError("Can't create descriptor pool");
+
+		VkDescriptorSetAllocateInfo descriptorSetAllocateInfos {};
+		descriptorSetAllocateInfos.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		descriptorSetAllocateInfos.descriptorPool = descriptorPool;
+		descriptorSetAllocateInfos.descriptorSetCount = 1;
+		descriptorSetAllocateInfos.pSetLayouts = &descriptorSetLayout;
+		if (vkAllocateDescriptorSets(device, &descriptorSetAllocateInfos, &descriptorSet) != VK_SUCCESS)
+			throw se::exceptions::RuntimeError("Can't allocate descriptor set");
+
 
 		return descriptorSetLayout;
 	}

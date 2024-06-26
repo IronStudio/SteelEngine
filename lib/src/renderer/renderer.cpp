@@ -142,8 +142,9 @@ namespace se::renderer {
 		se::ResourceManager::RendererComputePipeline computePipelineInfos {};
 		computePipelineInfos.context = m_context.res;
 		computePipelineInfos.shaders = {m_computeShader.res};
-		computePipelineInfos.attributeBufferView = {m_worldMapBufferView.res, m_cameraBufferView.res, m_hittedBlockBufferView.res};
-		m_computePipeline = std::move(se::ResourceManager::load(computePipelineInfos));
+		computePipelineInfos.attributeBufferView = {m_cameraBufferView.res};
+		computePipelineInfos.rangeBufferView = {m_worldMapBufferView.res, m_hittedBlockBufferView.res};
+		//m_computePipeline = std::move(se::ResourceManager::load(computePipelineInfos));
 
 
 		bufferTransferor.res->sync();

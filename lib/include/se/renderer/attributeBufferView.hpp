@@ -11,6 +11,8 @@
 
 
 namespace se::renderer {
+	struct Buffer;
+
 	enum class AttributeType {
 		eFloat32,
 		eInt32,
@@ -37,6 +39,7 @@ namespace se::renderer {
 		se::renderer::ShaderTypeMask shaderTypes;
 		se::Uint64 binding;
 		se::renderer::BufferViewUsage usage;
+		se::renderer::Buffer *buffer;
 	};
 
 	struct AttributeInfos {
@@ -55,6 +58,8 @@ namespace se::renderer {
 				return m_attributeInfos.find(attr)->second;
 			}
 			inline se::ByteCount getTotalSize() const noexcept {return m_totalSize;}
+
+			inline void setBuffer(se::renderer::Buffer *buffer) {m_infos.buffer = buffer;}
 
 		protected:
 			se::renderer::AttributeBufferViewInfos m_infos;

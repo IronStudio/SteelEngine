@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "se/core.hpp"
+#include "se/renderer/buffer.hpp"
 #include "se/renderer/context.hpp"
 #include "se/renderer/shader.hpp"
 #include "se/renderer/bufferViewUsage.hpp"
@@ -18,6 +19,7 @@ namespace se::renderer {
 		se::Uint64 binding;
 		se::ByteCount size;
 		se::renderer::BufferViewUsage usage;
+		se::renderer::Buffer *buffer;
 	};
 
 	class SE_CORE RangeBufferView {
@@ -26,6 +28,7 @@ namespace se::renderer {
 			virtual ~RangeBufferView() = default;
 
 			inline const se::renderer::RangeBufferViewInfos &getInfos() const noexcept {return m_infos;}
+			inline void setBuffer(se::renderer::Buffer *buffer) {m_infos.buffer = buffer;}
 
 		protected:
 			se::renderer::RangeBufferViewInfos m_infos;
