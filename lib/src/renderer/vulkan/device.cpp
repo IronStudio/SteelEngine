@@ -289,6 +289,8 @@ namespace se::renderer::vulkan {
 		if (vkCreateDevice(infos.device, &deviceCreateInfos, nullptr, &device) != VK_SUCCESS)
 			throw se::exceptions::RuntimeError("Can't create logical device");
 
+		SE_VERBOSE("Created device : {}", (void*)device);
+
 		queues = s_getQueues(device, queueInfosForSelection);
 		return device;
 	}

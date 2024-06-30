@@ -3,6 +3,7 @@
 #include "se/logger.hpp"
 #include "se/utils/converter.hpp"
 
+#include "se/renderer/vulkan/buffer.hpp"
 #include "se/renderer/vulkan/commandBuffer.hpp"
 #include "se/renderer/vulkan/context.hpp"
 #include "se/renderer/vulkan/pipeline.hpp"
@@ -103,6 +104,7 @@ namespace se::renderer {
 		m_cameraBufferView.res->setBuffer(m_cameraBuffer.res);
 
 		bufferInfos.size = m_hittedBlockBufferView.res->getInfos().size;
+		bufferInfos.usage |= se::renderer::BufferUsage::eTransferSrc;
 		m_hittedBlocksBuffer = std::move(se::ResourceManager::load(bufferInfos));
 		m_hittedBlockBufferView.res->setBuffer(m_hittedBlocksBuffer.res);
 
@@ -159,18 +161,25 @@ namespace se::renderer {
 	}
 
 
-	void Renderer::render() {
+	void Renderer::render(
+		se::renderer::vulkan::Fence &fence,
+		se::renderer::vulkan::Semaphore &srcSemaphore,
+		se::renderer::vulkan::Semaphore &dstSemaphore,
+		VkImage dstImage
+	) {
 		auto *context {reinterpret_cast<se::renderer::vulkan::Context*> (m_context.res)};
+
+		se::renderer::vulkan::SemaphoreInfos semaphoreInfos {};
+		semaphoreInfos.context = context;
+		se::renderer::vulkan::Semaphore computeSemaphore {semaphoreInfos};
 
 		se::renderer::vulkan::CommandBufferInfos commandBufferInfos {};
 		commandBufferInfos.context = m_context.res;
 		commandBufferInfos.queue = se::renderer::vulkan::QueueType::eCompute;
 		se::renderer::vulkan::CommandBuffer commandBuffer {commandBufferInfos};
 
-		se::renderer::vulkan::FenceInfos fenceInfos {};
-		fenceInfos.context = context;
-		fenceInfos.signaled = false;
-		se::renderer::vulkan::Fence fence {fenceInfos};
+		commandBufferInfos.queue = se::renderer::vulkan::QueueType::eTransfer;
+		se::renderer::vulkan::CommandBuffer transferCommandBuffer {commandBufferInfos};
 
 		VkCommandBufferBeginInfo beginInfos {};
 		beginInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -196,16 +205,52 @@ namespace se::renderer {
 
 		(void)vkEndCommandBuffer(commandBuffer.getCommandBuffer());
 
+		SE_INFO("FIRST QUEUE SUBMIT");
+		VkPipelineStageFlags pipelineStageFlags {VK_PIPELINE_STAGE_TRANSFER_BIT};
 		VkSubmitInfo submitInfos {};
 		submitInfos.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfos.commandBufferCount = 1;
 		submitInfos.pCommandBuffers = &commandBuffer.getCommandBuffer();
-		submitInfos.waitSemaphoreCount = 0;
-		submitInfos.signalSemaphoreCount = 0;
-		(void)vkQueueSubmit(context->getDevice()->getQueue(se::renderer::vulkan::QueueType::eCompute), 1, &submitInfos, fence.getFence());
+		submitInfos.waitSemaphoreCount = 1;
+		submitInfos.pWaitSemaphores = &srcSemaphore.getSemaphore();
+		submitInfos.pWaitDstStageMask = &pipelineStageFlags;
+		submitInfos.signalSemaphoreCount = 1;
+		submitInfos.pSignalSemaphores = &computeSemaphore.getSemaphore();
+		(void)vkQueueSubmit(context->getDevice()->getQueue(se::renderer::vulkan::QueueType::eCompute), 1, &submitInfos, VK_NULL_HANDLE);
 
-		se::renderer::vulkan::Fence::sync(SE_NEVER_TIMEOUT, true, {&fence});
-		se::renderer::vulkan::Fence::reset({&fence});
+
+		(void)vkBeginCommandBuffer(transferCommandBuffer.getCommandBuffer(), &beginInfos);
+
+		VkBufferImageCopy bufferImageCopy {};
+		bufferImageCopy.bufferOffset = 0;
+		bufferImageCopy.bufferRowLength = m_infos.window->getInfos().size.x;
+		bufferImageCopy.bufferImageHeight = m_infos.window->getInfos().size.y;
+		bufferImageCopy.imageOffset = VkOffset3D(0, 0, 0);
+		bufferImageCopy.imageExtent = VkExtent3D(context->getSwapchain()->getExtent().width, context->getSwapchain()->getExtent().height, 1);
+		bufferImageCopy.imageSubresource.mipLevel = 0;
+		bufferImageCopy.imageSubresource.layerCount = 1;
+		bufferImageCopy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		(void)vkCmdCopyBufferToImage(
+			transferCommandBuffer.getCommandBuffer(),
+			reinterpret_cast<se::renderer::vulkan::Buffer*> (m_hittedBlocksBuffer.res)->getBuffer(),
+			dstImage, VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR, 1, &bufferImageCopy
+		);
+
+		(void)vkEndCommandBuffer(transferCommandBuffer.getCommandBuffer());
+
+
+		SE_INFO("SECOND QUEUE SUBMIT");
+		pipelineStageFlags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		submitInfos.pCommandBuffers = &transferCommandBuffer.getCommandBuffer();
+		submitInfos.waitSemaphoreCount = 1;
+		submitInfos.pWaitSemaphores = &computeSemaphore.getSemaphore();
+		submitInfos.pWaitDstStageMask = &pipelineStageFlags;
+		submitInfos.signalSemaphoreCount = 1;
+		submitInfos.pSignalSemaphores = &dstSemaphore.getSemaphore();
+		(void)vkQueueSubmit(context->getDevice()->getQueue(se::renderer::vulkan::QueueType::eTransfer), 1, &submitInfos, fence.getFence());
+
+		/*se::renderer::vulkan::Fence::sync(SE_NEVER_TIMEOUT, true, {&fence});
+		se::renderer::vulkan::Fence::reset({&fence});*/
 	}
 
 

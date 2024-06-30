@@ -37,7 +37,7 @@ namespace se::renderer::vulkan {
 		swapchainCreateInfos.imageColorSpace = m_chosenFormat.colorSpace;
 		swapchainCreateInfos.imageExtent = m_chosenExtent;
 		swapchainCreateInfos.imageArrayLayers = 1;
-		swapchainCreateInfos.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		swapchainCreateInfos.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 		swapchainCreateInfos.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		swapchainCreateInfos.queueFamilyIndexCount = 0;
 		swapchainCreateInfos.pQueueFamilyIndices = nullptr;

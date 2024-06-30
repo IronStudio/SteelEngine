@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <thread>
 
@@ -46,6 +47,9 @@ using namespace se::literals;
 
 class SandboxApp : public se::Application {
 	public:
+		std::ofstream engineLogFile {"engine.log"};
+		std::ofstream appLogFile {"app.log"};
+
 		SandboxApp() :
 			se::Application()
 		{
@@ -57,6 +61,8 @@ class SandboxApp : public se::Application {
 
 		void run() override {
 			SE_LOGGER.setSeverityMask(~se::LogSeverity::eVerbose);
+			/*SE_LOGGER.setOutputStream(&engineLogFile);
+			SE_APP_LOGGER.setOutputStream(&appLogFile);*/
 
 			/** @brief Window */
 			se::window::WindowInfos windowInfos {};
@@ -493,7 +499,25 @@ class SandboxApp : public se::Application {
 					&imageIndex
 				);
 
-				(void)vkResetCommandBuffer(graphicsCommandBuffer.getCommandBuffer(), 0);
+				renderer.render(
+					previousFrameReadyFence,
+					imageReadySemaphore,
+					imageDrawnSemaphore,
+					context.getSwapchain()->getImages()[imageIndex]
+				);
+
+				VkSwapchainKHR swapchain {context.getSwapchain()->getSwapChain()};
+				VkPresentInfoKHR presentInfos {};
+				presentInfos.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+				presentInfos.swapchainCount = 1;
+				presentInfos.pSwapchains = &swapchain;
+				presentInfos.pImageIndices = &imageIndex;
+				presentInfos.pResults = nullptr;
+				presentInfos.waitSemaphoreCount = 1;
+				presentInfos.pWaitSemaphores = &imageDrawnSemaphore.getSemaphore();
+				(void)vkQueuePresentKHR(context.getDevice()->getQueue(se::renderer::vulkan::QueueType::ePresent), &presentInfos);
+
+				/*(void)vkResetCommandBuffer(graphicsCommandBuffer.getCommandBuffer(), 0);
 
 
 				VkRenderingAttachmentInfo colorAttachmentInfos {};
@@ -573,7 +597,7 @@ class SandboxApp : public se::Application {
 					pipeline.getPipelineLayout(), 0, 1, &pipeline.getDescriptorSet(), 0, nullptr
 				);
 
-				vkCmdDraw(graphicsCommandBuffer.getCommandBuffer(), vertices.size() / 7, /*perInstanceDatas.size() / 3*/1, 0, 0);
+				vkCmdDraw(graphicsCommandBuffer.getCommandBuffer(), vertices.size() / 7, /*perInstanceDatas.size() / 3 * / 1, 0, 0);
 
 				vkCmdEndRendering(graphicsCommandBuffer.getCommandBuffer());
 
@@ -614,9 +638,7 @@ class SandboxApp : public se::Application {
 				presentInfos.pResults = nullptr;
 				presentInfos.waitSemaphoreCount = 1;
 				presentInfos.pWaitSemaphores = &imageDrawnSemaphore.getSemaphore();
-				(void)vkQueuePresentKHR(context.getDevice()->getQueue(se::renderer::vulkan::QueueType::ePresent), &presentInfos);
-
-				renderer.render();
+				(void)vkQueuePresentKHR(context.getDevice()->getQueue(se::renderer::vulkan::QueueType::ePresent), &presentInfos);*/
 			}
 
 			vkDeviceWaitIdle(context.getDevice()->getDevice());

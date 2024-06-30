@@ -8,6 +8,8 @@
 #include "se/renderer/context.hpp"
 #include "se/renderer/graphicsApi.hpp"
 
+#include "se/renderer/vulkan/synchronisation.hpp"
+
 
 
 namespace se::renderer {
@@ -22,7 +24,12 @@ namespace se::renderer {
 			Renderer(const se::renderer::RendererInfos &infos);
 			~Renderer();
 
-			void render();
+			void render(
+				se::renderer::vulkan::Fence &fence,
+				se::renderer::vulkan::Semaphore &srcSemaphore,
+				se::renderer::vulkan::Semaphore &dstSemaphore,
+				VkImage dst
+			);
 
 			inline const se::renderer::RendererInfos &getInfos() const noexcept {return m_infos;}
 			inline se::renderer::Context *getContext() const noexcept {return m_context.res;}
