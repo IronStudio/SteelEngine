@@ -18,8 +18,13 @@ option(BUILD_STATIC "BUILD_STATIC" OFF)
 
 if (BUILD_STATIC)
 	set(LIBRARY_TYPE STATIC)
+	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_STATIC)
 else()
 	set(LIBRARY_TYPE SHARED)
+	add_compile_definitions(
+		${PROJECT_ACRONYM_UPPERCASE}_SHARED
+		${PROJECT_ACRONYM_UPPERCASE}_BUILD_ENGINE
+	)
 endif()
 
 include_directories(include)

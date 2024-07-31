@@ -34,6 +34,13 @@ target_link_libraries(
 )
 
 
+if (BUILD_STATIC)
+	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_STATIC)
+else()
+	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_SHARED)
+endif()
+
+
 
 if (WIN32)
 	add_compile_definitions(${SANDBOX_NAME_UPPERCASE}_WINDOWS)

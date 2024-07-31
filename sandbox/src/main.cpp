@@ -1,8 +1,8 @@
-#include <test.hpp>
+#include <se/engine.hpp>
 
 
 int main() {
-	test::sayHello();
+	se::Engine engine {};
 
 	return 0;
 }
