@@ -1,6 +1,0 @@
-[submodule "vendors/SteelEngine-Malge"]
-	path = vendors/SteelEngine-Malge
-	url = git@github.com:IronStudio/SteelEngine-Malge.git
-[submodule "vendors/glad"]
-	path = vendors/glad
-	url = git@github.com:IronStudio/SE-glad.git

@@ -18,25 +18,25 @@ option(BUILD_STATIC "BUILD_STATIC" OFF)
 
 if (BUILD_STATIC)
 	set(LIBRARY_TYPE STATIC)
-	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_STATIC)
 else()
 	set(LIBRARY_TYPE SHARED)
-	add_compile_definitions(
-		${PROJECT_ACRONYM_UPPERCASE}_SHARED
-		${PROJECT_ACRONYM_UPPERCASE}_BUILD_LIB
-	)
 endif()
 
-include_directories(include ${DEPS_INCLUDE_DIRS})
+include_directories(include)
 
 file(GLOB_RECURSE LIBRARY_HEADER *.hpp)
 file(GLOB_RECURSE LIBRARY_INLINE *.inl)
 file(GLOB_RECURSE LIBRARY_SOURCE *.cpp)
-file(GLOB_RECURSE LIBRARY_C_FILES *.c)
 
-add_library(${LIBRARY_NAME} ${LIBRARY_TYPE} ${LIBRARY_HEADER} ${LIBRARY_INLINE} ${LIBRARY_SOURCE} ${LIBRARY_C_FILES})
+add_library(${LIBRARY_NAME} ${LIBRARY_TYPE} ${LIBRARY_HEADER} ${LIBRARY_INLINE} ${LIBRARY_SOURCE})
 set_property(TARGET ${LIBRARY_NAME} PROPERTY CXX_STANDARD ${PROJECT_CPP_DIALECT})
-set_property(TARGET ${LIBRARY_NAME} PROPERTY C_STANDARD ${PROJECT_C_DIALECT})
-set_target_properties(${LIBRARY_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
-target_link_libraries(${LIBRARY_NAME} PUBLIC ${DEPS_LIBRARIES})
+if (WIN32)
+	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_WINDOWS)
+elseif (UNIX)
+	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_LINUX)
+elseif (APPLE)
+	add_compile_definitions(${PROJECT_ACRONYM_UPPERCASE}_APPLE)
+else()
+	message(FATAL_ERROR "Platforms other than Windows, Linux and MacOS aren't supported for now")
+endif()
