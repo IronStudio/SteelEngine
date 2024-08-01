@@ -39,6 +39,8 @@ namespace se {
 			template <se::StringEncoding encoding2>
 			se::String<encoding2> useEncoding() const noexcept;
 
+			se::String<encoding> operator+(const se::String<encoding> &string);
+			const se::String<encoding> &operator+=(const se::String<encoding> &string);
 
 			inline const _Char *const &getData() const noexcept {return m_data;}
 			inline const se::Count &getSize() const noexcept {return m_size;}

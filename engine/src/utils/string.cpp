@@ -178,7 +178,7 @@ namespace se {
 
 			se::Uint32 xxxxxx {(code >> 10) & 0b0011'1111};
 			se::Uint32 yyyyyyyyyy {code & 0b0011'1111'1111};
-			se::Uint32 wwww {uuuuu - 1};
+			se::Uint32 wwww {(uuuuu - 1) & 0b0000'1111};
 
 			UTF16Char part1 {(UTF16Char)(0b1101'1000'0000'0000 | (wwww << 6) | xxxxxx)};
 			UTF16Char part2 {(UTF16Char)(0b1101'1100'0000'0000 | yyyyyyyyyy)};

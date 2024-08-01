@@ -102,4 +102,42 @@ namespace se {
 	}
 
 
+	template <se::StringEncoding encoding>
+	se::String<encoding> String<encoding>::operator+(const se::String<encoding> &string) {
+		if (m_data == nullptr || m_size == 0) {
+			if (string.m_data == nullptr || string.m_size == 0)
+				return se::String<encoding> ();
+			return string;
+		}
+
+		if (string.m_data == nullptr || string.m_size == 0)
+			return *this;
+
+		se::Count totalSize {m_size + string.m_size};
+		_Char *buffer {reinterpret_cast<_Char*> (malloc(totalSize * sizeof(_Char)))};
+		memcpy(buffer, m_data, m_size * sizeof(_Char));
+		memcpy(buffer + m_size * sizeof(_Char), string.m_data, string.m_size * sizeof(_Char));
+
+		se::String<encoding> output {buffer, totalSize};
+		free(buffer);
+		return output;
+	}
+
+
+	template <se::StringEncoding encoding>
+	const se::String<encoding> &String<encoding>::operator+=(const se::String<encoding> &string) {
+		if (m_data == nullptr || m_size == 0) {
+			*this = string;
+			return *this;
+		}
+
+		if (string.m_data == nullptr || string.m_size == 0)
+			return *this;
+
+		m_data = reinterpret_cast<_Char*> (realloc(m_data, (m_size + string.m_size + 1) * sizeof(_Char)));
+		memcpy(m_data + m_size * sizeof(_Char), string.m_data, (string.m_size + 1) * sizeof(_Char));
+		return *this;
+	}
+
+
 } // namespace se
