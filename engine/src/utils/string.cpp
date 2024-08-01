@@ -14,14 +14,14 @@
 namespace se {
 	template <>
 	template <>
-	se::String<UTF8> String<UTF8>::useEncoding<UTF8> () const noexcept {
+	se::_String<UTF8> _String<UTF8>::useEncoding<UTF8> () const noexcept {
 		return *this;
 	}
 
 
 	template <>
 	template <>
-	se::String<UTF16> String<UTF16>::useEncoding<UTF16> () const noexcept {
+	se::_String<UTF16> _String<UTF16>::useEncoding<UTF16> () const noexcept {
 		return *this;
 	}
 
@@ -38,11 +38,11 @@ namespace se {
 
 	template <>
 	template <>
-	se::String<UTF8> String<UTF16>::useEncoding<UTF8> () const noexcept {
+	se::_String<UTF8> _String<UTF16>::useEncoding<UTF8> () const noexcept {
 		using UTF8Char = se::EncodingChar<UTF8>::Char;
 
 		if (m_data == nullptr || m_size == 0)
-			return se::String<UTF8> ();
+			return se::_String<UTF8> ();
 
 		Buffer<UTF8Char> buffer {reinterpret_cast<UTF8Char*> (malloc(3 * m_size))};
 
@@ -109,17 +109,17 @@ namespace se {
 			++outputStringSize;
 		}
 
-		return se::String<UTF8> (buffer.buffer, outputStringSize);
+		return se::_String<UTF8> (buffer.buffer, outputStringSize);
 	}
 
 
 	template <>
 	template <>
-	se::String<UTF16> String<UTF8>::useEncoding<UTF16> () const noexcept {
+	se::_String<UTF16> _String<UTF8>::useEncoding<UTF16> () const noexcept {
 		using UTF16Char = se::EncodingChar<UTF16>::Char;
 
 		if (m_data == nullptr || m_size == 0)
-			return se::String<UTF16> ();
+			return se::_String<UTF16> ();
 
 		Buffer<UTF16Char> buffer {reinterpret_cast<UTF16Char*> (malloc(3 * m_size))};
 
@@ -188,7 +188,7 @@ namespace se {
 		}
 
 
-		return se::String<UTF16> (buffer.buffer, outputStringSize);
+		return se::_String<UTF16> (buffer.buffer, outputStringSize);
 	}
 
 

@@ -9,7 +9,7 @@
 
 namespace se {
 	template <se::StringEncoding encoding>
-	String<encoding>::String() noexcept :
+	_String<encoding>::_String() noexcept :
 		m_data {nullptr},
 		m_size {0}
 	{
@@ -18,7 +18,7 @@ namespace se {
 
 
 	template <se::StringEncoding encoding>
-	String<encoding>::String(const _Char *const str) noexcept :
+	_String<encoding>::_String(const _Char *const str) noexcept :
 		m_data {nullptr},
 		m_size {0}
 	{
@@ -32,7 +32,7 @@ namespace se {
 
 
 	template <se::StringEncoding encoding>
-	String<encoding>::String(const _Char *const str, const se::Count size) noexcept :
+	_String<encoding>::_String(const _Char *const str, const se::Count size) noexcept :
 		m_data {nullptr},
 		m_size {size}
 	{
@@ -47,7 +47,7 @@ namespace se {
 
 
 	template <se::StringEncoding encoding>
-	String<encoding>::~String() {
+	_String<encoding>::~_String() {
 		if (m_data != nullptr)
 			free(m_data);
 		m_data = nullptr;
@@ -56,7 +56,7 @@ namespace se {
 
 
 	template <se::StringEncoding encoding>
-	String<encoding>::String(const se::String<encoding> &string) noexcept :
+	_String<encoding>::_String(const se::_String<encoding> &string) noexcept :
 		m_data {nullptr},
 		m_size {0}
 	{
@@ -65,8 +65,8 @@ namespace se {
 
 
 	template <se::StringEncoding encoding>
-	const se::String<encoding> &String<encoding>::operator=(const se::String<encoding> &string) noexcept {
-		this->~String();
+	const se::_String<encoding> &_String<encoding>::operator=(const se::_String<encoding> &string) noexcept {
+		this->~_String();
 
 		if (string.m_data == nullptr || string.m_size == 0)
 			return *this;
@@ -81,7 +81,7 @@ namespace se {
 
 
 	template <se::StringEncoding encoding>
-	String<encoding>::String(se::String<encoding> &&string) noexcept :
+	_String<encoding>::_String(se::_String<encoding> &&string) noexcept :
 		m_data {string.m_data},
 		m_size {string.m_size}
 	{
@@ -91,7 +91,7 @@ namespace se {
 
 
 	template <se::StringEncoding encoding>
-	const se::String<encoding> &String<encoding>::operator=(se::String<encoding> &&string) noexcept {
+	const se::_String<encoding> &_String<encoding>::operator=(se::_String<encoding> &&string) noexcept {
 		m_data = string.m_data;
 		m_size = string.m_size;
 
@@ -103,10 +103,10 @@ namespace se {
 
 
 	template <se::StringEncoding encoding>
-	se::String<encoding> String<encoding>::operator+(const se::String<encoding> &string) {
+	se::_String<encoding> _String<encoding>::operator+(const se::_String<encoding> &string) {
 		if (m_data == nullptr || m_size == 0) {
 			if (string.m_data == nullptr || string.m_size == 0)
-				return se::String<encoding> ();
+				return se::_String<encoding> ();
 			return string;
 		}
 
@@ -118,14 +118,14 @@ namespace se {
 		memcpy(buffer, m_data, m_size * sizeof(_Char));
 		memcpy(buffer + m_size * sizeof(_Char), string.m_data, string.m_size * sizeof(_Char));
 
-		se::String<encoding> output {buffer, totalSize};
+		se::_String<encoding> output {buffer, totalSize};
 		free(buffer);
 		return output;
 	}
 
 
 	template <se::StringEncoding encoding>
-	const se::String<encoding> &String<encoding>::operator+=(const se::String<encoding> &string) {
+	const se::_String<encoding> &_String<encoding>::operator+=(const se::_String<encoding> &string) {
 		if (m_data == nullptr || m_size == 0) {
 			*this = string;
 			return *this;
@@ -137,6 +137,15 @@ namespace se {
 		m_data = reinterpret_cast<_Char*> (realloc(m_data, (m_size + string.m_size + 1) * sizeof(_Char)));
 		memcpy(m_data + m_size * sizeof(_Char), string.m_data, (string.m_size + 1) * sizeof(_Char));
 		return *this;
+	}
+
+
+	template <se::StringEncoding encoding>
+	_String<encoding>::_Char &_String<encoding>::operator[] (se::Count index) const noexcept {
+		SE_ASSERT(m_data != nullptr && m_size != 0, "Can't access element of empty string");
+		SE_ASSERT(index < m_size, "Can't access char outside of the string (the null-terminated char is inaccessable through this operator)");
+
+		return m_data[index];
 	}
 
 

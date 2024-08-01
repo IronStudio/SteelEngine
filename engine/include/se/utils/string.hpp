@@ -20,27 +20,29 @@ namespace se {
 
 
 	template <se::StringEncoding encoding>
-	class SE_CORE String final {
+	class SE_CORE _String final {
 		using _Char = typename se::EncodingChar<encoding>::Char;
 
 		public:
-			String() noexcept;
-			String(const _Char *const str) noexcept;
-			String(const _Char *const str, const se::Count size) noexcept;
-			~String();
+			_String() noexcept;
+			_String(const _Char *const str) noexcept;
+			_String(const _Char *const str, const se::Count size) noexcept;
+			~_String();
 
-			String(const se::String<encoding> &string) noexcept;
-			const se::String<encoding> &operator=(const se::String<encoding> &string) noexcept;
+			_String(const se::_String<encoding> &string) noexcept;
+			const se::_String<encoding> &operator=(const se::_String<encoding> &string) noexcept;
 
-			String(se::String<encoding> &&string) noexcept;
-			const se::String<encoding> &operator=(se::String<encoding> &&string) noexcept;
+			_String(se::_String<encoding> &&string) noexcept;
+			const se::_String<encoding> &operator=(se::_String<encoding> &&string) noexcept;
 
 
 			template <se::StringEncoding encoding2>
-			se::String<encoding2> useEncoding() const noexcept;
+			se::_String<encoding2> useEncoding() const noexcept;
 
-			se::String<encoding> operator+(const se::String<encoding> &string);
-			const se::String<encoding> &operator+=(const se::String<encoding> &string);
+			se::_String<encoding> operator+(const se::_String<encoding> &string);
+			const se::_String<encoding> &operator+=(const se::_String<encoding> &string);
+
+			_Char &operator[] (se::Count index) const noexcept;
 
 			inline const _Char *const &getData() const noexcept {return m_data;}
 			inline const se::Count &getSize() const noexcept {return m_size;}
@@ -50,6 +52,16 @@ namespace se {
 			_Char *m_data;
 			se::Count m_size;
 	};
+
+
+	using UTF8String  = se::_String<se::StringEncoding::eUtf8>;
+	using UTF16String = se::_String<se::StringEncoding::eUtf16>;
+
+	#ifndef SE_USE_UTF16_STRING
+		using String = se::UTF8String;
+	#else
+		using String = se::UTF16String;
+	#endif
 
 } // namespace se
 
