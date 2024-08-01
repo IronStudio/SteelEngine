@@ -24,7 +24,7 @@
 
 #define __SE_INTERNAL_ASSERT(expr, msg) if (!!(expr)) {}\
 else {\
-	std::cout << "ASSERT '" #expr "' failed : " msg << std::endl;\
+	std::cout << "ASSERT '" #expr "' failed in file '" __FILE__ "':" << __LINE__ << " : " msg << std::endl;\
 	__SE_DEBUG_BREAK;\
 }
 
